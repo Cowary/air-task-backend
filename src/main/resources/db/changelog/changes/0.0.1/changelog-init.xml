@@ -1,0 +1,32 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="1-create-taskExecution" author="cowary">
+        <preConditions>
+            <not>
+                <tableExists tableName="task_execution"/>
+            </not>
+        </preConditions>
+        <createTable tableName="task_execution">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="task_name" type="varchar(1024)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="planka_task_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_ts" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_ts" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
