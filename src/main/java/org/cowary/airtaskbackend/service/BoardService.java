@@ -13,50 +13,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class BoardService {
-    private final ProjectService projectService;
-    private final BoardsApi boardsApi;
+public interface BoardService {
 
-    public List<BoardRs> getAllBoardByProject(Long projectId) {
-        var project = projectService.getAllProjects().getProjectList().stream().filter(pr -> projectId.equals(pr.getId())).findFirst();
+    public List<BoardRs> getAllBoardByProject(Long projectId);
 
-        List<BoardRs> boards = new ArrayList<>();
-        for (BoardRs boardRs : project.get().getBoardList()) {
-            var boardPlanka = boardsApi.getBoard(String.valueOf(boardRs.getId()), false);
-            boards.add(BoardRs.builder()
-                    .id(Long.valueOf(boardPlanka.getItem().getId()))
-                    .name(boardPlanka.getItem().getName())
-                    .projectId(projectId)
-                    .taskList(getTaskList(Long.valueOf(boardPlanka.getItem().getId()), boardPlanka.getIncluded().getLists(), boardPlanka.getIncluded().getCards())).build());
-        }
-        return boards;
-    }
-
-    public List<TaskListRs> getTaskList(Long boardId, List<ModelList> taskList, List<GetBoard200ResponseIncludedCardsInner> cardList) {
-        log.info("boardId: {}, getTaskList: {}, cardList: {}",boardId, taskList, cardList);
-        List<TaskListRs> taskLists = new ArrayList<>();
-        for (ModelList taskListPlanko : taskList.stream().filter(m -> ModelList.TypeEnum.ACTIVE.equals(m.getType())).toList()) {
-            taskLists.add(TaskListRs.builder()
-                    .id(Long.valueOf(taskListPlanko.getId()))
-                    .name(taskListPlanko.getName())
-                    .boardId(boardId)
-                    .tasks(cardList.stream()
-                            .filter(c -> c.getListId().equals(taskListPlanko.getId()))
-                            .filter(c -> !c.getIsClosed())
-                            .map(t -> TaskDtoRs.builder()
-                                    .id(Long.valueOf(t.getId()))
-                                    .name(t.getName())
-                                    .taskListId(Long.valueOf(taskListPlanko.getId()))
-                                    .build())
-                            .toList()
-                    ).build());
-        }
-        log.info("boardId: {}, getTaskList: {}", boardId, taskLists);
-        return taskLists;
-    }
-
-
+    public List<TaskListRs> getTaskList(Long boardId, List<ModelList> taskList, List<GetBoard200ResponseIncludedCardsInner> cardList);
 }
