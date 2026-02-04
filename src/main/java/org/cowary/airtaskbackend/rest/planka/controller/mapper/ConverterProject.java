@@ -1,17 +1,17 @@
-package org.cowary.airtaskbackend.controller.mapper;
+package org.cowary.airtaskbackend.rest.planka.controller.mapper;
 
 import lombok.experimental.UtilityClass;
-import org.cowary.airtaskbackend.controller.dto.BoardRs;
-import org.cowary.airtaskbackend.controller.dto.ProjectDtoRs;
-import org.cowary.airtaskbackend.controller.dto.ProjectListDtoRs;
 import org.cowary.airtaskbackend.model.planko.GetProjects200Response;
+import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.BoardRs;
+import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.PlankaProjectDtoRs;
+import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.ProjectListDtoRs;
 
 @UtilityClass
 public class ConverterProject {
 
     public static ProjectListDtoRs convert(GetProjects200Response source) {
         var list = source.getItems().stream()
-                .map(project -> ProjectDtoRs.builder()
+                .map(project -> PlankaProjectDtoRs.builder()
                         .id(Long.valueOf(project.getId()))
                         .name(project.getName())
                         .boardList(source.getIncluded().getBoards()

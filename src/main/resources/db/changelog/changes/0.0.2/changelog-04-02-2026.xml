@@ -1,0 +1,89 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="1-create-project" author="cowary">
+        <preConditions>
+            <not>
+                <tableExists tableName="project"/>
+            </not>
+        </preConditions>
+        <createTable tableName="project">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_ts" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_ts" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="2-create-weekly" author="cowary">
+        <preConditions>
+            <not>
+                <tableExists tableName="weekly"/>
+            </not>
+        </preConditions>
+        <createTable tableName="weekly">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_ts" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_ts" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="count" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="project_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="3-create-completed-weekly" author="cowary">
+        <preConditions>
+            <not>
+                <tableExists tableName="completed_weekly"/>
+            </not>
+        </preConditions>
+        <createTable tableName="completed_weekly">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_ts" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_ts" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="weekly_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="completed_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

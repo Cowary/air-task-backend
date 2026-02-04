@@ -1,6 +1,6 @@
 //package org.cowary.airtaskbackend.controller.mapper;
 //
-//import org.cowary.airtaskbackend.controller.dto.BoardRs;
+//import org.cowary.airtaskbackend.controller.dto.planka.BoardRs;
 //import org.cowary.airtaskbackend.controller.dto.ProjectDtoRs;
 //import org.cowary.airtaskbackend.model.planko.GetProjects200Response;
 //import org.cowary.airtaskbackend.model.planko.GetProjects200ResponseItemsInner;

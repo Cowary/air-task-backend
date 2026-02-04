@@ -1,4 +1,4 @@
-package org.cowary.airtaskbackend;
+package org.cowary.airtaskbackend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -20,7 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Arrays;
 
 @Configuration
-public class ApiConfig {
+public class RestConfig {
 
     /**
      * Настройка ObjectMapper для правильной сериализации JsonNullable
@@ -42,6 +42,7 @@ public class ApiConfig {
         return mapper;
     }
 
+    //TODO: https://spring.io/blog/2025/10/07/introducing-jackson-3-support-in-spring
     /**
      * Настройка конвертера сообщений для RestTemplate
      */
@@ -55,7 +56,6 @@ public class ApiConfig {
         ));
         return converter;
     }
-
 
     @Bean
     public RestTemplate restTemplate(MappingJackson2HttpMessageConverter converter) {

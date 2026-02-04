@@ -3,11 +3,11 @@ package org.cowary.airtaskbackend.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cowary.airtaskbackend.api.planko.BoardsApi;
-import org.cowary.airtaskbackend.controller.dto.BoardRs;
-import org.cowary.airtaskbackend.controller.dto.TaskDtoRs;
-import org.cowary.airtaskbackend.controller.dto.TaskListRs;
 import org.cowary.airtaskbackend.model.planko.GetBoard200ResponseIncludedCardsInner;
 import org.cowary.airtaskbackend.model.planko.ModelList;
+import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.BoardRs;
+import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.PlankaTaskDtoRs;
+import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.TaskListRs;
 import org.cowary.airtaskbackend.service.BoardService;
 import org.cowary.airtaskbackend.service.ProjectService;
 import org.springframework.stereotype.Service;
@@ -49,7 +49,7 @@ public class BoardServiceImpl implements BoardService {
                     .tasks(cardList.stream()
                             .filter(c -> c.getListId().equals(taskListPlanko.getId()))
                             .filter(c -> !c.getIsClosed())
-                            .map(t -> TaskDtoRs.builder()
+                            .map(t -> PlankaTaskDtoRs.builder()
                                     .id(Long.valueOf(t.getId()))
                                     .name(t.getName())
                                     .taskListId(Long.valueOf(taskListPlanko.getId()))

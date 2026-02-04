@@ -1,4 +1,4 @@
-package org.cowary.airtaskbackend.controller.dto;
+package org.cowary.airtaskbackend.rest.planka.controller.dto.planka;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -8,8 +8,5 @@ import lombok.experimental.FieldDefaults;
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ModelListDto {
-    Long id;
-    String name;
-    Long projectId;
+public class TaskListDtoRs {
 }

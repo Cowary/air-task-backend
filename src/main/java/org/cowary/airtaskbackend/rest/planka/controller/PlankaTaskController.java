@@ -1,8 +1,8 @@
-package org.cowary.airtaskbackend.controller;
+package org.cowary.airtaskbackend.rest.planka.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.cowary.airtaskbackend.controller.dto.BoardRs;
+import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.BoardRs;
 import org.cowary.airtaskbackend.service.BoardService;
 import org.cowary.airtaskbackend.service.CardService;
 import org.cowary.airtaskbackend.service.TaskExecutionService;
@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController("/task")
+@RestController("/planka/task")
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true)
-public class TaskController {
+public class PlankaTaskController {
     BoardService boardService;
     CardService cardService;
     TaskExecutionService taskExecutionService;

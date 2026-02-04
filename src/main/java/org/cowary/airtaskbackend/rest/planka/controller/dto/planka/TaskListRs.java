@@ -1,4 +1,4 @@
-package org.cowary.airtaskbackend.controller.dto;
+package org.cowary.airtaskbackend.rest.planka.controller.dto.planka;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,5 +17,5 @@ public class TaskListRs {
     Long id;
     String name;
     Long boardId;
-    List<TaskDtoRs> tasks;
+    List<PlankaTaskDtoRs> tasks;
 }

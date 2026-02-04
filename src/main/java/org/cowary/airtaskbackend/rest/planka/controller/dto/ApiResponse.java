@@ -1,4 +1,4 @@
-package org.cowary.airtaskbackend.controller.dto;
+package org.cowary.airtaskbackend.rest.planka.controller.dto;
 
 import lombok.Builder;
 import lombok.Data;
