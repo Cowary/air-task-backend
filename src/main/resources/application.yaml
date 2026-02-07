@@ -20,5 +20,26 @@ spring:
       session.events.log.LOG_QUERIES_SLOWER_THAN_MS: 25
   liquibase:
     enabled: true
+#  mvc:
+#    pathmatch:
+#      matching-strategy: ant_path_matcher
+
 server:
   port: 8090
+
+# SpringDoc OpenAPI Configuration
+#  api-docs:
+#    path: /api-docs
+#  swagger-ui:
+##    path: /swagger-ui.html
+#    operations-sorter: method
+#    tags-sorter: alpha
+#    filter: true
+#    show-extensions: true
+#    show-common-extensions: true
+#    version: openapi_3_1
+#  packages-to-scan: org.cowary.airtaskbackend.rest
+springdoc:
+  api-docs:
+    version: openapi_3_1
+  packagesToScan: org.cowary.airtaskbackend.rest

@@ -1,4 +1,4 @@
-package org.cowary.airtaskbackend.rest.core.dto;
+package org.cowary.airtaskbackend.rest.project.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,10 +9,9 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class CompletedWeeklyDto {
-    private Long id;
-    private Long weeklyId;
+@AllArgsConstructor
+public class CompletedWeeklyCreateRequest {
+    private Long weeklyEntityId;
     private LocalDateTime completedDate;
 }
