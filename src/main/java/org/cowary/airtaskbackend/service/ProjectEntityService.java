@@ -25,9 +25,11 @@ public class ProjectEntityService {
     @Transactional(readOnly = true)
     public List<ProjectResponse> getAllProjects() {
         log.debug("Getting all projects");
-        return projectRepository.findAll().stream()
+        var projectList = projectRepository.findAll().stream()
                 .map(projectMapper::toResponse)
                 .toList();
+        log.debug("Project list: {}", projectList);
+        return projectList;
     }
 
     @Transactional(readOnly = true)
