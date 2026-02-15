@@ -30,9 +30,6 @@ public class RestConfig {
         this.objectMapperFactory = objectMapperFactory;
     }
 
-    /**
-     * Настройка ObjectMapper для правильной сериализации JsonNullable
-     */
     @Bean
     @Primary
     public ObjectMapper objectMapper() {
@@ -41,60 +38,6 @@ public class RestConfig {
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
-
-//    tools.jackson.databind.ObjectMapper objectMapper() {
-//        tools.jackson.databind.ObjectMapper objectMapper = new tools.jackson.databind.ObjectMapper();
-//        JavaTimeModule javaTimeModule = new JavaTimeModule();
-//        javaTimeModule.addDeserializer(LocalDateTime.class, new CustomLocalDateTimeDeserializer());
-//        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-//
-//        return mapper;
-//    }
-
-//    @Primary
-//    @Bean
-//    public ObjectMapper objectMapper2() {
-//        ObjectMapper mapper = new ObjectMapper();
-//
-//        // Добавляем модуль для JsonNullable
-////        JsonNullableModule jsonNullableModule = new JsonNullableModule();
-////        mapper.registerModule(jsonNullableModule);
-//
-//        // Создаём JavaTimeModule и ДОБАВЛЯЕМ кастомный десериализатор ДО регистрации
-//        JavaTimeModule javaTimeModule = new JavaTimeModule();
-//        javaTimeModule.addDeserializer(LocalDateTime.class, new CustomLocalDateTimeDeserializer());
-//
-//        // Теперь регистрируем модуль (вместе с нашим кастомным десериализатором)
-//        mapper.registerModule(javaTimeModule);
-//
-//        // Отключаем запись временных меток
-//        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-//
-//        return mapper;
-//    }
-
-//    @Bean
-//    public tools.jackson.databind.ObjectMapper jacksonObjectMapper() {
-//        tools.jackson.databind.ObjectMapper mapper = new tools.jackson.databind.ObjectMapper();
-//        JsonMapper.builder()
-//                .
-//
-//        // Добавляем модуль для JsonNullable
-//        JsonNullableModule jsonNullableModule = new JsonNullableModule();
-//        mapper.registerModule(jsonNullableModule);
-//
-//        // Создаём JavaTimeModule и ДОБАВЛЯЕМ кастомный десериализатор ДО регистрации
-//        JavaTimeModule javaTimeModule = new JavaTimeModule();
-//        javaTimeModule.addDeserializer(LocalDateTime.class, new CustomLocalDateTimeDeserializer());
-//
-//        // Теперь регистрируем модуль (вместе с нашим кастомным десериализатором)
-//        mapper.registerModule(javaTimeModule);
-//
-//        // Отключаем запись временных меток
-//        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-//
-//        return mapper;
-//    }
 
     @Bean
     public JsonMapper jsonMapper() {
@@ -110,9 +53,7 @@ public class RestConfig {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JsonNullableModule());
         JavaTimeModule javaTimeModule = new JavaTimeModule();
-//        javaTimeModule.addDeserializer(LocalDateTime.class, new CustomLocalDateTimeDeserializer());
         SimpleModule module = new SimpleModule();
-//        module.addDeserializer(LocalDateTime.class, new CustomLocalDateTimeDeserializer());
         mapper.registerModule(javaTimeModule);
         mapper.registerModule(module);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -133,6 +74,7 @@ public class RestConfig {
     }
 
     //TODO: https://spring.io/blog/2025/10/07/introducing-jackson-3-support-in-spring
+
     /**
      * Настройка конвертера сообщений для RestTemplate
      */
@@ -146,35 +88,6 @@ public class RestConfig {
 //        ));
 //        return converter;
 //    }
-
-//    @Bean
-//    public RestTemplate restTemplate(MappingJackson2HttpMessageConverter converter) {
-//        // Создаём пул соединений
-////        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-////        connectionManager.setMaxTotal(100);
-////        connectionManager.setDefaultMaxPerRoute(20);
-////
-////        // Настраиваем клиент
-////        HttpClient httpClient = HttpClients.custom()
-////                .setConnectionManager(connectionManager)
-////                .build();
-//
-//        // Создаём фабрику с поддержкой PATCH
-////        HttpComponentsClientHttpRequestFactory factory =
-////                new HttpComponentsClientHttpRequestFactory(httpClient);
-////
-//////        factory.setCsetConnectTimeout(5000); // 5 сек
-////        factory.setReadTimeout(30000);   // 30 сек
-////
-////        // Создаём RestTemplate
-////        RestTemplate restTemplate = new RestTemplate(factory);
-////        restTemplate.getMessageConverters().removeIf(c -> c instanceof MappingJackson2HttpMessageConverter);
-////        restTemplate.getMessageConverters().add(converter);
-//        RestTemplate restTemplate = new RestTemplate();
-//
-//        return restTemplate;
-//    }
-
     @Bean
     public ApiClient apiClient(AccessTokensApi accessTokensApi, RestTemplate restTemplate) {
         var apiClient = new ApiClient(restTemplate);

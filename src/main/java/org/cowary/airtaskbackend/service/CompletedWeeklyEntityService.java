@@ -13,9 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
@@ -53,10 +56,10 @@ public class CompletedWeeklyEntityService {
         // Validate weekly entity exists
         WeeklyEntity weeklyEntity = weeklyRepository.findById(request.getWeeklyEntityId())
                 .orElseThrow(() -> new NoSuchElementException("Weekly entity not found with id: " + request.getWeeklyEntityId()));
-        
+
         CompletedWeeklyEntity completedWeekly = completedWeeklyMapper.toEntity(request, weeklyEntity);
         CompletedWeeklyEntity savedCompletedWeekly = completedWeeklyRepository.save(completedWeekly);
-        
+
         return completedWeeklyMapper.toResponse(savedCompletedWeekly);
     }
 
@@ -85,6 +88,8 @@ public class CompletedWeeklyEntityService {
         // Group completed tasks by weekly task ID
         var completedByWeeklyId = completedThisWeek.stream()
                 .collect(Collectors.groupingBy(c -> c.getWeeklyEntity().getId(), Collectors.counting()));
+        Map<WeeklyEntity, List<CompletedWeeklyEntity>> completedByWeekly = completedThisWeek.stream()
+                .collect(Collectors.groupingBy(CompletedWeeklyEntity::getWeeklyEntity));
 
         // Separate completed and incomplete tasks
         var completedTasks = allWeeklyTasks.stream()
@@ -116,6 +121,10 @@ public class CompletedWeeklyEntityService {
                     Long completedCount = completedByWeeklyId.getOrDefault(weekly.getId(), 0L);
                     int remaining = weekly.getCount() - completedCount.intValue();
                     double percentage = weekly.getCount() > 0 ? (completedCount.doubleValue() / weekly.getCount()) * 100 : 0;
+                    boolean isCompletedToday = completedByWeekly.getOrDefault(weekly, Collections.emptyList()).stream()
+                            .anyMatch(c -> c.getCompletedDate()
+                                    .isBefore(LocalDate.now().atStartOfDay().plusHours(27)) && c.getCompletedDate()
+                                    .isAfter(LocalDate.now().atStartOfDay().minusHours(3)));
 
                     return WeeklyTaskStatisticsResponse.WeeklyWithCompletionStatus.builder()
                             .weeklyTaskId(weekly.getId())
@@ -126,6 +135,7 @@ public class CompletedWeeklyEntityService {
                             .completionPercentage(String.format("%.1f%%", percentage))
                             .projectId(weekly.getProject().getId())
                             .projectName(weekly.getProject().getName())
+                            .completedToday(isCompletedToday)
                             .build();
                 })
                 .collect(Collectors.toList());

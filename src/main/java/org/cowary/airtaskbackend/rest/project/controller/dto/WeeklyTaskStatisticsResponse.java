@@ -26,5 +26,6 @@ public class WeeklyTaskStatisticsResponse {
         private String completionPercentage;
         private Long projectId;
         private String projectName;
+        private Boolean completedToday;
     }
 }
