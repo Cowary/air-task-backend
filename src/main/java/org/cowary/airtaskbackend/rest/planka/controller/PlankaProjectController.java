@@ -2,9 +2,9 @@ package org.cowary.airtaskbackend.rest.planka.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.cowary.airtaskbackend.api.planko.ProjectsApi;
-import org.cowary.airtaskbackend.rest.planka.controller.dto.ApiResponse;
-import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.ProjectListDtoRs;
-import org.cowary.airtaskbackend.rest.planka.controller.mapper.ConverterProject;
+import org.cowary.airtaskbackend.rest.common.ApiResponse;
+import org.cowary.airtaskbackend.rest.planka.dto.ProjectListDtoRs;
+import org.cowary.airtaskbackend.rest.planka.mapper.ConverterProject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 

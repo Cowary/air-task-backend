@@ -2,11 +2,12 @@ package org.cowary.airtaskbackend.service;
 
 import org.cowary.airtaskbackend.api.planko.BoardsApi;
 import org.cowary.airtaskbackend.model.planko.*;
-import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.BoardRs;
-import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.PlankaProjectDtoRs;
-import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.ProjectListDtoRs;
-import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.TaskListRs;
-import org.cowary.airtaskbackend.service.impl.BoardServiceImpl;
+import org.cowary.airtaskbackend.rest.planka.dto.BoardRs;
+import org.cowary.airtaskbackend.rest.planka.dto.PlankaProjectDtoRs;
+import org.cowary.airtaskbackend.rest.planka.dto.ProjectListDtoRs;
+import org.cowary.airtaskbackend.rest.planka.dto.TaskListRs;
+import org.cowary.airtaskbackend.service.planka.ProjectService;
+import org.cowary.airtaskbackend.service.planka.impl.BoardServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

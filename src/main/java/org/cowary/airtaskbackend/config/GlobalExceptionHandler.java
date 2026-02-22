@@ -1,6 +1,7 @@
 package org.cowary.airtaskbackend.config;
 
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -30,7 +32,6 @@ public class GlobalExceptionHandler {
         body.put("error", "Validation Failed");
         body.put("path", request.getDescription(false).replace("uri=", ""));
 
-        // Сбор всех ошибок валидации
         List<String> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -71,7 +72,8 @@ public class GlobalExceptionHandler {
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("error", "Bad Request - Type Mismatch");
-        body.put("message", "The parameter '" + ex.getName() + "' could not be converted to " + ex.getRequiredType().getSimpleName() + ".");
+        body.put("message", "The parameter '" + ex.getName() + "' could not be converted to " + ex.getRequiredType()
+                .getSimpleName() + ".");
         body.put("path", request.getDescription(false).replace("uri=", ""));
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
@@ -90,24 +92,6 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
-
-//    @ExceptionHandler(AuthenticationException.class)
-//    public ResponseEntity<Object> handleAuthenticationException(
-//            AuthenticationException ex, WebRequest request) {
-//
-//        Map<String, Object> body = new HashMap<>();
-//        body.put("timestamp", LocalDateTime.now());
-//        body.put("status", HttpStatus.UNAUTHORIZED.value());
-//        body.put("error", "Unauthorized");
-//        if (ex instanceof BadCredentialsException) {
-//            body.put("message", "Invalid credentials provided.");
-//        } else {
-//            body.put("message", ex.getMessage() != null ? ex.getMessage() : "Authentication failed.");
-//        }
-//        body.put("path", request.getDescription(false).replace("uri=", ""));
-//
-//        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
-//    }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDeniedException(
@@ -147,7 +131,7 @@ public class GlobalExceptionHandler {
         body.put("error", "Internal Server Error");
         body.put("message", "An unexpected error occurred. Please try again later.");
         body.put("path", request.getDescription(false).replace("uri=", ""));
-        ex.printStackTrace();
+        log.error(ex.getMessage(), ex);
 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }

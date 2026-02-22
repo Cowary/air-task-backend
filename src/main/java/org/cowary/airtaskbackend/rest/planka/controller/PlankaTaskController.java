@@ -2,10 +2,10 @@ package org.cowary.airtaskbackend.rest.planka.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.cowary.airtaskbackend.rest.planka.controller.dto.planka.BoardRs;
-import org.cowary.airtaskbackend.service.BoardService;
-import org.cowary.airtaskbackend.service.CardService;
-import org.cowary.airtaskbackend.service.TaskExecutionService;
+import org.cowary.airtaskbackend.rest.planka.dto.BoardRs;
+import org.cowary.airtaskbackend.service.db.TaskExecutionService;
+import org.cowary.airtaskbackend.service.planka.BoardService;
+import org.cowary.airtaskbackend.service.planka.CardService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
