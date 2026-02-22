@@ -9,7 +9,7 @@
     </parent>
     <groupId>org.cowary</groupId>
     <artifactId>air-task-backend</artifactId>
-    <version>0.0.3</version>
+    <version>0.2.0</version>
     <name>air-task-backend</name>
     <description>air-task-backend</description>
     <properties>
@@ -168,7 +168,7 @@
                 <version>3.4.0</version>
                 <configuration>
                     <from>
-                        <image>eclipse-temurin:21-jre</image>
+                        <image>eclipse-temurin:21-jre-alpine</image>
                     </from>
                     <to>
                         <image>cowary/air-task-backend</image>
@@ -177,6 +177,16 @@
                             <tag>latest</tag>
                         </tags>
                     </to>
+                    <container>
+                        <jvmFlags>
+                            <jvmFlag>-Xms256m</jvmFlag>
+                            <jvmFlag>-Xmx512m</jvmFlag>
+                            <jvmFlag>-XX:+UseG1GC</jvmFlag>
+                            <jvmFlag>-XX:MaxGCPauseMillis=100</jvmFlag>
+                            <jvmFlag>-XX:+HeapDumpOnOutOfMemoryError</jvmFlag>
+                            <jvmFlag>-Djava.security.egd=file:/dev/./urandom</jvmFlag>
+                        </jvmFlags>
+                    </container>
                 </configuration>
             </plugin>
 

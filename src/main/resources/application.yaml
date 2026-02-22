@@ -3,6 +3,7 @@ logging:
   level:
     org.springframework: INFO
     org.cowary: DEBUG
+
 spring:
   application:
     name: air-monitor-back
@@ -13,18 +14,40 @@ spring:
       schema: myne
       username: ${db.username}
       password: ${db.password}
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
   jpa:
     hibernate:
       ddl-auto: validate
     properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        format_sql: false
       session.events.log.LOG_QUERIES_SLOWER_THAN_MS: 25
+    open-in-view: false
   liquibase:
     enabled: true
 
 server:
   port: 8090
+  compression:
+    enabled: true
 
 springdoc:
   api-docs:
     version: openapi_3_1
   packagesToScan: org.cowary.airtaskbackend.rest
+
+jvm:
+  heap:
+    initial: 256m
+    maximum: 512m
+  gc:
+    type: G1GC
+
