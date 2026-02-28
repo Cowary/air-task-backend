@@ -9,7 +9,7 @@
     </parent>
     <groupId>org.cowary</groupId>
     <artifactId>air-task-backend</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
     <name>air-task-backend</name>
     <description>air-task-backend</description>
     <properties>

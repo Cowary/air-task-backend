@@ -14,7 +14,12 @@ import java.util.List;
 public class WeeklyTaskStatisticsResponse {
     private List<WeeklyWithCompletionStatus> completedTasks;
     private List<WeeklyWithCompletionStatus> incompleteTasks;
-    
+    private Integer totalWeeklyTask;
+    private Integer totalWeekly;
+    private String weekNumber;
+    private Integer completedWeekly;
+    private Integer incompletedWeekly;
+
     @Data
     @Builder
     public static class WeeklyWithCompletionStatus {

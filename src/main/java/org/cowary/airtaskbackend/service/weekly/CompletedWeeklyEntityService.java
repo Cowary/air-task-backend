@@ -16,6 +16,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.IsoFields;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,10 @@ public class CompletedWeeklyEntityService {
 
     @Transactional(readOnly = true)
     public WeeklyTaskStatisticsResponse getWeeklyTaskStatistics() {
+        LocalDate today = LocalDate.now();
+        int currentWeek = today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+        int weeksInYear = (int) today.range(IsoFields.WEEK_OF_WEEK_BASED_YEAR).getMaximum();
+
         // Get current week boundaries (Monday 00:00 to Sunday 23:59:59)
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfWeek = now.with(DayOfWeek.MONDAY).with(LocalTime.MIN);
@@ -80,6 +85,8 @@ public class CompletedWeeklyEntityService {
 
         // Get all weekly tasks
         List<WeeklyEntity> allWeeklyTasks = weeklyRepository.findAll();
+
+        Integer totalWeeklyTasks = allWeeklyTasks.stream().mapToInt(WeeklyEntity::getCount).sum();
 
         // Get completed tasks for current week
         List<CompletedWeeklyEntity> completedThisWeek = completedWeeklyRepository
@@ -140,9 +147,17 @@ public class CompletedWeeklyEntityService {
                 })
                 .collect(Collectors.toList());
 
+        var incompleteTasksCount = incompleteTasks.stream()
+                .mapToInt(WeeklyTaskStatisticsResponse.WeeklyWithCompletionStatus::getRemainingCount)
+                .sum();
         return WeeklyTaskStatisticsResponse.builder()
                 .completedTasks(completedTasks)
                 .incompleteTasks(incompleteTasks)
+                .totalWeeklyTask(totalWeeklyTasks)
+                .totalWeekly(allWeeklyTasks.size())
+                .weekNumber(String.format("%s / %s", currentWeek, weeksInYear))
+                .incompletedWeekly(incompleteTasksCount)
+                .completedWeekly(totalWeeklyTasks - incompleteTasksCount)
                 .build();
     }
 }
