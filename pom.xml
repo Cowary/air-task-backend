@@ -9,7 +9,7 @@
     </parent>
     <groupId>org.cowary</groupId>
     <artifactId>air-task-backend</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <name>air-task-backend</name>
     <description>air-task-backend</description>
     <properties>
@@ -177,18 +177,6 @@
                             <tag>latest</tag>
                         </tags>
                     </to>
-<!--                    <container>-->
-<!--                        <jvmFlags>-->
-<!--                            <jvmFlag>-XX:InitialRAMPercentage=50.0</jvmFlag>-->
-<!--                            <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>-->
-<!--&lt;!&ndash;                            <jvmFlag>-Xms256m</jvmFlag>&ndash;&gt;-->
-<!--&lt;!&ndash;                            <jvmFlag>-Xmx512m</jvmFlag>&ndash;&gt;-->
-<!--                            <jvmFlag>-XX:+ZGenerational</jvmFlag>-->
-<!--                            <jvmFlag>XX:MaxMetaspaceSize=128m</jvmFlag>-->
-<!--&lt;!&ndash;                            <jvmFlag>-XX:+HeapDumpOnOutOfMemoryError</jvmFlag>&ndash;&gt;-->
-<!--&lt;!&ndash;                            <jvmFlag>-Djava.security.egd=file:/dev/./urandom</jvmFlag>&ndash;&gt;-->
-<!--                        </jvmFlags>-->
-<!--                    </container>-->
                 </configuration>
             </plugin>
 

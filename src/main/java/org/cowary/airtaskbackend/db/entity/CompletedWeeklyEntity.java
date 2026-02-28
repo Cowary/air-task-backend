@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class CompletedWeeklyEntity extends BaseEntity{
-    @OneToOne
+public class CompletedWeeklyEntity extends BaseEntity {
+    @ManyToOne
     @JoinColumn(nullable = false, name = "weekly_id")
     WeeklyEntity weeklyEntity;
     @Column(nullable = false)
