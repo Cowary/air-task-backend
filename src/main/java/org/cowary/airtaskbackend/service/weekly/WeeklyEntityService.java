@@ -29,7 +29,7 @@ public class WeeklyEntityService {
     public List<WeeklyResponse> getAllWeeklyTasks() {
         log.debug("Getting all weekly tasks");
         return weeklyRepository.findAll().stream()
-                .map(weeklyMapper::toResponse)
+                .map(weeklyMapper::toResponseWithProject)
                 .toList();
     }
 
@@ -52,14 +52,14 @@ public class WeeklyEntityService {
     @Transactional
     public WeeklyResponse createWeeklyTask(WeeklyCreateRequest request) {
         log.debug("Creating weekly task with name: {}", request.getName());
-        
+
         // Validate project exists
         ProjectEntity project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new NoSuchElementException("Project not found with id: " + request.getProjectId()));
-        
+
         WeeklyEntity weekly = weeklyMapper.toEntity(request);
         weekly.setProject(project);
-        
+
         WeeklyEntity savedWeekly = weeklyRepository.save(weekly);
         return weeklyMapper.toResponseWithProject(savedWeekly);
     }
@@ -69,7 +69,7 @@ public class WeeklyEntityService {
         log.debug("Updating weekly task with id: {}", id);
         WeeklyEntity weekly = weeklyRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Weekly task not found with id: " + id));
-        
+
         weeklyMapper.updateFromRequest(request, weekly);
         WeeklyEntity updatedWeekly = weeklyRepository.save(weekly);
         return weeklyMapper.toResponse(updatedWeekly);
@@ -88,7 +88,7 @@ public class WeeklyEntityService {
     public List<WeeklyResponse> getWeeklyTasksByProjectIdAndStatus(Long projectId, String status) {
         log.debug("Getting weekly tasks for project: {} with status: {}", projectId, status);
         return weeklyRepository.findByProjectIdAndStatus(projectId, status).stream()
-                .map(weeklyMapper::toResponse)
+                .map(weeklyMapper::toResponseWithProject)
                 .toList();
     }
 }
