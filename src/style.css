@@ -32,6 +32,8 @@
   --accent-green-light: #f1f8e9;
   --accent-red: #cc0000;
   --accent-red-light: #ffe6e6;
+  --accent-blue-light: #cce5ff;
+  --accent-blue: #007bff;
   --shadow-color: rgba(0, 0, 0, 0.1);
   --spinner-bg: #f3f3f3;
 }

@@ -729,7 +729,8 @@
             "type": "string",
             "enum": [
               "IN_PROGRESS",
-              "DONE"
+              "DONE",
+              "PAUSED"
             ]
           }
         }
@@ -781,7 +782,8 @@
             "type": "string",
             "enum": [
               "IN_PROGRESS",
-              "DONE"
+              "DONE",
+              "PAUSED"
             ]
           },
           "createdTs": {
@@ -804,7 +806,8 @@
             "type": "string",
             "enum": [
               "IN_PROGRESS",
-              "DONE"
+              "DONE",
+              "PAUSED"
             ]
           },
           "priority": {
@@ -848,7 +851,8 @@
             "type": "string",
             "enum": [
               "IN_PROGRESS",
-              "DONE"
+              "DONE",
+              "PAUSED"
             ]
           },
           "priority": {
@@ -895,7 +899,8 @@
             "type": "string",
             "enum": [
               "IN_PROGRESS",
-              "DONE"
+              "DONE",
+              "PAUSED"
             ]
           }
         }
@@ -910,7 +915,8 @@
             "type": "string",
             "enum": [
               "IN_PROGRESS",
-              "DONE"
+              "DONE",
+              "PAUSED"
             ]
           },
           "priority": {
@@ -1186,6 +1192,25 @@
             "items": {
               "$ref": "#/components/schemas/WeeklyWithCompletionStatus"
             }
+          },
+          "totalWeeklyTask": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalWeekly": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "weekNumber": {
+            "type": "string"
+          },
+          "completedWeekly": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "incompletedWeekly": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },

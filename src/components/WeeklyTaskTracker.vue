@@ -260,6 +260,7 @@
             >
               <option value="IN_PROGRESS">В работе</option>
               <option value="DONE">Выполнено</option>
+              <option value="PAUSED">На паузе</option>
             </select>
           </div>
 
@@ -455,7 +456,8 @@ export default {
     getStatusLabel(status) {
       const labels = {
         'IN_PROGRESS': 'В работе',
-        'DONE': 'Выполнено'
+        'DONE': 'Выполнено',
+        'PAUSED': 'На паузе'
       };
       return labels[status] || status;
     },
@@ -966,6 +968,12 @@ h1 {
   background-color: var(--accent-green-light);
   color: var(--accent-green);
 }
+
+.status-paused {
+  background-color: var(--accent-red-light);
+  color: var(--accent-red);
+}
+
 
 /* Кнопки действий */
 .task-actions {
