@@ -1,11 +1,29 @@
 <script setup>
+import { ref, onMounted } from 'vue'
 import packageJson from '../../package.json'
+import { getHealth } from '../api/weeklyTasks'
 
 /**
  * Главная страница приложения
  * Отображает название проекта и навигацию
  */
 const version = packageJson.version
+const backendVersion = ref('...')
+const backendHealthy = ref(null)
+const healthError = ref(false)
+
+onMounted(async () => {
+  try {
+    const health = await getHealth()
+    backendVersion.value = health.version || 'unknown'
+    backendHealthy.value = health.isHealthy
+    healthError.value = false
+  } catch (error) {
+    console.error('Failed to load health:', error)
+    healthError.value = true
+    backendHealthy.value = false
+  }
+})
 </script>
 
 <template>
@@ -13,7 +31,17 @@ const version = packageJson.version
     <div class="home-content">
       <h1 class="project-title">Air-Task</h1>
       <p class="project-subtitle">Система отслеживания еженедельных задач</p>
-      <p class="version">Версия {{ version }}</p>
+      
+      <div class="version-info">
+        <p class="version">Версия фронта: {{ version }}</p>
+        <p class="version">Версия бекенда: {{ backendVersion }}</p>
+        <div class="health-status">
+          <span class="health-label">Статус бекенда:</span>
+          <span v-if="healthError" class="health-value error"> недоступен</span>
+          <span v-else-if="backendHealthy" class="health-value healthy"> здоров</span>
+          <span v-else class="health-value unhealthy"> проблемы</span>
+        </div>
+      </div>
 
       <router-link to="/weekly-tasks" class="nav-button">
         Еженедельные задачи
@@ -57,10 +85,37 @@ const version = packageJson.version
   margin: 0 0 10px 0;
 }
 
+.version-info {
+  margin: 0 0 20px 0;
+}
+
 .version {
   color: var(--text-muted);
   font-size: 0.9rem;
-  margin: 0 0 20px 0;
+  margin: 0 0 5px 0;
+}
+
+.health-status {
+  margin-top: 0px;
+}
+
+.health-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.health-value {
+  margin-left: 5px;
+  font-weight: 600;
+}
+
+.health-value.healthy {
+  color: #4ade80;
+}
+
+.health-value.unhealthy,
+.health-value.error {
+  color: #f87171;
 }
 
 .nav-button {

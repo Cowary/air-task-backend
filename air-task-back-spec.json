@@ -423,6 +423,26 @@
         }
       }
     },
+    "/health": {
+      "get": {
+        "tags": [
+          "health-controller"
+        ],
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/weekly/v1/project/{projectId}": {
       "get": {
         "tags": [
@@ -1090,6 +1110,17 @@
             "items": {
               "$ref": "#/components/schemas/PlankaTaskDtoRs"
             }
+          }
+        }
+      },
+      "HealthDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "isHealthy": {
+            "type": "boolean"
           }
         }
       },
