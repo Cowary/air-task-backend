@@ -13,6 +13,23 @@ const apiClient = axios.create({
 });
 
 /**
+ * Получает список всех проектов
+ *
+ * API endpoint: GET /api/project/v1/list
+ *
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const getAllProjects = async () => {
+  try {
+    const response = await apiClient.get('/api/project/v1/list');
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при получении списка проектов:', error);
+    throw error;
+  }
+};
+
+/**
  * Получает список всех задач
  *
  * API endpoint: GET /v1/task/list

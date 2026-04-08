@@ -114,14 +114,23 @@
 
           <div class="form-group">
             <label for="taskProject">Проект *</label>
-            <input
+            <select
               id="taskProject"
-              v-model.trim="taskForm.projectName"
-              type="text"
+              v-model="taskForm.projectName"
               required
-              maxlength="100"
-              placeholder="Введите название проекта"
-            />
+              :disabled="loadingProjects || projects.length === 0"
+            >
+              <option value="" disabled v-if="!taskForm.projectName">Загрузка проектов...</option>
+              <option
+                v-for="project in projects"
+                :key="project.id"
+                :value="project.name"
+              >
+                {{ project.name }}
+              </option>
+            </select>
+            <span v-if="loadingProjects" class="form-hint">Загрузка проектов...</span>
+            <span v-else-if="projects.length === 0" class="form-hint">Нет доступных проектов</span>
           </div>
 
           <div class="form-group">
@@ -188,7 +197,7 @@
 </template>
 
 <script>
-import { getTasks, createTask, updateTask, deleteTask } from '../api/tasks.js';
+import { getTasks, createTask, updateTask, deleteTask, getAllProjects } from '../api/tasks.js';
 
 export default {
   name: 'TasksPage',
@@ -198,6 +207,10 @@ export default {
       tasks: [],
       loading: false,
       error: null,
+
+      // Проекты
+      projects: [],
+      loadingProjects: false,
 
       // Фильтры
       filterProject: '',
@@ -271,6 +284,22 @@ export default {
       }
     },
 
+    async loadProjects() {
+      this.loadingProjects = true;
+
+      try {
+        const response = await getAllProjects();
+
+        if (response.isSuccess) {
+          this.projects = response.data?.projects || [];
+        }
+      } catch (err) {
+        console.error('Ошибка загрузки проектов:', err);
+      } finally {
+        this.loadingProjects = false;
+      }
+    },
+
     getPriorityLabel(priority) {
       const labels = {
         'HIGH': 'Высокий',
@@ -305,7 +334,7 @@ export default {
       this.editingTask = null;
       this.taskForm = {
         name: '',
-        projectName: '',
+        projectName: this.projects.length > 0 ? this.projects[0].name : '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS',
         description: ''
@@ -330,7 +359,7 @@ export default {
       this.editingTask = null;
       this.taskForm = {
         name: '',
-        projectName: '',
+        projectName: this.projects.length > 0 ? this.projects[0].name : '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS',
         description: ''
@@ -418,6 +447,7 @@ export default {
 
   mounted() {
     this.loadTasks();
+    this.loadProjects();
   }
 };
 </script>
@@ -796,6 +826,12 @@ h1 {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--accent-primary);
+}
+
+.form-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .form-actions {
