@@ -16,6 +16,14 @@
       "description": "API для управления завершенными недельными задачами"
     },
     {
+      "name": "Task Management",
+      "description": "API for managing tasks"
+    },
+    {
+      "name": "Purchase Management",
+      "description": "API for managing purchases"
+    },
+    {
       "name": "Project Management",
       "description": "API для управления проектами"
     },
@@ -273,6 +281,134 @@
         }
       }
     },
+    "/v1/task/update": {
+      "post": {
+        "tags": [
+          "Task Management"
+        ],
+        "summary": "Update a task",
+        "description": "Updates task information with the specified ID",
+        "operationId": "update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskRq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Task successfully updated",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskRs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/task/save": {
+      "post": {
+        "tags": [
+          "Task Management"
+        ],
+        "summary": "Create a new task",
+        "description": "Creates a new task in the system",
+        "operationId": "save",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskRq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Task successfully created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskRs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/purchase/update": {
+      "post": {
+        "tags": [
+          "Purchase Management"
+        ],
+        "summary": "Update a purchase",
+        "description": "Updates purchase information with the specified ID",
+        "operationId": "update_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePurchaseRq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Purchase successfully updated",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseRs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/purchase/save": {
+      "post": {
+        "tags": [
+          "Purchase Management"
+        ],
+        "summary": "Create a new purchase",
+        "description": "Creates a new purchase in the system",
+        "operationId": "save_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePurchaseRq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Purchase successfully created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseRs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/weekly/v1": {
       "post": {
         "tags": [
@@ -362,6 +498,50 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseCompletedWeeklyResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/task/list": {
+      "get": {
+        "tags": [
+          "Task Management"
+        ],
+        "summary": "Get all tasks",
+        "description": "Returns a list of all tasks in the system",
+        "operationId": "list",
+        "responses": {
+          "200": {
+            "description": "List of tasks successfully retrieved",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskRs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/purchase/list": {
+      "get": {
+        "tags": [
+          "Purchase Management"
+        ],
+        "summary": "Get all purchases",
+        "description": "Returns a list of all purchases in the system",
+        "operationId": "list_1",
+        "responses": {
+          "200": {
+            "description": "List of purchases successfully retrieved",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseRs"
                 }
               }
             }
@@ -723,6 +903,70 @@
           }
         }
       }
+    },
+    "/v1/task": {
+      "delete": {
+        "tags": [
+          "Task Management"
+        ],
+        "summary": "Delete a task",
+        "description": "Deletes the task with the specified ID",
+        "operationId": "delete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteTaskRq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Task successfully deleted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/purchase": {
+      "delete": {
+        "tags": [
+          "Purchase Management"
+        ],
+        "summary": "Delete a purchase",
+        "description": "Deletes the purchase with the specified ID",
+        "operationId": "delete_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeletePurchaseRq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Purchase successfully deleted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseObject"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -892,6 +1136,351 @@
             "format": "date-time"
           }
         }
+      },
+      "UpdateTaskRq": {
+        "type": "object",
+        "description": "Request to update an existing task",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Task ID to update",
+            "example": 42,
+            "minimum": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Updated task name",
+            "example": "Updated task name",
+            "maxLength": 200,
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "description": "Task status",
+            "enum": [
+              "IN_PROGRESS",
+              "DONE",
+              "PAUSED"
+            ],
+            "example": "IN_PROGRESS"
+          },
+          "projectName": {
+            "type": "string",
+            "description": "Project name this task belongs to",
+            "example": "Air Task Backend",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "priority": {
+            "type": "string",
+            "description": "Task priority",
+            "enum": [
+              "HIGH",
+              "MIDDLE",
+              "LOW"
+            ],
+            "example": "HIGH"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional task description",
+            "example": "Add OAuth2 authentication flow",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "priority",
+          "projectName",
+          "status"
+        ]
+      },
+      "ProjectDto": {
+        "type": "object",
+        "description": "Project information",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Project name",
+            "example": "Air Task Backend",
+            "maxLength": 255,
+            "minLength": 1
+          }
+        }
+      },
+      "TaskRs": {
+        "type": "object",
+        "description": "Task response data",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Task unique identifier",
+            "example": 42
+          },
+          "name": {
+            "type": "string",
+            "description": "Task name",
+            "example": "Implement user authentication"
+          },
+          "status": {
+            "type": "string",
+            "description": "Task status",
+            "example": "IN_PROGRESS"
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectDto",
+            "description": "Project this task belongs to"
+          },
+          "priority": {
+            "type": "string",
+            "description": "Task priority level",
+            "example": "HIGH"
+          },
+          "createdTs": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record creation timestamp",
+            "example": "2024-01-15T10:30:00"
+          },
+          "updatedTs": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record last update timestamp",
+            "example": "2024-01-15T14:45:00"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional task description",
+            "example": "Add OAuth2 authentication flow"
+          }
+        },
+        "required": [
+          "createdTs",
+          "id",
+          "name",
+          "priority",
+          "project",
+          "status",
+          "updatedTs"
+        ]
+      },
+      "CreateTaskRq": {
+        "type": "object",
+        "description": "Request to create a new task",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Task name",
+            "example": "Implement user authentication",
+            "maxLength": 200,
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "description": "Task status",
+            "enum": [
+              "IN_PROGRESS",
+              "DONE",
+              "PAUSED"
+            ],
+            "example": "IN_PROGRESS"
+          },
+          "projectName": {
+            "type": "string",
+            "description": "Project name this task belongs to",
+            "example": "Air Task Backend",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "priority": {
+            "type": "string",
+            "description": "Task priority",
+            "enum": [
+              "HIGH",
+              "MIDDLE",
+              "LOW"
+            ],
+            "example": "HIGH"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional task description",
+            "example": "Add OAuth2 authentication flow",
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "name",
+          "priority",
+          "projectName",
+          "status"
+        ]
+      },
+      "UpdatePurchaseRq": {
+        "type": "object",
+        "description": "Request to update an existing purchase",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Purchase ID to update",
+            "example": 42,
+            "minimum": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Updated purchase name",
+            "example": "Updated laptop name",
+            "maxLength": 200,
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "description": "Purchase status",
+            "enum": [
+              "IN_PROGRESS",
+              "DONE",
+              "PAUSED"
+            ],
+            "example": "IN_PROGRESS"
+          },
+          "priority": {
+            "type": "string",
+            "description": "Purchase priority",
+            "enum": [
+              "HIGH",
+              "MIDDLE",
+              "LOW"
+            ],
+            "example": "HIGH"
+          },
+          "categoryName": {
+            "type": "string",
+            "description": "Category name this purchase belongs to",
+            "example": "Electronics",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "isComplete": {
+            "type": "boolean",
+            "description": "Whether the purchase is marked as complete"
+          }
+        },
+        "required": [
+          "categoryName",
+          "id",
+          "isComplete",
+          "name",
+          "priority",
+          "status"
+        ]
+      },
+      "CategoryDto": {
+        "type": "object",
+        "description": "Purchase category information",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Category name",
+            "example": "Electronics",
+            "maxLength": 255,
+            "minLength": 1
+          }
+        }
+      },
+      "PurchaseRs": {
+        "type": "object",
+        "description": "Purchase response data",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Purchase unique identifier",
+            "example": 42
+          },
+          "name": {
+            "type": "string",
+            "description": "Purchase name",
+            "example": "New laptop"
+          },
+          "priority": {
+            "type": "string",
+            "description": "Purchase priority level",
+            "example": "HIGH"
+          },
+          "category": {
+            "$ref": "#/components/schemas/CategoryDto",
+            "description": "Category this purchase belongs to"
+          },
+          "isComplete": {
+            "type": "boolean",
+            "description": "Whether the purchase is marked as complete"
+          },
+          "createdTs": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record creation timestamp",
+            "example": "2024-01-15T10:30:00"
+          },
+          "updatedTs": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record last update timestamp",
+            "example": "2024-01-15T14:45:00"
+          }
+        },
+        "required": [
+          "category",
+          "createdTs",
+          "id",
+          "isComplete",
+          "name",
+          "priority",
+          "updatedTs"
+        ]
+      },
+      "CreatePurchaseRq": {
+        "type": "object",
+        "description": "Request to create a new purchase",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Purchase name",
+            "example": "New laptop",
+            "maxLength": 200,
+            "minLength": 1
+          },
+          "priority": {
+            "type": "string",
+            "description": "Purchase priority",
+            "enum": [
+              "HIGH",
+              "MIDDLE",
+              "LOW"
+            ],
+            "example": "HIGH"
+          },
+          "categoryName": {
+            "type": "string",
+            "description": "Category name this purchase belongs to",
+            "example": "Electronics",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "isComplete": {
+            "type": "boolean",
+            "description": "Whether the purchase is marked as complete"
+          }
+        },
+        "required": [
+          "categoryName",
+          "isComplete",
+          "name",
+          "priority"
+        ]
       },
       "WeeklyCreateRequest": {
         "type": "object",
@@ -1282,7 +1871,54 @@
           }
         }
       },
+      "DeleteTaskRq": {
+        "type": "object",
+        "description": "Request to delete a task",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Task ID to delete",
+            "example": 42,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
       "ApiResponseVoid": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "errorType": {
+            "type": "string"
+          },
+          "data": {}
+        }
+      },
+      "DeletePurchaseRq": {
+        "type": "object",
+        "description": "Request to delete a purchase",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Purchase ID to delete",
+            "example": 42,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "ApiResponseObject": {
         "type": "object",
         "properties": {
           "isSuccess": {
