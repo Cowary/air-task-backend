@@ -43,9 +43,17 @@ onMounted(async () => {
         </div>
       </div>
 
-      <router-link to="/weekly-tasks" class="nav-button">
-        Еженедельные задачи
-      </router-link>
+      <div class="navigation">
+        <router-link to="/weekly-tasks" class="nav-button">
+          📊 Еженедельные задачи
+        </router-link>
+        <router-link to="/tasks" class="nav-button nav-button-tasks">
+          📝 Задачи
+        </router-link>
+        <router-link to="/purchases" class="nav-button nav-button-purchases">
+          🛒 Покупки
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -118,6 +126,12 @@ onMounted(async () => {
   color: #f87171;
 }
 
+.navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .nav-button {
   display: inline-block;
   padding: 14px 32px;
@@ -130,9 +144,25 @@ onMounted(async () => {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
+.nav-button-tasks {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.nav-button-purchases {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
 .nav-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.nav-button-tasks:hover {
+  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+}
+
+.nav-button-purchases:hover {
+  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
 }
 
 .nav-button:active {
