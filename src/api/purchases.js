@@ -39,6 +39,8 @@ export const getPurchases = async () => {
  * @param {string} purchaseData.priority - Приоритет (HIGH, MIDDLE, LOW) - обязательно
  * @param {string} purchaseData.categoryName - Название категории (обязательно, макс. 100 символов)
  * @param {boolean} purchaseData.isComplete - Статус завершенности (обязательно)
+ * @param {Array} purchaseData.linkList - Список ссылок (опционально)
+ * @param {Array} purchaseData.priceList - Список цен (опционально)
  * @returns {Promise} Промис с данными от сервера
  */
 export const createPurchase = async (purchaseData) => {
@@ -47,7 +49,9 @@ export const createPurchase = async (purchaseData) => {
       name: purchaseData.name,
       priority: purchaseData.priority,
       categoryName: purchaseData.categoryName,
-      isComplete: purchaseData.isComplete
+      isComplete: purchaseData.isComplete,
+      linkList: purchaseData.linkList || [],
+      priceList: purchaseData.priceList || []
     };
 
     const response = await apiClient.post('/v1/purchase/save', requestBody);
@@ -70,6 +74,8 @@ export const createPurchase = async (purchaseData) => {
  * @param {string} purchaseData.categoryName - Название категории (обязательно, макс. 100 символов)
  * @param {boolean} purchaseData.isComplete - Статус завершенности (обязательно)
  * @param {string} purchaseData.status - Статус (IN_PROGRESS, DONE, PAUSED) - обязательно
+ * @param {Array} purchaseData.linkList - Список ссылок (опционально)
+ * @param {Array} purchaseData.priceList - Список цен (опционально)
  * @returns {Promise} Промис с данными от сервера
  */
 export const updatePurchase = async (purchaseData) => {
@@ -80,7 +86,9 @@ export const updatePurchase = async (purchaseData) => {
       priority: purchaseData.priority,
       categoryName: purchaseData.categoryName,
       isComplete: purchaseData.isComplete,
-      status: purchaseData.status
+      status: purchaseData.status,
+      linkList: purchaseData.linkList || [],
+      priceList: purchaseData.priceList || []
     };
 
     const response = await apiClient.post('/v1/purchase/update', requestBody);

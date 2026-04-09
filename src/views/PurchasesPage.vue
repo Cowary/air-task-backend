@@ -77,6 +77,26 @@
                 Создано: {{ formatDate(purchase.createdTs) }}
               </span>
             </div>
+
+            <!-- Список цен -->
+            <div v-if="purchase.priceList && purchase.priceList.length > 0" class="price-list">
+              <div class="meta-title">💰 Цены:</div>
+              <div v-for="price in purchase.priceList" :key="price.id" class="price-item">
+                <span class="price-amount">{{ formatPrice(price.amount) }} {{ price.currency }}</span>
+                <span v-if="price.isActual" class="price-actual-badge">Актуальная</span>
+                <span class="price-date">{{ formatDate(price.createdTs) }}</span>
+              </div>
+            </div>
+
+            <!-- Список ссылок -->
+            <div v-if="purchase.linkList && purchase.linkList.length > 0" class="link-list">
+              <div class="meta-title">🔗 Ссылки:</div>
+              <div v-for="link in purchase.linkList" :key="link.id" class="link-item">
+                <a :href="link.link" target="_blank" rel="noopener noreferrer" class="link-url">
+                  {{ truncateUrl(link.link) }}
+                </a>
+              </div>
+            </div>
           </div>
 
           <div class="purchase-actions">
@@ -153,6 +173,55 @@
             </label>
           </div>
 
+          <!-- Управление ценами -->
+          <div class="form-section">
+            <label>💰 Цены:</label>
+            <div class="list-manager">
+              <div v-for="(price, index) in purchaseForm.priceList" :key="index" class="list-item">
+                <div class="list-item-content">
+                  <input
+                    v-model.number="price.amount"
+                    type="number"
+                    step="0.01"
+                    placeholder="Сумма"
+                    class="inline-input"
+                  />
+                  <input
+                    v-model.trim="price.currency"
+                    type="text"
+                    placeholder="Валюта (USD, RUB)"
+                    class="inline-input inline-input-short"
+                  />
+                  <label class="checkbox-label-inline">
+                    <input type="checkbox" v-model="price.isActual" />
+                    <span>Актуальная</span>
+                  </label>
+                </div>
+                <button @click="removePrice(index)" class="btn-remove" type="button" title="Удалить цену">✕</button>
+              </div>
+              <button @click="addPrice" class="btn-add" type="button">+ Добавить цену</button>
+            </div>
+          </div>
+
+          <!-- Управление ссылками -->
+          <div class="form-section">
+            <label>🔗 Ссылки:</label>
+            <div class="list-manager">
+              <div v-for="(link, index) in purchaseForm.linkList" :key="index" class="list-item">
+                <div class="list-item-content">
+                  <input
+                    v-model.trim="link.link"
+                    type="url"
+                    placeholder="https://example.com"
+                    class="inline-input"
+                  />
+                </div>
+                <button @click="removeLink(index)" class="btn-remove" type="button" title="Удалить ссылку">✕</button>
+              </div>
+              <button @click="addLink" class="btn-add" type="button">+ Добавить ссылку</button>
+            </div>
+          </div>
+
           <div class="form-actions">
             <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
             <button type="submit" class="save-btn" :disabled="saving">
@@ -205,7 +274,9 @@ export default {
         categoryName: '',
         priority: 'MIDDLE',
         isComplete: false,
-        status: 'IN_PROGRESS'
+        status: 'IN_PROGRESS',
+        priceList: [],
+        linkList: []
       },
 
       // Модальное окно удаления
@@ -287,6 +358,42 @@ export default {
       });
     },
 
+    formatPrice(amount) {
+      if (amount === null || amount === undefined) return '0';
+      return new Intl.NumberFormat('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(amount);
+    },
+
+    truncateUrl(url, maxLength = 50) {
+      if (!url) return '';
+      if (url.length <= maxLength) return url;
+      return url.substring(0, maxLength) + '...';
+    },
+
+    addPrice() {
+      this.purchaseForm.priceList.push({
+        amount: 0,
+        currency: 'RUB',
+        isActual: false
+      });
+    },
+
+    removePrice(index) {
+      this.purchaseForm.priceList.splice(index, 1);
+    },
+
+    addLink() {
+      this.purchaseForm.linkList.push({
+        link: ''
+      });
+    },
+
+    removeLink(index) {
+      this.purchaseForm.linkList.splice(index, 1);
+    },
+
     openCreateModal() {
       this.editingPurchase = null;
       this.purchaseForm = {
@@ -294,7 +401,9 @@ export default {
         categoryName: '',
         priority: 'MIDDLE',
         isComplete: false,
-        status: 'IN_PROGRESS'
+        status: 'IN_PROGRESS',
+        priceList: [],
+        linkList: []
       };
       this.showPurchaseModal = true;
     },
@@ -306,7 +415,9 @@ export default {
         categoryName: purchase.category?.name || '',
         priority: purchase.priority,
         isComplete: purchase.isComplete,
-        status: purchase.status || 'IN_PROGRESS'
+        status: purchase.status || 'IN_PROGRESS',
+        priceList: purchase.priceList ? JSON.parse(JSON.stringify(purchase.priceList)) : [],
+        linkList: purchase.linkList ? JSON.parse(JSON.stringify(purchase.linkList)) : []
       };
       this.showPurchaseModal = true;
     },
@@ -319,7 +430,9 @@ export default {
         categoryName: '',
         priority: 'MIDDLE',
         isComplete: false,
-        status: 'IN_PROGRESS'
+        status: 'IN_PROGRESS',
+        priceList: [],
+        linkList: []
       };
     },
 
@@ -341,14 +454,18 @@ export default {
             categoryName: this.purchaseForm.categoryName,
             priority: this.purchaseForm.priority,
             isComplete: this.purchaseForm.isComplete,
-            status: this.purchaseForm.status
+            status: this.purchaseForm.status,
+            priceList: this.purchaseForm.priceList,
+            linkList: this.purchaseForm.linkList
           });
         } else {
           response = await createPurchase({
             name: this.purchaseForm.name,
             categoryName: this.purchaseForm.categoryName,
             priority: this.purchaseForm.priority,
-            isComplete: this.purchaseForm.isComplete
+            isComplete: this.purchaseForm.isComplete,
+            priceList: this.purchaseForm.priceList,
+            linkList: this.purchaseForm.linkList
           });
         }
 
@@ -634,6 +751,61 @@ h1 {
   color: var(--text-muted);
 }
 
+/* Списки цен и ссылок */
+.meta-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.price-list,
+.link-list {
+  margin-top: 8px;
+}
+
+.price-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.price-amount {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.price-actual-badge {
+  background-color: var(--accent-green-light);
+  color: var(--accent-green);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.price-date {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.link-item {
+  padding: 4px 0;
+}
+
+.link-url {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.link-url:hover {
+  text-decoration: underline;
+}
+
 /* Кнопки действий */
 .purchase-actions {
   display: flex;
@@ -761,6 +933,120 @@ h1 {
 .form-group select:focus {
   outline: none;
   border-color: var(--accent-primary);
+}
+
+/* Секция формы */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 12px;
+  background-color: var(--bg-tertiary);
+  border-radius: 6px;
+}
+
+.form-section label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Менеджер списков */
+.list-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-secondary);
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.list-item-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inline-input {
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 13px;
+  flex: 1;
+}
+
+.inline-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.inline-input-short {
+  max-width: 100px;
+  flex: none;
+}
+
+.checkbox-label-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.checkbox-label-inline input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.btn-remove {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--accent-red-light);
+  color: var(--accent-red);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-remove:hover {
+  background-color: var(--accent-red);
+  color: white;
+}
+
+.btn-add {
+  padding: 6px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--accent-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+}
+
+.btn-add:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--bg-secondary);
 }
 
 .checkbox-label {
