@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8090",
+      "url": "http://192.168.1.74:8090",
       "description": "Generated server url"
     }
   ],
@@ -1319,6 +1319,62 @@
           "status"
         ]
       },
+      "LinkDto": {
+        "type": "object",
+        "description": "Link",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "link": {
+            "type": "string",
+            "description": "The URL link",
+            "example": "https://example.com"
+          }
+        },
+        "required": [
+          "id",
+          "link"
+        ]
+      },
+      "PriceDto": {
+        "type": "object",
+        "description": "Price",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "amount": {
+            "type": "number",
+            "description": "The price amount",
+            "example": 99.99
+          },
+          "currency": {
+            "type": "string",
+            "description": "The currency code",
+            "example": "USD"
+          },
+          "isActual": {
+            "type": "boolean",
+            "description": "Indicates whether the price is actual",
+            "example": true
+          },
+          "createdTs": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Created time"
+          }
+        },
+        "required": [
+          "amount",
+          "createdTs",
+          "currency",
+          "id",
+          "isActual"
+        ]
+      },
       "UpdatePurchaseRq": {
         "type": "object",
         "description": "Request to update an existing purchase",
@@ -1367,6 +1423,18 @@
           "isComplete": {
             "type": "boolean",
             "description": "Whether the purchase is marked as complete"
+          },
+          "linkList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkDto"
+            }
+          },
+          "priceList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceDto"
+            }
           }
         },
         "required": [
@@ -1430,6 +1498,20 @@
             "format": "date-time",
             "description": "Record last update timestamp",
             "example": "2024-01-15T14:45:00"
+          },
+          "linkList": {
+            "type": "array",
+            "description": "Link list",
+            "items": {
+              "$ref": "#/components/schemas/LinkDto"
+            }
+          },
+          "priceList": {
+            "type": "array",
+            "description": "Price history list",
+            "items": {
+              "$ref": "#/components/schemas/PriceDto"
+            }
           }
         },
         "required": [
@@ -1438,6 +1520,7 @@
           "id",
           "isComplete",
           "name",
+          "priceList",
           "priority",
           "updatedTs"
         ]
@@ -1473,6 +1556,18 @@
           "isComplete": {
             "type": "boolean",
             "description": "Whether the purchase is marked as complete"
+          },
+          "linkList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkDto"
+            }
+          },
+          "priceList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceDto"
+            }
           }
         },
         "required": [
