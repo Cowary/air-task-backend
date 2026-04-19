@@ -36,7 +36,7 @@ pipeline {
         )
         string(
             name: 'BACKEND_URL', 
-            defaultValue: 'http://localhost:8090', 
+            defaultValue: 'http://192.168.1.79:8102',
             description: 'URL backend сервера'
         )
     }
@@ -84,7 +84,7 @@ pipeline {
                 echo "Сборка образа ${DOCKER_IMAGE}:${params.DOCKER_TAG}..."
                 script {
                     def buildArgs = ""
-                    if (params.BACKEND_URL != 'http://localhost:8090') {
+                    if (params.BACKEND_URL != 'http://192.168.1.79:8102') {
                         buildArgs = "--build-arg BACKEND_URL=${params.BACKEND_URL}"
                     }
                     
