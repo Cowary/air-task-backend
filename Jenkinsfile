@@ -34,11 +34,6 @@ pipeline {
             defaultValue: 'latest', 
             description: 'Тег образа'
         )
-        string(
-            name: 'BACKEND_URL', 
-            defaultValue: 'http://192.168.1.79:8102',
-            description: 'URL backend сервера'
-        )
     }
 
     // Переменные окружения
@@ -82,20 +77,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo "Сборка образа ${DOCKER_IMAGE}:${params.DOCKER_TAG}..."
-                script {
-                    def buildArgs = ""
-                    if (params.BACKEND_URL != 'http://192.168.1.79:8102') {
-                        buildArgs = "--build-arg BACKEND_URL=${params.BACKEND_URL}"
-                    }
-                    
-                    sh """
-                        docker build \
-                            ${buildArgs} \
-                            -t ${IMAGE_NAME}:${IMAGE_TAG} \
-                            -t ${IMAGE_NAME}:${env.BUILD_NUMBER} \
-                            .
-                    """
-                }
+                sh """
+                    docker build \
+                        -t ${IMAGE_NAME}:${IMAGE_TAG} \
+                        -t ${IMAGE_NAME}:${env.BUILD_NUMBER} \
+                        .
+                """
             }
         }
 

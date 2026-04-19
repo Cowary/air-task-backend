@@ -1,39 +1,46 @@
-` block containing what appears to be documentation for a Vue 3 + Vite template
-2. There's an `<edit>` block containing a README for "Air Task Frontend" application
+# Air Task Frontend
 
-Looking at the instruction, it says the edit is in the form of:
-// ... existing code ...
-FIRST_EDIT
-// ... existing code ...
+Vue 3 + Vite приложение для управления задачами.
 
-But in this case, both the code and edit blocks contain markdown documentation, not actual code with comments.
+## Запуск из IDE (dev mode)
 
-The task seems to be to replace the content in the `<code>` block with the content from the `<edit>` block.
+### IDEA
 
-Wait, let me re-read the task more carefully. It says:
+1. **Run → Edit Configurations...**
+2. Создать/редактировать npm конфигурацию с `npm run dev`
+3. В поле **Environment variables** добавить:
+   ```
+   VITE_BACKEND_URL=http://192.168.1.79:8102
+   ```
 
-"The code is any type of code and the edit is in the form of:
-// ... existing code ...
-FIRST_EDIT
-// ... existing code ...
-SECOND_EDIT
-// ... existing code ...
-THIRD_EDIT
-// ... existing code ..."
+### Терминал
 
-And it says: "In some cases, the comment // ... existing code ... or // ... остальной код ... may not be at the beginning or end of the snippet."
-
-So the pattern is that we have comments marking where the edit snippets should be inserted. But in this case, I don't see that pattern. The edit block just contains the full README content.
-
-Looking more carefully at the code block, it has:
-```
-` block contains a Vue 3 + Vite template description (markdown-like text, not actual code)
+```bash
+VITE_BACKEND_URL=http://192.168.1.79:8102 npm run dev
 ```
 
-And the edit block contains the full README.
+По умолчанию: `http://localhost:8090`
 
-I think the user wants to replace the content in the code block with the content from the edit block. The code block appears to be incomplete or malformed in the input.
+## Запуск в Production (Docker)
 
-Let me provide the output - the merged result should have the edit content replacing the code content.
+### Способ 1: docker-compose
 
-Actually, I notice the output format. The user said "Output the code wrapped between <code> and
+```yaml
+services:
+  air-task-front:
+    environment:
+      - BACKEND_URL=http://air-task-back:8090
+```
+
+### Способ 2: запуск контейнера
+
+```bash
+docker run -d -p 8080:80 -e BACKEND_URL=http://192.168.1.79:8102 air-task-front:latest
+```
+
+### Логи
+
+При запуске контейнера выводится адрес backend:
+```
+==> BACKEND_URL: http://air-task-back:8090
+```
