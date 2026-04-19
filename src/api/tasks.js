@@ -30,6 +30,33 @@ export const getAllProjects = async () => {
 };
 
 /**
+ * Создаёт новый проект
+ *
+ * API endpoint: POST /api/project/v1
+ *
+ * @param {Object} projectData - Данные для создания проекта
+ * @param {string} projectData.name - Название проекта (обязательно)
+ * @param {string} [projectData.status] - Статус проекта (опционально)
+ * @param {string} [projectData.priority] - Приоритет проекта (опционально)
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const createProject = async (projectData) => {
+  try {
+    const requestBody = {
+      name: projectData.name,
+      status: projectData.status,
+      priority: projectData.priority
+    };
+
+    const response = await apiClient.post('/api/project/v1', requestBody);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при создании проекта:', error);
+    throw error;
+  }
+};
+
+/**
  * Получает список всех задач
  *
  * API endpoint: GET /v1/task/list

@@ -113,14 +113,41 @@ export const getAllProjects = async () => {
 };
 
 /**
+ * Создаёт новый проект
+ *
+ * API endpoint: POST /api/project/v1
+ *
+ * @param {Object} projectData - Данные для создания проекта
+ * @param {string} projectData.name - Название проекта (обязательно)
+ * @param {string} [projectData.status] - Статус проекта (опционально)
+ * @param {string} [projectData.priority] - Приоритет проекта (опционально)
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const createProject = async (projectData) => {
+  try {
+    const requestBody = {
+      name: projectData.name,
+      status: projectData.status,
+      priority: projectData.priority
+    };
+
+    const response = await apiClient.post('/api/project/v1', requestBody);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при создании проекта:', error);
+    throw error;
+  }
+};
+
+/**
  * Создаёт новую недельную задачу
- * 
+ *
  * API endpoint: POST /api/weekly/v1
- * 
+ *
  * @param {Object} taskData - Данные для создания задачи
  * @param {string} taskData.name - Название задачи
  * @param {number} taskData.count - Требуемое количество выполнений
- * @param {number} taskData.projectId - ID проекта
+ * @param {string} taskData.projectName - Название проекта (обязательно для backend)
  * @param {string} taskData.priority - Приоритет (HIGH, MIDDLE, LOW)
  * @param {string} taskData.status - Статус (IN_PROGRESS, DONE)
  * @returns {Promise} Промис с данными от сервера
@@ -130,11 +157,11 @@ export const createWeeklyTask = async (taskData) => {
     const requestBody = {
       name: taskData.name,
       count: taskData.count,
-      projectId: taskData.projectId,
+      projectName: taskData.projectName,
       priority: taskData.priority || 'MIDDLE',
       status: taskData.status || 'IN_PROGRESS'
     };
-    
+
     const response = await apiClient.post('/api/weekly/v1', requestBody);
     return response.data;
   } catch (error) {
@@ -152,6 +179,7 @@ export const createWeeklyTask = async (taskData) => {
  * @param {Object} taskData - Данные для обновления
  * @param {string} taskData.name - Название задачи
  * @param {number} taskData.count - Требуемое количество выполнений
+ * @param {string} taskData.projectName - Название проекта (обязательно для backend)
  * @param {string} taskData.priority - Приоритет (HIGH, MIDDLE, LOW)
  * @param {string} taskData.status - Статус (IN_PROGRESS, DONE)
  * @returns {Promise} Промис с данными от сервера
@@ -159,8 +187,10 @@ export const createWeeklyTask = async (taskData) => {
 export const updateWeeklyTask = async (id, taskData) => {
   try {
     const requestBody = {
+      id: id,
       name: taskData.name,
       count: taskData.count,
+      projectName: taskData.projectName,
       priority: taskData.priority,
       status: taskData.status
     };

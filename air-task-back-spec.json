@@ -6,14 +6,22 @@
   },
   "servers": [
     {
-      "url": "http://192.168.1.74:8090",
+      "url": "http://localhost:8090",
       "description": "Generated server url"
     }
   ],
   "tags": [
     {
+      "name": "Weekly Task Management",
+      "description": "API for weekly task management"
+    },
+    {
       "name": "Completed Weekly Task Management",
-      "description": "API для управления завершенными недельными задачами"
+      "description": "API for completed weekly task management"
+    },
+    {
+      "name": "Project Management",
+      "description": "API for project management"
     },
     {
       "name": "Task Management",
@@ -22,14 +30,6 @@
     {
       "name": "Purchase Management",
       "description": "API for managing purchases"
-    },
-    {
-      "name": "Project Management",
-      "description": "API для управления проектами"
-    },
-    {
-      "name": "Weekly Task Management",
-      "description": "API для управления недельными задачами"
     }
   ],
   "paths": {
@@ -38,8 +38,8 @@
         "tags": [
           "Weekly Task Management"
         ],
-        "summary": "Получить недельную задачу по ID",
-        "description": "Возвращает недельную задачу с указанным ID",
+        "summary": "Get weekly task by ID",
+        "description": "Returns weekly task with specified ID",
         "operationId": "getWeeklyTaskById",
         "parameters": [
           {
@@ -69,8 +69,8 @@
         "tags": [
           "Weekly Task Management"
         ],
-        "summary": "Обновить недельную задачу",
-        "description": "Обновляет информацию о недельной задаче с указанным ID",
+        "summary": "Update weekly task",
+        "description": "Updates weekly task information with specified ID",
         "operationId": "updateWeeklyTask",
         "parameters": [
           {
@@ -110,8 +110,8 @@
         "tags": [
           "Weekly Task Management"
         ],
-        "summary": "Удалить недельную задачу",
-        "description": "Удаляет недельную задачу с указанным ID",
+        "summary": "Delete weekly task",
+        "description": "Deletes weekly task with specified ID",
         "operationId": "deleteWeeklyTask",
         "parameters": [
           {
@@ -143,8 +143,8 @@
         "tags": [
           "Project Management"
         ],
-        "summary": "Получить проект по ID",
-        "description": "Возвращает проект с указанным ID",
+        "summary": "Get project by ID",
+        "description": "Returns project with specified ID",
         "operationId": "getProjectById",
         "parameters": [
           {
@@ -174,8 +174,8 @@
         "tags": [
           "Project Management"
         ],
-        "summary": "Обновить проект",
-        "description": "Обновляет информацию о проекте с указанным ID",
+        "summary": "Update project",
+        "description": "Updates project information with specified ID",
         "operationId": "updateProject",
         "parameters": [
           {
@@ -215,6 +215,8 @@
         "tags": [
           "Project Management"
         ],
+        "summary": "Delete project",
+        "description": "Deletes project with specified ID",
         "operationId": "deleteProject",
         "parameters": [
           {
@@ -241,46 +243,6 @@
         }
       }
     },
-    "/v1/update-time": {
-      "post": {
-        "tags": [
-          "planka-task-controller"
-        ],
-        "operationId": "updateTime",
-        "parameters": [
-          {
-            "name": "cardId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          {
-            "name": "timeId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/v1/task/update": {
       "post": {
         "tags": [
@@ -293,7 +255,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateTaskRq"
+                "$ref": "#/components/schemas/TaskUpdateRequest"
               }
             }
           },
@@ -305,7 +267,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/TaskRs"
+                  "$ref": "#/components/schemas/TaskResponse"
                 }
               }
             }
@@ -325,19 +287,19 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTaskRq"
+                "$ref": "#/components/schemas/TaskCreateRequest"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Task successfully created",
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/TaskRs"
+                  "$ref": "#/components/schemas/TaskResponse"
                 }
               }
             }
@@ -357,7 +319,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdatePurchaseRq"
+                "$ref": "#/components/schemas/PurchaseUpdateRequest"
               }
             }
           },
@@ -369,7 +331,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/PurchaseRs"
+                  "$ref": "#/components/schemas/PurchaseResponse"
                 }
               }
             }
@@ -389,19 +351,19 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreatePurchaseRq"
+                "$ref": "#/components/schemas/PurchaseCreateRequest"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Purchase successfully created",
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/PurchaseRs"
+                  "$ref": "#/components/schemas/PurchaseResponse"
                 }
               }
             }
@@ -414,8 +376,8 @@
         "tags": [
           "Weekly Task Management"
         ],
-        "summary": "Создать новую недельную задачу",
-        "description": "Создает новую недельную задачу в системе",
+        "summary": "Create new weekly task",
+        "description": "Creates a new weekly task in the system",
         "operationId": "createWeeklyTask",
         "requestBody": {
           "content": {
@@ -446,8 +408,8 @@
         "tags": [
           "Project Management"
         ],
-        "summary": "Создать новый проект",
-        "description": "Создает новый проект в системе",
+        "summary": "Create new project",
+        "description": "Creates a new project in the system",
         "operationId": "createProject",
         "requestBody": {
           "content": {
@@ -478,9 +440,9 @@
         "tags": [
           "Completed Weekly Task Management"
         ],
-        "summary": "Создать завершенную задачу",
-        "description": "Создает новую запись о завершенной недельной задаче",
-        "operationId": "createCompletedWeeklyTask",
+        "summary": "Complete weekly task",
+        "description": "Marks a weekly task as completed",
+        "operationId": "completeWeeklyTask",
         "requestBody": {
           "content": {
             "application/json": {
@@ -505,6 +467,70 @@
         }
       }
     },
+    "/v1/task/{id}": {
+      "get": {
+        "tags": [
+          "Task Management"
+        ],
+        "summary": "Get task by ID",
+        "description": "Returns task with specified ID",
+        "operationId": "getById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task successfully retrieved",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Task Management"
+        ],
+        "summary": "Delete a task",
+        "description": "Deletes the task with the specified ID",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task successfully deleted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/task/list": {
       "get": {
         "tags": [
@@ -519,7 +545,71 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/TaskRs"
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/purchase/{id}": {
+      "get": {
+        "tags": [
+          "Purchase Management"
+        ],
+        "summary": "Get purchase by ID",
+        "description": "Returns purchase with specified ID",
+        "operationId": "getById_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Purchase successfully retrieved",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Purchase Management"
+        ],
+        "summary": "Delete a purchase",
+        "description": "Deletes the purchase with the specified ID",
+        "operationId": "delete_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Purchase successfully deleted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
                 }
               }
             }
@@ -541,61 +631,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/PurchaseRs"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/list": {
-      "get": {
-        "tags": [
-          "planka-project-controller"
-        ],
-        "operationId": "getProjects",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseProjectListDtoRs"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/list-by-project/{projectId}": {
-      "get": {
-        "tags": [
-          "planka-task-controller"
-        ],
-        "operationId": "taskByProject",
-        "parameters": [
-          {
-            "name": "projectId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/BoardRs"
-                  }
+                  "$ref": "#/components/schemas/PurchaseResponse"
                 }
               }
             }
@@ -623,87 +659,13 @@
         }
       }
     },
-    "/api/weekly/v1/project/{projectId}": {
-      "get": {
-        "tags": [
-          "Weekly Task Management"
-        ],
-        "summary": "Получить недельные задачи по проекту",
-        "description": "Возвращает список недельных задач для указанного проекта",
-        "operationId": "getWeeklyTasksByProject",
-        "parameters": [
-          {
-            "name": "projectId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseListWeeklyResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/weekly/v1/project/{projectId}/status/{status}": {
-      "get": {
-        "tags": [
-          "Weekly Task Management"
-        ],
-        "summary": "Получить недельные задачи по проекту и статусу",
-        "description": "Возвращает список недельных задач для указанного проекта с определенным статусом",
-        "operationId": "getWeeklyTasksByProjectAndStatus",
-        "parameters": [
-          {
-            "name": "projectId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          {
-            "name": "status",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseListWeeklyResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/weekly/v1/list": {
       "get": {
         "tags": [
           "Weekly Task Management"
         ],
-        "summary": "Получить список всех недельных задач",
-        "description": "Возвращает список всех недельных задач в системе",
+        "summary": "Get all weekly tasks",
+        "description": "Returns a list of all weekly tasks in the system",
         "operationId": "getAllWeeklyTasks",
         "responses": {
           "200": {
@@ -724,8 +686,8 @@
         "tags": [
           "Project Management"
         ],
-        "summary": "Получить список всех проектов",
-        "description": "Возвращает список всех проектов в системе",
+        "summary": "Get all projects",
+        "description": "Returns a list of all projects in the system",
         "operationId": "getAllProjects",
         "responses": {
           "200": {
@@ -746,8 +708,8 @@
         "tags": [
           "Project Management"
         ],
-        "summary": "Получить список проектов с недельными задачами",
-        "description": "Возвращает список всех проектов с их недельными задачами",
+        "summary": "Get projects with weekly tasks",
+        "description": "Returns all projects with their weekly tasks",
         "operationId": "getProjectsWithWeeklyTasks",
         "responses": {
           "200": {
@@ -768,8 +730,8 @@
         "tags": [
           "Completed Weekly Task Management"
         ],
-        "summary": "Получить завершенную задачу по ID",
-        "description": "Возвращает завершенную задачу с указанным ID",
+        "summary": "Get completed weekly task by ID",
+        "description": "Returns completed weekly task with specified ID",
         "operationId": "getCompletedWeeklyTaskById",
         "parameters": [
           {
@@ -799,8 +761,8 @@
         "tags": [
           "Completed Weekly Task Management"
         ],
-        "summary": "Удалить завершенную задачу",
-        "description": "Удаляет запись о завершенной задаче с указанным ID",
+        "summary": "Delete completed weekly task",
+        "description": "Deletes completed weekly task with specified ID",
         "operationId": "deleteCompletedWeeklyTask",
         "parameters": [
           {
@@ -827,46 +789,13 @@
         }
       }
     },
-    "/api/completed-weekly/v1/weekly/{weeklyId}": {
-      "get": {
-        "tags": [
-          "Completed Weekly Task Management"
-        ],
-        "summary": "Получить завершенные задачи по weekly entity ID",
-        "description": "Возвращает список завершенных задач для указанной weekly entity",
-        "operationId": "getCompletedWeeklyTasksByWeeklyId",
-        "parameters": [
-          {
-            "name": "weeklyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseListCompletedWeeklyResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/completed-weekly/v1/statistics/current-week": {
       "get": {
         "tags": [
           "Completed Weekly Task Management"
         ],
-        "summary": "Получить статистику выполнения недельных задач за текущую неделю",
-        "description": "Возвращает два списка: завершенных и не завершенных задач на текущей неделе с учетом требуемого количества",
+        "summary": "Get weekly task statistics",
+        "description": "Returns statistics for weekly tasks completion",
         "operationId": "getWeeklyTaskStatistics",
         "responses": {
           "200": {
@@ -887,8 +816,8 @@
         "tags": [
           "Completed Weekly Task Management"
         ],
-        "summary": "Получить список всех завершенных недельных задач",
-        "description": "Возвращает список всех завершенных недельных задач в системе",
+        "summary": "Get all completed weekly tasks",
+        "description": "Returns a list of all completed weekly tasks",
         "operationId": "getAllCompletedWeeklyTasks",
         "responses": {
           "200": {
@@ -903,70 +832,6 @@
           }
         }
       }
-    },
-    "/v1/task": {
-      "delete": {
-        "tags": [
-          "Task Management"
-        ],
-        "summary": "Delete a task",
-        "description": "Deletes the task with the specified ID",
-        "operationId": "delete",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeleteTaskRq"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Task successfully deleted",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseVoid"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/purchase": {
-      "delete": {
-        "tags": [
-          "Purchase Management"
-        ],
-        "summary": "Delete a purchase",
-        "description": "Deletes the purchase with the specified ID",
-        "operationId": "delete_1",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeletePurchaseRq"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Purchase successfully deleted",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseObject"
-                }
-              }
-            }
-          }
-        }
-      }
     }
   },
   "components": {
@@ -974,6 +839,10 @@
       "WeeklyUpdateRequest": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
           "name": {
             "type": "string"
           },
@@ -996,6 +865,9 @@
               "DONE",
               "PAUSED"
             ]
+          },
+          "projectName": {
+            "type": "string"
           }
         }
       },
@@ -1016,34 +888,51 @@
           }
         }
       },
+      "InnerProject": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
       "WeeklyResponse": {
         "type": "object",
+        "description": "Response body containing weekly task details",
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "description": "Unique identifier of the weekly task",
+            "example": 42
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Name of the weekly task",
+            "example": "Weekly review"
           },
           "count": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "description": "Count or quantity for the weekly task",
+            "example": 5
           },
-          "projectId": {
-            "type": "integer",
-            "format": "int64"
+          "project": {
+            "$ref": "#/components/schemas/InnerProject",
+            "description": "Project this task belongs to"
           },
           "priority": {
             "type": "string",
+            "description": "Task priority level",
             "enum": [
-              "HIGH",
-              "MIDDLE",
-              "LOW"
+              "LOW",
+              "MEDIUM",
+              "HIGH"
             ]
           },
           "status": {
             "type": "string",
+            "description": "Current task status",
             "enum": [
               "IN_PROGRESS",
               "DONE",
@@ -1052,11 +941,15 @@
           },
           "createdTs": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Timestamp when the weekly task was created",
+            "example": "2024-01-15T10:30:00"
           },
           "updatedTs": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Timestamp when the weekly task was last updated",
+            "example": "2024-01-16T14:00:00"
           }
         }
       },
@@ -1067,20 +960,10 @@
             "type": "string"
           },
           "status": {
-            "type": "string",
-            "enum": [
-              "IN_PROGRESS",
-              "DONE",
-              "PAUSED"
-            ]
+            "type": "string"
           },
           "priority": {
-            "type": "string",
-            "enum": [
-              "HIGH",
-              "MIDDLE",
-              "LOW"
-            ]
+            "type": "string"
           }
         }
       },
@@ -1112,20 +995,10 @@
             "type": "string"
           },
           "status": {
-            "type": "string",
-            "enum": [
-              "IN_PROGRESS",
-              "DONE",
-              "PAUSED"
-            ]
+            "type": "string"
           },
           "priority": {
-            "type": "string",
-            "enum": [
-              "HIGH",
-              "MIDDLE",
-              "LOW"
-            ]
+            "type": "string"
           },
           "createdTs": {
             "type": "string",
@@ -1137,179 +1010,92 @@
           }
         }
       },
-      "UpdateTaskRq": {
+      "TaskUpdateRequest": {
         "type": "object",
-        "description": "Request to update an existing task",
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int64",
-            "description": "Task ID to update",
-            "example": 42,
-            "minimum": 1
+            "format": "int64"
           },
           "name": {
-            "type": "string",
-            "description": "Updated task name",
-            "example": "Updated task name",
-            "maxLength": 200,
-            "minLength": 1
-          },
-          "status": {
-            "type": "string",
-            "description": "Task status",
-            "enum": [
-              "IN_PROGRESS",
-              "DONE",
-              "PAUSED"
-            ],
-            "example": "IN_PROGRESS"
+            "type": "string"
           },
           "projectName": {
-            "type": "string",
-            "description": "Project name this task belongs to",
-            "example": "Air Task Backend",
-            "maxLength": 100,
-            "minLength": 1
+            "type": "string"
           },
           "priority": {
-            "type": "string",
-            "description": "Task priority",
-            "enum": [
-              "HIGH",
-              "MIDDLE",
-              "LOW"
-            ],
-            "example": "HIGH"
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
           },
           "description": {
-            "type": "string",
-            "description": "Optional task description",
-            "example": "Add OAuth2 authentication flow",
-            "maxLength": 1000
+            "type": "string"
           }
         },
         "required": [
-          "id",
-          "name",
-          "priority",
-          "projectName",
-          "status"
+          "id"
         ]
       },
-      "ProjectDto": {
+      "ProjectInfo": {
         "type": "object",
-        "description": "Project information",
         "properties": {
           "name": {
-            "type": "string",
-            "description": "Project name",
-            "example": "Air Task Backend",
-            "maxLength": 255,
-            "minLength": 1
+            "type": "string"
           }
         }
       },
-      "TaskRs": {
+      "TaskResponse": {
         "type": "object",
-        "description": "Task response data",
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int64",
-            "description": "Task unique identifier",
-            "example": 42
+            "format": "int64"
           },
           "name": {
-            "type": "string",
-            "description": "Task name",
-            "example": "Implement user authentication"
+            "type": "string"
           },
           "status": {
-            "type": "string",
-            "description": "Task status",
-            "example": "IN_PROGRESS"
+            "type": "string"
           },
           "project": {
-            "$ref": "#/components/schemas/ProjectDto",
-            "description": "Project this task belongs to"
+            "$ref": "#/components/schemas/ProjectInfo"
           },
           "priority": {
-            "type": "string",
-            "description": "Task priority level",
-            "example": "HIGH"
+            "type": "string"
           },
           "createdTs": {
             "type": "string",
-            "format": "date-time",
-            "description": "Record creation timestamp",
-            "example": "2024-01-15T10:30:00"
+            "format": "date-time"
           },
           "updatedTs": {
             "type": "string",
-            "format": "date-time",
-            "description": "Record last update timestamp",
-            "example": "2024-01-15T14:45:00"
+            "format": "date-time"
           },
           "description": {
-            "type": "string",
-            "description": "Optional task description",
-            "example": "Add OAuth2 authentication flow"
+            "type": "string"
           }
-        },
-        "required": [
-          "createdTs",
-          "id",
-          "name",
-          "priority",
-          "project",
-          "status",
-          "updatedTs"
-        ]
+        }
       },
-      "CreateTaskRq": {
+      "TaskCreateRequest": {
         "type": "object",
-        "description": "Request to create a new task",
         "properties": {
           "name": {
             "type": "string",
-            "description": "Task name",
-            "example": "Implement user authentication",
-            "maxLength": 200,
             "minLength": 1
-          },
-          "status": {
-            "type": "string",
-            "description": "Task status",
-            "enum": [
-              "IN_PROGRESS",
-              "DONE",
-              "PAUSED"
-            ],
-            "example": "IN_PROGRESS"
           },
           "projectName": {
             "type": "string",
-            "description": "Project name this task belongs to",
-            "example": "Air Task Backend",
-            "maxLength": 100,
             "minLength": 1
           },
           "priority": {
-            "type": "string",
-            "description": "Task priority",
-            "enum": [
-              "HIGH",
-              "MIDDLE",
-              "LOW"
-            ],
-            "example": "HIGH"
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
           },
           "description": {
-            "type": "string",
-            "description": "Optional task description",
-            "example": "Add OAuth2 authentication flow",
-            "maxLength": 10000
+            "type": "string"
           }
         },
         "required": [
@@ -1321,241 +1107,130 @@
       },
       "LinkDto": {
         "type": "object",
-        "description": "Link",
         "properties": {
           "id": {
             "type": "integer",
             "format": "int64"
           },
           "link": {
-            "type": "string",
-            "description": "The URL link",
-            "example": "https://example.com"
+            "type": "string"
           }
-        },
-        "required": [
-          "id",
-          "link"
-        ]
+        }
       },
       "PriceDto": {
         "type": "object",
-        "description": "Price",
         "properties": {
           "id": {
             "type": "integer",
             "format": "int64"
           },
           "amount": {
-            "type": "number",
-            "description": "The price amount",
-            "example": 99.99
+            "type": "number"
           },
           "currency": {
-            "type": "string",
-            "description": "The currency code",
-            "example": "USD"
+            "type": "string"
           },
           "isActual": {
-            "type": "boolean",
-            "description": "Indicates whether the price is actual",
-            "example": true
+            "type": "boolean"
           },
           "createdTs": {
             "type": "string",
-            "format": "date-time",
-            "description": "Created time"
-          }
-        },
-        "required": [
-          "amount",
-          "createdTs",
-          "currency",
-          "id",
-          "isActual"
-        ]
-      },
-      "UpdatePurchaseRq": {
-        "type": "object",
-        "description": "Request to update an existing purchase",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Purchase ID to update",
-            "example": 42,
-            "minimum": 1
-          },
-          "name": {
-            "type": "string",
-            "description": "Updated purchase name",
-            "example": "Updated laptop name",
-            "maxLength": 200,
-            "minLength": 1
-          },
-          "status": {
-            "type": "string",
-            "description": "Purchase status",
-            "enum": [
-              "IN_PROGRESS",
-              "DONE",
-              "PAUSED"
-            ],
-            "example": "IN_PROGRESS"
-          },
-          "priority": {
-            "type": "string",
-            "description": "Purchase priority",
-            "enum": [
-              "HIGH",
-              "MIDDLE",
-              "LOW"
-            ],
-            "example": "HIGH"
-          },
-          "categoryName": {
-            "type": "string",
-            "description": "Category name this purchase belongs to",
-            "example": "Electronics",
-            "maxLength": 100,
-            "minLength": 1
-          },
-          "isComplete": {
-            "type": "boolean",
-            "description": "Whether the purchase is marked as complete"
-          },
-          "linkList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/LinkDto"
-            }
-          },
-          "priceList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PriceDto"
-            }
-          }
-        },
-        "required": [
-          "categoryName",
-          "id",
-          "isComplete",
-          "name",
-          "priority",
-          "status"
-        ]
-      },
-      "CategoryDto": {
-        "type": "object",
-        "description": "Purchase category information",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Category name",
-            "example": "Electronics",
-            "maxLength": 255,
-            "minLength": 1
+            "format": "date-time"
           }
         }
       },
-      "PurchaseRs": {
+      "PurchaseUpdateRequest": {
         "type": "object",
-        "description": "Purchase response data",
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int64",
-            "description": "Purchase unique identifier",
-            "example": 42
+            "format": "int64"
           },
           "name": {
-            "type": "string",
-            "description": "Purchase name",
-            "example": "New laptop"
+            "type": "string"
           },
           "priority": {
-            "type": "string",
-            "description": "Purchase priority level",
-            "example": "HIGH"
+            "type": "string"
           },
-          "category": {
-            "$ref": "#/components/schemas/CategoryDto",
-            "description": "Category this purchase belongs to"
+          "categoryName": {
+            "type": "string"
           },
           "isComplete": {
-            "type": "boolean",
-            "description": "Whether the purchase is marked as complete"
+            "type": "boolean"
+          },
+          "linkList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkDto"
+            }
+          },
+          "priceList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceDto"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "PurchaseResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "isComplete": {
+            "type": "boolean"
           },
           "createdTs": {
             "type": "string",
-            "format": "date-time",
-            "description": "Record creation timestamp",
-            "example": "2024-01-15T10:30:00"
+            "format": "date-time"
           },
           "updatedTs": {
             "type": "string",
-            "format": "date-time",
-            "description": "Record last update timestamp",
-            "example": "2024-01-15T14:45:00"
+            "format": "date-time"
           },
           "linkList": {
             "type": "array",
-            "description": "Link list",
             "items": {
               "$ref": "#/components/schemas/LinkDto"
             }
           },
           "priceList": {
             "type": "array",
-            "description": "Price history list",
             "items": {
               "$ref": "#/components/schemas/PriceDto"
             }
           }
-        },
-        "required": [
-          "category",
-          "createdTs",
-          "id",
-          "isComplete",
-          "name",
-          "priceList",
-          "priority",
-          "updatedTs"
-        ]
+        }
       },
-      "CreatePurchaseRq": {
+      "PurchaseCreateRequest": {
         "type": "object",
-        "description": "Request to create a new purchase",
         "properties": {
           "name": {
             "type": "string",
-            "description": "Purchase name",
-            "example": "New laptop",
-            "maxLength": 200,
             "minLength": 1
           },
           "priority": {
-            "type": "string",
-            "description": "Purchase priority",
-            "enum": [
-              "HIGH",
-              "MIDDLE",
-              "LOW"
-            ],
-            "example": "HIGH"
+            "type": "string"
           },
           "categoryName": {
-            "type": "string",
-            "description": "Category name this purchase belongs to",
-            "example": "Electronics",
-            "maxLength": 100,
-            "minLength": 1
+            "type": "string"
           },
           "isComplete": {
-            "type": "boolean",
-            "description": "Whether the purchase is marked as complete"
+            "type": "boolean"
           },
           "linkList": {
             "type": "array",
@@ -1571,67 +1246,73 @@
           }
         },
         "required": [
-          "categoryName",
-          "isComplete",
-          "name",
-          "priority"
+          "name"
         ]
       },
       "WeeklyCreateRequest": {
         "type": "object",
+        "description": "Request body for creating a new weekly task",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Name of the weekly task",
+            "example": "Weekly review",
+            "minLength": 1
           },
           "count": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "description": "Count or quantity for the weekly task",
+            "example": 5
           },
-          "projectId": {
-            "type": "integer",
-            "format": "int64"
+          "projectName": {
+            "type": "string",
+            "description": "Name of the project this task belongs to",
+            "example": "Development",
+            "minLength": 1
           },
           "priority": {
             "type": "string",
+            "description": "Task priority level",
             "enum": [
-              "HIGH",
-              "MIDDLE",
-              "LOW"
+              "LOW",
+              "MEDIUM",
+              "HIGH"
             ]
           },
           "status": {
             "type": "string",
+            "description": "Current task status",
             "enum": [
               "IN_PROGRESS",
               "DONE",
               "PAUSED"
             ]
           }
-        }
+        },
+        "required": [
+          "count",
+          "name",
+          "projectName"
+        ]
       },
       "ProjectCreateRequest": {
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "status": {
-            "type": "string",
-            "enum": [
-              "IN_PROGRESS",
-              "DONE",
-              "PAUSED"
-            ]
+            "type": "string"
           },
           "priority": {
-            "type": "string",
-            "enum": [
-              "HIGH",
-              "MIDDLE",
-              "LOW"
-            ]
+            "type": "string"
           }
-        }
+        },
+        "required": [
+          "name"
+        ]
       },
       "CompletedWeeklyCreateRequest": {
         "type": "object",
@@ -1644,7 +1325,10 @@
             "type": "string",
             "format": "date-time"
           }
-        }
+        },
+        "required": [
+          "weeklyEntityId"
+        ]
       },
       "ApiResponseCompletedWeeklyResponse": {
         "type": "object",
@@ -1665,135 +1349,42 @@
       },
       "CompletedWeeklyResponse": {
         "type": "object",
+        "description": "Response body containing completed weekly task details",
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "description": "Unique identifier of the completed weekly record",
+            "example": 100
           },
           "weeklyEntityId": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "description": "Reference to the original weekly task",
+            "example": 42
           },
           "weeklyEntityName": {
-            "type": "string"
+            "type": "string",
+            "description": "Name of the weekly task",
+            "example": "Weekly review"
           },
           "completedDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date",
+            "description": "Date when the task was completed",
+            "example": "2024-04-15"
           },
           "createdTs": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Timestamp when the completed record was created",
+            "example": "2024-04-15T10:30:00"
           },
           "updatedTs": {
             "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "ApiResponseProjectListDtoRs": {
-        "type": "object",
-        "properties": {
-          "isSuccess": {
-            "type": "boolean"
-          },
-          "errorMessage": {
-            "type": "string"
-          },
-          "errorType": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/ProjectListDtoRs"
-          }
-        }
-      },
-      "BoardRs": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "projectId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "taskList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TaskListRs"
-            }
-          }
-        }
-      },
-      "PlankaProjectDtoRs": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "boardList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BoardRs"
-            }
-          }
-        }
-      },
-      "PlankaTaskDtoRs": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "taskListId": {
-            "type": "integer",
-            "format": "int64"
-          }
-        }
-      },
-      "ProjectListDtoRs": {
-        "type": "object",
-        "properties": {
-          "projectList": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PlankaProjectDtoRs"
-            }
-          }
-        }
-      },
-      "TaskListRs": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "boardId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "tasks": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PlankaTaskDtoRs"
-            }
+            "format": "date-time",
+            "description": "Timestamp when the completed record was last updated",
+            "example": "2024-04-15T10:30:00"
           }
         }
       },
@@ -1856,6 +1447,129 @@
           }
         }
       },
+      "ApiResponseWeeklyTaskStatisticsResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "errorType": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/WeeklyTaskStatisticsResponse"
+          }
+        }
+      },
+      "WeeklyTaskStatisticsResponse": {
+        "type": "object",
+        "description": "Response body containing weekly task statistics",
+        "properties": {
+          "completedWeekly": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of completed weekly tasks",
+            "example": 10
+          },
+          "incompletedWeekly": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of incomplete weekly tasks",
+            "example": 5
+          },
+          "totalWeeklyTask": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total number of weekly tasks",
+            "example": 15
+          },
+          "totalWeekly": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total count across all weekly tasks",
+            "example": 50
+          },
+          "weekNumber": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Week number of the year",
+            "example": 16
+          },
+          "completedTasks": {
+            "type": "array",
+            "description": "List of completed tasks",
+            "items": {
+              "$ref": "#/components/schemas/WeeklyWithCompletionStatus"
+            }
+          },
+          "incompleteTasks": {
+            "type": "array",
+            "description": "List of incomplete tasks",
+            "items": {
+              "$ref": "#/components/schemas/WeeklyWithCompletionStatus"
+            }
+          }
+        }
+      },
+      "WeeklyWithCompletionStatus": {
+        "type": "object",
+        "description": "Weekly task with completion status details",
+        "properties": {
+          "weeklyTaskId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique identifier of the weekly task",
+            "example": 42
+          },
+          "weeklyTaskName": {
+            "type": "string",
+            "description": "Name of the weekly task",
+            "example": "Code review"
+          },
+          "requiredCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Required count for the weekly task",
+            "example": 5
+          },
+          "completedCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of times the task was completed",
+            "example": 3
+          },
+          "remainingCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Remaining count to complete the task",
+            "example": 2
+          },
+          "completionPercentage": {
+            "type": "string",
+            "description": "Completion percentage as a string",
+            "example": "60%"
+          },
+          "projectId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique identifier of the project",
+            "example": 10
+          },
+          "projectName": {
+            "type": "string",
+            "description": "Name of the project",
+            "example": "Development"
+          },
+          "completedToday": {
+            "type": "boolean",
+            "description": "Whether the task was completed today",
+            "example": true
+          }
+        }
+      },
       "ApiResponseListCompletedWeeklyResponse": {
         "type": "object",
         "properties": {
@@ -1876,144 +1590,7 @@
           }
         }
       },
-      "ApiResponseWeeklyTaskStatisticsResponse": {
-        "type": "object",
-        "properties": {
-          "isSuccess": {
-            "type": "boolean"
-          },
-          "errorMessage": {
-            "type": "string"
-          },
-          "errorType": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/WeeklyTaskStatisticsResponse"
-          }
-        }
-      },
-      "WeeklyTaskStatisticsResponse": {
-        "type": "object",
-        "properties": {
-          "completedTasks": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/WeeklyWithCompletionStatus"
-            }
-          },
-          "incompleteTasks": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/WeeklyWithCompletionStatus"
-            }
-          },
-          "totalWeeklyTask": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalWeekly": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "weekNumber": {
-            "type": "string"
-          },
-          "completedWeekly": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "incompletedWeekly": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "WeeklyWithCompletionStatus": {
-        "type": "object",
-        "properties": {
-          "weeklyTaskId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "weeklyTaskName": {
-            "type": "string"
-          },
-          "requiredCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "completedCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "remainingCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "completionPercentage": {
-            "type": "string"
-          },
-          "projectId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "projectName": {
-            "type": "string"
-          },
-          "completedToday": {
-            "type": "boolean"
-          }
-        }
-      },
-      "DeleteTaskRq": {
-        "type": "object",
-        "description": "Request to delete a task",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Task ID to delete",
-            "example": 42,
-            "minimum": 1
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
       "ApiResponseVoid": {
-        "type": "object",
-        "properties": {
-          "isSuccess": {
-            "type": "boolean"
-          },
-          "errorMessage": {
-            "type": "string"
-          },
-          "errorType": {
-            "type": "string"
-          },
-          "data": {}
-        }
-      },
-      "DeletePurchaseRq": {
-        "type": "object",
-        "description": "Request to delete a purchase",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Purchase ID to delete",
-            "example": 42,
-            "minimum": 1
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "ApiResponseObject": {
         "type": "object",
         "properties": {
           "isSuccess": {

@@ -63,7 +63,7 @@
             >
               <!-- Название проекта (если есть) -->
               <div class="task-project" v-if="task.projectName">
-                📁 {{ task.projectName }}
+                📁 {{ task.projectName}}
               </div>
               
               <!-- Название задачи -->
@@ -170,8 +170,8 @@
         <div v-else class="task-list">
           <div v-for="task in allTasks" :key="task.id" class="task-card manage-card">
             <div class="task-info">
-              <div class="task-project" v-if="getProjectName(task.projectId)">
-                📁 {{ getProjectName(task.projectId) }}
+              <div class="task-project" v-if="task.project?.name">
+                📁 {{ task.project.name }}
               </div>
               <div class="task-name">{{ task.name }}</div>
               <div class="task-meta">
@@ -224,20 +224,30 @@
 
           <div class="form-group">
             <label for="taskProject">Проект *</label>
-            <select 
-              id="taskProject" 
-              v-model.number="taskForm.projectId" 
-              required
-            >
-              <option value="" disabled>Выберите проект</option>
-              <option 
-                v-for="project in projects" 
-                :key="project.id" 
-                :value="project.id"
+            <div class="project-select-wrapper">
+              <select
+                id="taskProject"
+                v-model="taskForm.projectName"
+                required
               >
-                {{ project.name }}
-              </option>
-            </select>
+                <option value="" disabled>Выберите проект</option>
+                <option
+                  v-for="project in projects"
+                  :key="project.id"
+                  :value="project.name"
+                >
+                  {{ project.name }}
+                </option>
+              </select>
+              <button
+                type="button"
+                @click="openProjectModal"
+                class="create-project-btn"
+                title="Создать новый проект"
+              >
+                + Проект
+              </button>
+            </div>
           </div>
 
           <div class="form-group">
@@ -287,23 +297,37 @@
         </div>
       </div>
     </div>
+
+    <!-- Модальное окно создания проекта -->
+    <ProjectModal
+      :visible="showProjectModal"
+      :create-project="createProjectApi"
+      :on-project-created="handleProjectCreated"
+      @close="closeProjectModal"
+    />
   </div>
 </template>
 
 <script>
 // Импортируем функции для работы с API
-import { 
-  getWeeklyTaskStatistics, 
+import {
+  getWeeklyTaskStatistics,
   completeWeeklyTask,
   getAllWeeklyTasks,
   getAllProjects,
   createWeeklyTask,
   updateWeeklyTask,
-  deleteWeeklyTask
+  deleteWeeklyTask,
+  createProject
 } from '../api/weeklyTasks.js';
+import ProjectModal from '../components/ProjectModal.vue';
 
 export default {
   name: 'WeeklyTaskTracker',
+
+  components: {
+    ProjectModal
+  },
   
   data() {
     return {
@@ -332,7 +356,7 @@ export default {
       taskForm: {
         name: '',
         count: 1,
-        projectId: null,
+        projectName: '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS'
       },
@@ -340,7 +364,10 @@ export default {
       // Модальное окно удаления
       showDeleteModal: false,
       taskToDelete: null,
-      deleting: false
+      deleting: false,
+
+      // Модальное окно проекта
+      showProjectModal: false
     };
   },
   
@@ -439,11 +466,6 @@ export default {
       }
     },
     
-    getProjectName(projectId) {
-      const project = this.projects.find(p => p.id === projectId);
-      return project ? project.name : 'Неизвестный проект';
-    },
-    
     getPriorityLabel(priority) {
       const labels = {
         'HIGH': 'Высокий',
@@ -469,7 +491,7 @@ export default {
       this.taskForm = {
         name: '',
         count: 1,
-        projectId: this.projects.length > 0 ? this.projects[0].id : null,
+        projectName: this.projects.length > 0 ? this.projects[0].name : '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS'
       };
@@ -481,7 +503,7 @@ export default {
       this.taskForm = {
         name: task.name,
         count: task.count,
-        projectId: task.projectId,
+        projectName: task.project?.name || '',
         priority: task.priority,
         status: task.status
       };
@@ -494,14 +516,14 @@ export default {
       this.taskForm = {
         name: '',
         count: 1,
-        projectId: null,
+        projectName: '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS'
       };
     },
     
     async saveTask() {
-      if (!this.taskForm.name || !this.taskForm.count || !this.taskForm.projectId) {
+      if (!this.taskForm.name || !this.taskForm.count || !this.taskForm.projectName) {
         alert('Пожалуйста, заполните все обязательные поля');
         return;
       }
@@ -547,12 +569,12 @@ export default {
       if (!this.taskToDelete) {
         return;
       }
-      
+
       this.deleting = true;
-      
+
       try {
         const response = await deleteWeeklyTask(this.taskToDelete.id);
-        
+
         if (response.isSuccess) {
           this.closeDeleteModal();
           await this.loadAllTasks();
@@ -565,6 +587,23 @@ export default {
       } finally {
         this.deleting = false;
       }
+    },
+
+    openProjectModal() {
+      this.showProjectModal = true;
+    },
+
+    closeProjectModal() {
+      this.showProjectModal = false;
+    },
+
+    async handleProjectCreated(project) {
+      await this.loadProjects();
+      this.taskForm.projectId = project.id;
+    },
+
+    createProjectApi(projectData) {
+      return createProject(projectData);
     }
   },
   
@@ -1090,6 +1129,33 @@ h1 {
 
 .form-group select {
   cursor: pointer;
+}
+
+.project-select-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.project-select-wrapper select {
+  flex: 1;
+}
+
+.create-project-btn {
+  padding: 10px 15px;
+  background-color: var(--accent-green);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.create-project-btn:hover {
+  background-color: #27ae60;
 }
 
 .form-actions {

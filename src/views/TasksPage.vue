@@ -114,23 +114,33 @@
 
           <div class="form-group">
             <label for="taskProject">Проект *</label>
-            <select
-              id="taskProject"
-              v-model="taskForm.projectName"
-              required
-              :disabled="loadingProjects || projects.length === 0"
-            >
-              <option value="" disabled v-if="!taskForm.projectName">Загрузка проектов...</option>
-              <option
-                v-for="project in projects"
-                :key="project.id"
-                :value="project.name"
+            <div class="project-select-wrapper">
+              <select
+                id="taskProject"
+                v-model="taskForm.projectName"
+                required
+                :disabled="loadingProjects || projects.length === 0"
               >
-                {{ project.name }}
-              </option>
-            </select>
+                <option value="" disabled v-if="!taskForm.projectName && loadingProjects">Загрузка проектов...</option>
+                <option
+                  v-for="project in projects"
+                  :key="project.id"
+                  :value="project.name"
+                >
+                  {{ project.name }}
+                </option>
+              </select>
+              <button
+                type="button"
+                @click="openProjectModal"
+                class="create-project-btn"
+                title="Создать новый проект"
+              >
+                + Проект
+              </button>
+            </div>
             <span v-if="loadingProjects" class="form-hint">Загрузка проектов...</span>
-            <span v-else-if="projects.length === 0" class="form-hint">Нет доступных проектов</span>
+            <span v-else-if="projects.length === 0" class="form-hint">Нет доступных проектов. Создайте первый проект!</span>
           </div>
 
           <div class="form-group">
@@ -193,14 +203,27 @@
         </div>
       </div>
     </div>
+
+    <!-- Модальное окно создания проекта -->
+    <ProjectModal
+      :visible="showProjectModal"
+      :create-project="createProjectApi"
+      :on-project-created="handleProjectCreated"
+      @close="closeProjectModal"
+    />
   </div>
 </template>
 
 <script>
-import { getTasks, createTask, updateTask, deleteTask, getAllProjects } from '../api/tasks.js';
+import { getTasks, createTask, updateTask, deleteTask, getAllProjects, createProject } from '../api/tasks.js';
+import ProjectModal from '../components/ProjectModal.vue';
 
 export default {
   name: 'TasksPage',
+
+  components: {
+    ProjectModal
+  },
 
   data() {
     return {
@@ -232,7 +255,10 @@ export default {
       // Модальное окно удаления
       showDeleteModal: false,
       taskToDelete: null,
-      deleting: false
+      deleting: false,
+
+      // Модальное окно проекта
+      showProjectModal: false
     };
   },
 
@@ -442,6 +468,23 @@ export default {
       } finally {
         this.deleting = false;
       }
+    },
+
+    openProjectModal() {
+      this.showProjectModal = true;
+    },
+
+    closeProjectModal() {
+      this.showProjectModal = false;
+    },
+
+    async handleProjectCreated(project) {
+      await this.loadProjects();
+      this.taskForm.projectName = project.name;
+    },
+
+    createProjectApi(projectData) {
+      return createProject(projectData);
     }
   },
 
@@ -826,6 +869,33 @@ h1 {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--accent-primary);
+}
+
+.project-select-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.project-select-wrapper select {
+  flex: 1;
+}
+
+.create-project-btn {
+  padding: 10px 15px;
+  background-color: var(--accent-green);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.create-project-btn:hover {
+  background-color: #27ae60;
 }
 
 .form-hint {
