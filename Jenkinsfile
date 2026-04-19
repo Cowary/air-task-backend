@@ -5,8 +5,21 @@ pipeline {
     // Агент, на котором выполняется сборка
     agent any
 
+
+
     // Параметры сборки
     parameters {
+         gitParameter(
+             name: 'BRANCH_NAME',
+             type: 'PT_BRANCH',
+             defaultValue: 'master',
+             branchFilter: 'origin/(.*)',
+             sortMode: 'DESCENDING_SMART',
+             description: 'Select branch to build and deploy',
+             selectedValue: 'DEFAULT',
+             listSize: '0'
+         )
+
         string(
             name: 'DOCKER_REGISTRY', 
             defaultValue: 'cowary', 
@@ -47,8 +60,11 @@ pipeline {
         // Получение исходного кода
         stage('Checkout') {
             steps {
-                echo 'Получение исходного кода...'
-                checkout scm
+                checkout scm: [
+                    $class: 'GitSCM',
+                    branches: [[name: "${params.BRANCH_NAME}"]],
+                    userRemoteConfigs: [[url: 'http://192.168.1.77:3002/cowary/air-task-front.git']]
+                ]
             }
         }
 
