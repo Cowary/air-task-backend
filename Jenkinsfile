@@ -91,8 +91,8 @@ pipeline {
                     sh """
                         docker build \
                             ${buildArgs} \
-                            -t ${DOCKER_IMAGE}:${params.DOCKER_TAG} \
-                            -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} \
+                            -t ${IMAGE_NAME}:${IMAGE_TAG} \
+                            -t ${IMAGE_NAME}:${env.BUILD_NUMBER} \
                             .
                     """
                 }
