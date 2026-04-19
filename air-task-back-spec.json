@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8090",
+      "url": "http://192.168.1.74:8090",
       "description": "Generated server url"
     }
   ],
@@ -30,6 +30,10 @@
     {
       "name": "Purchase Management",
       "description": "API for managing purchases"
+    },
+    {
+      "name": "Purchase category Management",
+      "description": "API for managing purchases category"
     }
   ],
   "paths": {
@@ -639,6 +643,28 @@
         }
       }
     },
+    "/v1/purchase/category/list": {
+      "get": {
+        "tags": [
+          "Purchase category Management"
+        ],
+        "summary": "Get all purchases categories",
+        "description": "Returns a list of all categories in the system",
+        "operationId": "list_2",
+        "responses": {
+          "200": {
+            "description": "List of purchases categories successfully retrieved",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -689,28 +715,6 @@
         "summary": "Get all projects",
         "description": "Returns a list of all projects in the system",
         "operationId": "getAllProjects",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseProjectListResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/project/v1/list-with-weekly": {
-      "get": {
-        "tags": [
-          "Project Management"
-        ],
-        "summary": "Get projects with weekly tasks",
-        "description": "Returns all projects with their weekly tasks",
-        "operationId": "getProjectsWithWeeklyTasks",
         "responses": {
           "200": {
             "description": "OK",
@@ -838,36 +842,48 @@
     "schemas": {
       "WeeklyUpdateRequest": {
         "type": "object",
+        "description": "Request body for updating a weekly task",
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "description": "Unique identifier of the weekly task",
+            "example": 42
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Name of the weekly task",
+            "example": "Daily Standup"
           },
           "count": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "description": "Count/quantity for the weekly task",
+            "example": 5
           },
           "priority": {
             "type": "string",
+            "description": "Priority level of the weekly task",
             "enum": [
-              "HIGH",
-              "MIDDLE",
-              "LOW"
+              "LOW",
+              "MEDIUM",
+              "HIGH"
             ]
           },
           "status": {
             "type": "string",
+            "description": "Status of the weekly task",
             "enum": [
+              "PENDING",
               "IN_PROGRESS",
-              "DONE",
-              "PAUSED"
+              "COMPLETED",
+              "CANCELLED"
             ]
           },
           "projectName": {
-            "type": "string"
+            "type": "string",
+            "description": "Name of the project this weekly task belongs to",
+            "example": "Project Alpha"
           }
         }
       },

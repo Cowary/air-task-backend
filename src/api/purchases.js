@@ -109,16 +109,27 @@ export const updatePurchase = async (purchaseData) => {
  */
 export const deletePurchase = async (id) => {
   try {
-    const requestBody = {
-      id: id
-    };
-
-    const response = await apiClient.delete('/v1/purchase', {
-      data: requestBody
-    });
+    const response = await apiClient.delete(`/v1/purchase/${id}`);
     return response.data;
   } catch (error) {
     console.error('Ошибка при удалении покупки:', error);
+    throw error;
+  }
+};
+
+/**
+ * Получает список всех категорий покупок
+ *
+ * API endpoint: GET /v1/purchase/category/list
+ *
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const getPurchaseCategories = async () => {
+  try {
+    const response = await apiClient.get('/v1/purchase/category/list');
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при получении списка категорий:', error);
     throw error;
   }
 };
