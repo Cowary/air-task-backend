@@ -5,7 +5,10 @@ pipeline {
     // Агент, на котором выполняется сборка
     agent any
 
-
+    tools {
+        maven 'Maven 3.9.11'
+        dockerTool 'docker'
+    }
 
     // Параметры сборки
     parameters {
