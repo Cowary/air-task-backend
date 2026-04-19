@@ -165,18 +165,16 @@ pipeline {
         }
     }
 
-    // Пост-этап: выполняется после всех stages
     post {
+        always {
+            sh 'docker logout || true'
+            sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
+            sh "docker rmi ${FULL_IMAGE} || true"
+        }
         success {
-            echo 'Сборка успешно завершена!'
-            // Можно добавить уведомление в Slack, Telegram и т.д.
+            echo "✅ Frontend build, push and deploy successful!"
         }
         failure {
-            echo 'Сборка завершена с ошибками!'
+            echo "❌ Frontend build or deploy failed."
         }
-        always {
-            // Всегда выходим из Docker Hub
-            sh 'docker logout || true'
-        }
-    }
-}
+    }}
