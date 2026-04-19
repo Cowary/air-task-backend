@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   // URL backend из переменной окружения или значение по умолчанию
-  const backendUrl = env.VITE_BACKEND_URL || 'http://localhost:8090'
+  const backendUrl = env.VITE_BACKEND_URL || 'http://192.168.1.79:8102'
 
   return {
     plugins: [vue()],

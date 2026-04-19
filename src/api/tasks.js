@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Получаем адрес backend из переменной окружения
-const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8090';
+const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://192.168.1.79:8102';
 
 // Создаём экземпляр axios с базовой конфигурацией
 const apiClient = axios.create({
