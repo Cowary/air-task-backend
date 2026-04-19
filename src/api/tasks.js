@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Получаем адрес backend из переменной окружения
-const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8090';
+const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://192.168.1.79:8102';
 
 // Создаём экземпляр axios с базовой конфигурацией
 const apiClient = axios.create({
@@ -25,6 +25,33 @@ export const getAllProjects = async () => {
     return response.data;
   } catch (error) {
     console.error('Ошибка при получении списка проектов:', error);
+    throw error;
+  }
+};
+
+/**
+ * Создаёт новый проект
+ *
+ * API endpoint: POST /api/project/v1
+ *
+ * @param {Object} projectData - Данные для создания проекта
+ * @param {string} projectData.name - Название проекта (обязательно)
+ * @param {string} [projectData.status] - Статус проекта (опционально)
+ * @param {string} [projectData.priority] - Приоритет проекта (опционально)
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const createProject = async (projectData) => {
+  try {
+    const requestBody = {
+      name: projectData.name,
+      status: projectData.status,
+      priority: projectData.priority
+    };
+
+    const response = await apiClient.post('/api/project/v1', requestBody);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при создании проекта:', error);
     throw error;
   }
 };

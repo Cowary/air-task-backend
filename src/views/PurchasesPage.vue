@@ -61,8 +61,8 @@
         <div v-for="purchase in filteredPurchases" :key="purchase.id" class="purchase-card">
           <div class="purchase-info">
             <div class="purchase-header">
-              <div class="purchase-category" v-if="purchase.category?.name">
-                🏷️ {{ purchase.category.name }}
+              <div class="purchase-category" v-if="purchase.category">
+                🏷️ {{ purchase.category }}
               </div>
               <span class="purchase-priority" :class="`priority-${purchase.priority.toLowerCase()}`">
                 {{ getPriorityLabel(purchase.priority) }}
@@ -127,14 +127,16 @@
 
           <div class="form-group">
             <label for="purchaseCategory">Категория *</label>
-            <input
+            <select
               id="purchaseCategory"
-              v-model.trim="purchaseForm.categoryName"
-              type="text"
+              v-model="purchaseForm.categoryName"
               required
-              maxlength="100"
-              placeholder="Введите название категории"
-            />
+            >
+              <option value="" disabled>Выберите категорию</option>
+              <option v-for="category in categories" :key="category" :value="category">
+                {{ category }}
+              </option>
+            </select>
           </div>
 
           <div class="form-group">
@@ -249,7 +251,7 @@
 </template>
 
 <script>
-import { getPurchases, createPurchase, updatePurchase, deletePurchase } from '../api/purchases.js';
+import { getPurchases, createPurchase, updatePurchase, deletePurchase, getPurchaseCategories } from '../api/purchases.js';
 
 export default {
   name: 'PurchasesPage',
@@ -257,6 +259,7 @@ export default {
   data() {
     return {
       purchases: [],
+      categories: [],
       loading: false,
       error: null,
 
@@ -290,8 +293,8 @@ export default {
     uniqueCategories() {
       const categories = new Set();
       this.purchases.forEach(purchase => {
-        if (purchase.category?.name) {
-          categories.add(purchase.category.name);
+        if (purchase.category) {
+          categories.add(purchase.category);
         }
       });
       return Array.from(categories).sort();
@@ -299,7 +302,7 @@ export default {
 
     filteredPurchases() {
       return this.purchases.filter(purchase => {
-        if (this.filterCategory && purchase.category?.name !== this.filterCategory) {
+        if (this.filterCategory && purchase.category !== this.filterCategory) {
           return false;
         }
         if (this.filterPriority && purchase.priority !== this.filterPriority) {
@@ -334,6 +337,18 @@ export default {
         console.error('Ошибка загрузки покупок:', err);
       } finally {
         this.loading = false;
+      }
+    },
+
+    async loadCategories() {
+      try {
+        const response = await getPurchaseCategories();
+
+        if (response.isSuccess && response.data) {
+          this.categories = response.data.map(cat => typeof cat === 'string' ? cat : cat.name || cat.category);
+        }
+      } catch (err) {
+        console.error('Ошибка загрузки категорий:', err);
       }
     },
 
@@ -412,7 +427,7 @@ export default {
       this.editingPurchase = purchase;
       this.purchaseForm = {
         name: purchase.name,
-        categoryName: purchase.category?.name || '',
+        categoryName: purchase.category || '',
         priority: purchase.priority,
         isComplete: purchase.isComplete,
         status: purchase.status || 'IN_PROGRESS',
@@ -520,6 +535,7 @@ export default {
 
   mounted() {
     this.loadPurchases();
+    this.loadCategories();
   }
 };
 </script>

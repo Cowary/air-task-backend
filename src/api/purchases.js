@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Получаем адрес backend из переменной окружения
-const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8090';
+const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://192.168.1.79:8102';
 
 // Создаём экземпляр axios с базовой конфигурацией
 const apiClient = axios.create({
@@ -109,16 +109,27 @@ export const updatePurchase = async (purchaseData) => {
  */
 export const deletePurchase = async (id) => {
   try {
-    const requestBody = {
-      id: id
-    };
-
-    const response = await apiClient.delete('/v1/purchase', {
-      data: requestBody
-    });
+    const response = await apiClient.delete(`/v1/purchase/${id}`);
     return response.data;
   } catch (error) {
     console.error('Ошибка при удалении покупки:', error);
+    throw error;
+  }
+};
+
+/**
+ * Получает список всех категорий покупок
+ *
+ * API endpoint: GET /v1/purchase/category/list
+ *
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const getPurchaseCategories = async () => {
+  try {
+    const response = await apiClient.get('/v1/purchase/category/list');
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при получении списка категорий:', error);
     throw error;
   }
 };

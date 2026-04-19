@@ -107,7 +107,7 @@ npm run preview
 
 **URL приложения в режиме разработки:** http://localhost:5173
 
-**Адрес backend по умолчанию:** http://localhost:8090
+**Адрес backend по умолчанию:** http://192.168.1.79:8102
 
 **Изменение адреса backend в режиме разработки:**
 ```bash
@@ -132,7 +132,7 @@ VITE_BACKEND_URL=http://air-task-back:8090 docker-compose up -d
 
 ### Требования к Backend
 
-- Backend должен быть запущен по адресу `http://localhost:8090` (по умолчанию)
+- Backend должен быть запущен по адресу `http://192.168.1.79:8102` (по умолчанию)
 - Адрес backend настраивается через переменную окружения `VITE_BACKEND_URL`
 - Для production необходимо настроить проксирование в nginx
 
@@ -205,7 +205,7 @@ VITE_BACKEND_URL=http://air-task-back:8090 docker-compose up -d
 
 **Важно:** Axios настроен с использованием переменной окружения `VITE_BACKEND_URL`, которая:
 - Встраивается в код при сборке (префикс `VITE_` обязателен)
-- По умолчанию использует значение `http://localhost:8090`
+- По умолчанию использует значение `http://192.168.1.79:8102`
 
 ### Основной компонент (src/components/WeeklyTaskTracker.vue)
 
@@ -254,7 +254,7 @@ VITE_BACKEND_URL=http://air-task-back:8090 docker-compose up -d
 
 | Способ | Команда |
 |--------|---------|
-| Локальная разработка | `VITE_BACKEND_URL=http://localhost:8090 npm run dev` |
+| Локальная разработка | `VITE_BACKEND_URL=http://192.168.1.79:8102 npm run dev` |
 | Docker сборка | `docker build --build-arg VITE_BACKEND_URL=http://host.docker.internal:8090 .` |
 | Docker Compose | `VITE_BACKEND_URL=http://air-task-back:8090 docker-compose up -d` |
 
@@ -287,7 +287,7 @@ VITE_BACKEND_URL=http://air-task-back:8090 docker-compose up -d
 | DOCKER_REGISTRY | cowary | Docker registry (пользователь или организация) |
 | IMAGE_NAME | air-task-front | Название образа |
 | DOCKER_TAG | latest | Тег образа |
-| BACKEND_URL | http://localhost:8090 | URL backend сервера |
+| BACKEND_URL | http://192.168.1.79:8102 | URL backend сервера |
 
 **Этапы:**
 1. Clean — очистка рабочей директории
