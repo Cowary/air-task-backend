@@ -1,29 +1,13 @@
-# Docker Compose конфигурация для запуска frontend-приложения
-# Использование: docker-compose up --build
-#
-# Настройка backend:
-# По умолчанию: localhost:8090
-# Изменить: VITE_BACKEND_URL=http://air-task-back:8090 docker-compose up -d
-
 version: '3.8'
 
 services:
-  # Сервис frontend-приложения
   air-task-front:
-    # Собираем образ из Dockerfile в текущей директории
     build:
       context: .
       dockerfile: Dockerfile
-      # Передаём адрес backend при сборке
-      args:
-        - VITE_BACKEND_URL=${VITE_BACKEND_URL:-http://192.168.1.79:8102}
-    # Пробрасываем VITE_BACKEND_URL для nginx (используется в runtime)
     environment:
-      - VITE_BACKEND_URL=${VITE_BACKEND_URL:-http://192.168.1.79:8102}
-    # Перезапуск контейнера при падении
+      - BACKEND_URL=${BACKEND_URL:-http://192.168.1.79:8102}
     restart: unless-stopped
-    # Проброс портов: внешний:внутренний
     ports:
       - "8080:80"
-    # Имя контейнера для удобства
     container_name: air-task-front
