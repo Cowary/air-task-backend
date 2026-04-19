@@ -35,7 +35,7 @@ const getMoscowTimeISO = () => {
  */
 export const getWeeklyTaskStatistics = async () => {
   try {
-    const response = await apiClient.get('/api/completed-weekly/v1/statistics/current-week');
+    const response = await apiClient.get('/completed-weekly/v1/statistics/current-week');
     return response.data;
   } catch (error) {
     console.error('Ошибка при получении статистики:', error);
@@ -58,7 +58,7 @@ export const completeWeeklyTask = async (weeklyEntityId) => {
       completedDate: getMoscowTimeISO()
     };
     
-    const response = await apiClient.post('/api/completed-weekly/v1', requestBody);
+    const response = await apiClient.post('/completed-weekly/v1', requestBody);
     return response.data;
   } catch (error) {
     console.error('Ошибка при отметке задачи:', error);
@@ -75,7 +75,7 @@ export const completeWeeklyTask = async (weeklyEntityId) => {
  */
 export const getAllWeeklyTasks = async () => {
   try {
-    const response = await apiClient.get('/api/weekly/v1/list');
+    const response = await apiClient.get('/weekly/v1/list');
     return response.data;
   } catch (error) {
     console.error('Ошибка при получении списка задач:', error);
@@ -92,7 +92,7 @@ export const getAllWeeklyTasks = async () => {
  */
 export const getAllProjects = async () => {
   try {
-    const response = await apiClient.get('/api/project/v1/list');
+    const response = await apiClient.get('/project/v1/list');
     return response.data;
   } catch (error) {
     console.error('Ошибка при получении списка проектов:', error);
@@ -119,7 +119,7 @@ export const createProject = async (projectData) => {
       priority: projectData.priority
     };
 
-    const response = await apiClient.post('/api/project/v1', requestBody);
+    const response = await apiClient.post('/project/v1', requestBody);
     return response.data;
   } catch (error) {
     console.error('Ошибка при создании проекта:', error);
@@ -150,7 +150,7 @@ export const createWeeklyTask = async (taskData) => {
       status: taskData.status || 'IN_PROGRESS'
     };
 
-    const response = await apiClient.post('/api/weekly/v1', requestBody);
+    const response = await apiClient.post('/weekly/v1', requestBody);
     return response.data;
   } catch (error) {
     console.error('Ошибка при создании задачи:', error);
@@ -183,7 +183,7 @@ export const updateWeeklyTask = async (id, taskData) => {
       status: taskData.status
     };
     
-    const response = await apiClient.put(`/api/weekly/v1/${id}`, requestBody);
+    const response = await apiClient.put(`/weekly/v1/${id}`, requestBody);
     return response.data;
   } catch (error) {
     console.error('Ошибка при обновлении задачи:', error);
@@ -201,7 +201,7 @@ export const updateWeeklyTask = async (id, taskData) => {
  */
 export const deleteWeeklyTask = async (id) => {
   try {
-    const response = await apiClient.delete(`/api/weekly/v1/${id}`);
+    const response = await apiClient.delete(`/weekly/v1/${id}`);
     return response.data;
   } catch (error) {
     console.error('Ошибка при удалении задачи:', error);

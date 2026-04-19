@@ -16,7 +16,7 @@ const apiClient = axios.create({
  */
 export const getAllProjects = async () => {
   try {
-    const response = await apiClient.get('/api/project/v1/list');
+    const response = await apiClient.get('/project/v1/list');
     return response.data;
   } catch (error) {
     console.error('Ошибка при получении списка проектов:', error);
@@ -43,7 +43,7 @@ export const createProject = async (projectData) => {
       priority: projectData.priority
     };
 
-    const response = await apiClient.post('/api/project/v1', requestBody);
+    const response = await apiClient.post('/project/v1', requestBody);
     return response.data;
   } catch (error) {
     console.error('Ошибка при создании проекта:', error);
