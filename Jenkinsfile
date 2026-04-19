@@ -28,11 +28,7 @@ pipeline {
             defaultValue: 'cowary', 
             description: 'Docker registry (пользователь или организация)'
         )
-//        string(
-//            name: 'IMAGE_NAME',
-//            defaultValue: 'air-task-front',
-//            description: 'Название образа'
-//        )
+
         string(
             name: 'DOCKER_TAG', 
             defaultValue: 'latest', 
