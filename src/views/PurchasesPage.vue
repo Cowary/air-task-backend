@@ -127,16 +127,34 @@
 
           <div class="form-group">
             <label for="purchaseCategory">Категория *</label>
-            <select
-              id="purchaseCategory"
-              v-model="purchaseForm.categoryName"
-              required
-            >
-              <option value="" disabled>Выберите категорию</option>
-              <option v-for="category in categories" :key="category" :value="category">
-                {{ category }}
-              </option>
-            </select>
+            <div v-if="!isNewCategoryMode" class="category-select-wrapper">
+              <select
+                id="purchaseCategory"
+                v-model="purchaseForm.categoryName"
+                required
+              >
+                <option value="" disabled>Выберите категорию</option>
+                <option v-for="category in categories" :key="category" :value="category">
+                  {{ category }}
+                </option>
+              </select>
+              <button type="button" @click="enableNewCategoryMode" class="btn-new-category">
+                + Новая
+              </button>
+            </div>
+            <div v-else class="category-input-wrapper">
+              <input
+                id="purchaseNewCategory"
+                v-model.trim="newCategoryName"
+                type="text"
+                placeholder="Введите название новой категории"
+                @keyup.enter="confirmNewCategory"
+                @blur="confirmNewCategory"
+              />
+              <button type="button" @click="cancelNewCategoryMode" class="btn-cancel-category">
+                ✕
+              </button>
+            </div>
           </div>
 
           <div class="form-group">
@@ -281,6 +299,8 @@ export default {
         priceList: [],
         linkList: []
       },
+      isNewCategoryMode: false,
+      newCategoryName: '',
 
       // Модальное окно удаления
       showDeleteModal: false,
@@ -409,6 +429,29 @@ export default {
       this.purchaseForm.linkList.splice(index, 1);
     },
 
+    enableNewCategoryMode() {
+      this.isNewCategoryMode = true;
+      this.newCategoryName = '';
+    },
+
+    cancelNewCategoryMode() {
+      this.isNewCategoryMode = false;
+      this.newCategoryName = '';
+    },
+
+    confirmNewCategory() {
+      const trimmedName = this.newCategoryName ? this.newCategoryName.trim() : '';
+      if (trimmedName) {
+        this.purchaseForm.categoryName = trimmedName;
+        if (!this.categories.includes(trimmedName)) {
+          this.categories.push(trimmedName);
+          this.categories.sort();
+        }
+      }
+      this.isNewCategoryMode = false;
+      this.newCategoryName = '';
+    },
+
     openCreateModal() {
       this.editingPurchase = null;
       this.purchaseForm = {
@@ -420,6 +463,8 @@ export default {
         priceList: [],
         linkList: []
       };
+      this.isNewCategoryMode = false;
+      this.newCategoryName = '';
       this.showPurchaseModal = true;
     },
 
@@ -434,10 +479,14 @@ export default {
         priceList: purchase.priceList ? JSON.parse(JSON.stringify(purchase.priceList)) : [],
         linkList: purchase.linkList ? JSON.parse(JSON.stringify(purchase.linkList)) : []
       };
+      this.isNewCategoryMode = false;
+      this.newCategoryName = '';
       this.showPurchaseModal = true;
     },
 
     closeModal() {
+      this.isNewCategoryMode = false;
+      this.newCategoryName = '';
       this.showPurchaseModal = false;
       this.editingPurchase = null;
       this.purchaseForm = {
@@ -966,6 +1015,67 @@ h1 {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
+}
+
+.category-select-wrapper {
+  display: flex;
+  gap: 10px;
+}
+
+.category-select-wrapper select {
+  flex: 1;
+}
+
+.btn-new-category {
+  padding: 10px 15px;
+  background-color: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.btn-new-category:hover {
+  background-color: #5a6fd6;
+}
+
+.category-input-wrapper {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.category-input-wrapper input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.category-input-wrapper input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.btn-cancel-category {
+  padding: 8px 12px;
+  background-color: var(--accent-red);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-cancel-category:hover {
+  background-color: #e74c3c;
 }
 
 /* Менеджер списков */
