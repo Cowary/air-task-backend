@@ -28,11 +28,11 @@ pipeline {
             defaultValue: 'cowary', 
             description: 'Docker registry (пользователь или организация)'
         )
-        string(
-            name: 'IMAGE_NAME', 
-            defaultValue: 'air-task-front', 
-            description: 'Название образа'
-        )
+//        string(
+//            name: 'IMAGE_NAME',
+//            defaultValue: 'air-task-front',
+//            description: 'Название образа'
+//        )
         string(
             name: 'DOCKER_TAG', 
             defaultValue: 'latest', 
@@ -48,6 +48,17 @@ pipeline {
     // Переменные окружения
     environment {
         DOCKER_IMAGE = "${params.DOCKER_REGISTRY}/${params.IMAGE_NAME}"
+
+        // === Docker Registry (Forgejo) ===
+        REGISTRY        = '192.168.1.77:3002'
+        REGISTRY_USER   = 'cowary'
+        REGISTRY_CREDS  = 'forgejo-credentials'
+
+        // === Image Names & Tags ===
+        IMAGE_NAME      = 'air-task-front'
+        IMAGE_TAG       = 'latest'
+        FULL_IMAGE      = "${REGISTRY}/${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+        DHUB_IMAGE      = "${DHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
     }
 
     // Этапы сборки
@@ -92,33 +103,55 @@ pipeline {
             }
         }
 
-        // Логин в Docker Hub
-        stage('Docker Login') {
-            when {
-                expression { env.DOCKER_HUB_CREDENTIALS_ID != null }
-            }
+//        // Логин в Docker Hub
+//        stage('Docker Login') {
+//            when {
+//                expression { env.DOCKER_HUB_CREDENTIALS_ID != null }
+//            }
+//            steps {
+//                echo 'Вход в Docker Hub...'
+//                withCredentials([usernamePassword(
+//                    credentialsId: env.DOCKER_HUB_CREDENTIALS_ID ?: 'docker-hub',
+//                    usernameVariable: 'DOCKER_HUB_USER',
+//                    passwordVariable: 'DOCKER_HUB_PASS'
+//                )]) {
+//                    sh 'echo $DOCKER_HUB_PASS | docker login -u $DOCKER_HUB_USER --password-stdin'
+//                }
+//            }
+//        }
+//
+//        // Пуш образа в registry
+//        stage('Push Image') {
+//            steps {
+//                echo "Пуш образа ${DOCKER_IMAGE}:${params.DOCKER_TAG}..."
+//                sh """
+//                    docker push ${DOCKER_IMAGE}:${params.DOCKER_TAG}
+//                    docker push ${DOCKER_IMAGE}:${env.BUILD_NUMBER}
+//                """
+//            }
+//        }
+        stage('Tag & Push to Forgejo Registry') {
             steps {
-                echo 'Вход в Docker Hub...'
                 withCredentials([usernamePassword(
-                    credentialsId: env.DOCKER_HUB_CREDENTIALS_ID ?: 'docker-hub',
-                    usernameVariable: 'DOCKER_HUB_USER',
-                    passwordVariable: 'DOCKER_HUB_PASS'
+                    credentialsId: env.REGISTRY_CREDS,
+                    usernameVariable: 'REG_USER',
+                    passwordVariable: 'REG_PASS'
                 )]) {
-                    sh 'echo $DOCKER_HUB_PASS | docker login -u $DOCKER_HUB_USER --password-stdin'
+                    sh """
+                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${FULL_IMAGE}
+
+                        echo "\${REG_PASS}" | docker login ${REGISTRY} \
+                            -u "\${REG_USER}" \
+                            --password-stdin
+
+                        docker push ${FULL_IMAGE}
+
+                        docker logout ${REGISTRY}
+                    """
                 }
             }
         }
 
-        // Пуш образа в registry
-        stage('Push Image') {
-            steps {
-                echo "Пуш образа ${DOCKER_IMAGE}:${params.DOCKER_TAG}..."
-                sh """
-                    docker push ${DOCKER_IMAGE}:${params.DOCKER_TAG}
-                    docker push ${DOCKER_IMAGE}:${env.BUILD_NUMBER}
-                """
-            }
-        }
 
         // Удаление локальных образов для очистки
         stage('Cleanup') {
