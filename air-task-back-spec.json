@@ -1,19 +1,41 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI definition",
-    "version": "v0"
+    "title": "Air Task Backend API",
+    "description": "REST API для управления проектами и недельными задачами с интеграцией Planka",
+    "contact": {
+      "name": "Air Task Team",
+      "email": "support@airtask.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://springdoc.org"
+    },
+    "version": "v1.0"
   },
   "servers": [
     {
-      "url": "http://192.168.1.74:8090",
-      "description": "Generated server url"
+      "url": "http://localhost:8090",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.airtask.com",
+      "description": "Production server"
+    }
+  ],
+  "security": [
+    {
+      "bearer-key": []
     }
   ],
   "tags": [
     {
       "name": "Weekly Task Management",
       "description": "API for weekly task management"
+    },
+    {
+      "name": "auth",
+      "description": "Authentication"
     },
     {
       "name": "Completed Weekly Task Management",
@@ -247,7 +269,39 @@
         }
       }
     },
-    "/v1/task/update": {
+    "/api/weekly/v1": {
+      "post": {
+        "tags": [
+          "Weekly Task Management"
+        ],
+        "summary": "Create new weekly task",
+        "description": "Creates a new weekly task in the system",
+        "operationId": "createWeeklyTask",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeeklyCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseWeeklyResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task/update": {
       "post": {
         "tags": [
           "Task Management"
@@ -279,7 +333,7 @@
         }
       }
     },
-    "/v1/task/save": {
+    "/api/v1/task/save": {
       "post": {
         "tags": [
           "Task Management"
@@ -311,7 +365,7 @@
         }
       }
     },
-    "/v1/purchase/update": {
+    "/api/v1/purchase/update": {
       "post": {
         "tags": [
           "Purchase Management"
@@ -343,7 +397,7 @@
         }
       }
     },
-    "/v1/purchase/save": {
+    "/api/v1/purchase/save": {
       "post": {
         "tags": [
           "Purchase Management"
@@ -368,38 +422,6 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/PurchaseResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/weekly/v1": {
-      "post": {
-        "tags": [
-          "Weekly Task Management"
-        ],
-        "summary": "Create new weekly task",
-        "description": "Creates a new weekly task in the system",
-        "operationId": "createWeeklyTask",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WeeklyCreateRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseWeeklyResponse"
                 }
               }
             }
@@ -471,7 +493,81 @@
         }
       }
     },
-    "/v1/task/{id}": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "description": "Authenticate with login and password to get a JWT token",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful authentication",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid login or password",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authentication is disabled",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/weekly/v1/list": {
+      "get": {
+        "tags": [
+          "Weekly Task Management"
+        ],
+        "summary": "Get all weekly tasks",
+        "description": "Returns a list of all weekly tasks in the system",
+        "operationId": "getAllWeeklyTasks",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListWeeklyResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/task/{id}": {
       "get": {
         "tags": [
           "Task Management"
@@ -535,7 +631,7 @@
         }
       }
     },
-    "/v1/task/list": {
+    "/api/v1/task/list": {
       "get": {
         "tags": [
           "Task Management"
@@ -557,7 +653,7 @@
         }
       }
     },
-    "/v1/purchase/{id}": {
+    "/api/v1/purchase/{id}": {
       "get": {
         "tags": [
           "Purchase Management"
@@ -621,7 +717,7 @@
         }
       }
     },
-    "/v1/purchase/list": {
+    "/api/v1/purchase/list": {
       "get": {
         "tags": [
           "Purchase Management"
@@ -643,7 +739,7 @@
         }
       }
     },
-    "/v1/purchase/category/list": {
+    "/api/v1/purchase/category/list": {
       "get": {
         "tags": [
           "Purchase category Management"
@@ -658,48 +754,6 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/PurchaseResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/health": {
-      "get": {
-        "tags": [
-          "health-controller"
-        ],
-        "operationId": "getHealth",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/weekly/v1/list": {
-      "get": {
-        "tags": [
-          "Weekly Task Management"
-        ],
-        "summary": "Get all weekly tasks",
-        "description": "Returns a list of all weekly tasks in the system",
-        "operationId": "getAllWeeklyTasks",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseListWeeklyResponse"
                 }
               }
             }
@@ -722,6 +776,26 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/ApiResponseProjectListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "health-controller"
+        ],
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthDto"
                 }
               }
             }
@@ -1026,6 +1100,53 @@
           }
         }
       },
+      "WeeklyCreateRequest": {
+        "type": "object",
+        "description": "Request body for creating a new weekly task",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the weekly task",
+            "example": "Weekly review",
+            "minLength": 1
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Count or quantity for the weekly task",
+            "example": 5
+          },
+          "projectName": {
+            "type": "string",
+            "description": "Name of the project this task belongs to",
+            "example": "Development",
+            "minLength": 1
+          },
+          "priority": {
+            "type": "string",
+            "description": "Task priority level",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Current task status",
+            "enum": [
+              "IN_PROGRESS",
+              "DONE",
+              "PAUSED"
+            ]
+          }
+        },
+        "required": [
+          "count",
+          "name",
+          "projectName"
+        ]
+      },
       "TaskUpdateRequest": {
         "type": "object",
         "properties": {
@@ -1265,53 +1386,6 @@
           "name"
         ]
       },
-      "WeeklyCreateRequest": {
-        "type": "object",
-        "description": "Request body for creating a new weekly task",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the weekly task",
-            "example": "Weekly review",
-            "minLength": 1
-          },
-          "count": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Count or quantity for the weekly task",
-            "example": 5
-          },
-          "projectName": {
-            "type": "string",
-            "description": "Name of the project this task belongs to",
-            "example": "Development",
-            "minLength": 1
-          },
-          "priority": {
-            "type": "string",
-            "description": "Task priority level",
-            "enum": [
-              "LOW",
-              "MEDIUM",
-              "HIGH"
-            ]
-          },
-          "status": {
-            "type": "string",
-            "description": "Current task status",
-            "enum": [
-              "IN_PROGRESS",
-              "DONE",
-              "PAUSED"
-            ]
-          }
-        },
-        "required": [
-          "count",
-          "name",
-          "projectName"
-        ]
-      },
       "ProjectCreateRequest": {
         "type": "object",
         "properties": {
@@ -1404,14 +1478,35 @@
           }
         }
       },
-      "HealthDto": {
+      "AuthRequest": {
         "type": "object",
         "properties": {
-          "version": {
+          "login": {
+            "type": "string",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "login",
+          "password"
+        ]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
             "type": "string"
           },
-          "isHealthy": {
-            "type": "boolean"
+          "type": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
@@ -1460,6 +1555,17 @@
             "items": {
               "$ref": "#/components/schemas/ProjectResponse"
             }
+          }
+        }
+      },
+      "HealthDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "isHealthy": {
+            "type": "boolean"
           }
         }
       },
@@ -1620,6 +1726,13 @@
           },
           "data": {}
         }
+      }
+    },
+    "securitySchemes": {
+      "bearer-key": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   }

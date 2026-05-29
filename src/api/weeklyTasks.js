@@ -1,11 +1,4 @@
-import axios from 'axios';
-
-const apiClient = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
+import apiClient from './client';
 
 /**
  * Возвращает текущее время в формате ISO с таймзоной Москвы
@@ -229,6 +222,3 @@ export const getHealth = async () => {
     throw error;
   }
 };
-
-// Экспортируем объект apiClient на случай, если нужно будет делать другие запросы
-export default apiClient;

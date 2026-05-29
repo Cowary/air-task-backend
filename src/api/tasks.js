@@ -1,11 +1,4 @@
-import axios from 'axios';
-
-const apiClient = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
+import apiClient from './client';
 
 /**
  * Получает список всех проектов
@@ -156,5 +149,3 @@ export const deleteTask = async (id) => {
   }
 };
 
-// Экспортируем объект apiClient на случай, если нужно будет делать другие запросы
-export default apiClient;

@@ -1,11 +1,4 @@
-import axios from 'axios';
-
-const apiClient = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
+import apiClient from './client';
 
 /**
  * Получает список всех покупок
@@ -129,5 +122,3 @@ export const getPurchaseCategories = async () => {
   }
 };
 
-// Экспортируем объект apiClient на случай, если нужно будет делать другие запросы
-export default apiClient;
