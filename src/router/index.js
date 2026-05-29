@@ -3,9 +3,17 @@ import HomePage from '../views/HomePage.vue'
 import WeeklyTaskTracker from '../components/WeeklyTaskTracker.vue'
 import TasksPage from '../views/TasksPage.vue'
 import PurchasesPage from '../views/PurchasesPage.vue'
+import LoginPage from '../views/LoginPage.vue'
+import { initAuth, useAuth } from '../store/auth'
 
-// Определение маршрутов приложения
+initAuth()
+
 const routes = [
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginPage
+  },
   {
     path: '/',
     name: 'home',
@@ -28,10 +36,18 @@ const routes = [
   }
 ]
 
-// Создание и экспорт роутера
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  const auth = useAuth()
+  if (to.name !== 'login' && !auth.isAuthenticated) {
+    next({ name: 'login' })
+  } else {
+    next()
+  }
 })
 
 export default router

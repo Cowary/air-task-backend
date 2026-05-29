@@ -1,5 +1,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuth, logout } from './store/auth'
+
+const router = useRouter()
+const auth = useAuth()
+
+function handleLogout() {
+  logout()
+  router.push('/login')
+}
 
 /**
  * Главный компонент приложения
@@ -54,6 +64,16 @@ onMounted(() => {
       :title="isDark ? 'Переключить на светлую тему' : 'Переключить на тёмную тему'"
     >
       {{ isDark ? '☀️' : '🌙' }}
+    </button>
+
+    <!-- Кнопка выхода -->
+    <button
+      v-if="auth.isAuthenticated"
+      class="logout-button"
+      @click="handleLogout"
+      title="Выйти"
+    >
+      Выйти
     </button>
 
     <router-view />
@@ -111,6 +131,32 @@ body {
 }
 
 .theme-toggle:active {
+  transform: scale(0.95);
+}
+
+.logout-button {
+  position: fixed;
+  top: 16px;
+  right: 68px;
+  z-index: 1000;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--accent-red);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px var(--shadow-color);
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.logout-button:active {
   transform: scale(0.95);
 }
 </style>
