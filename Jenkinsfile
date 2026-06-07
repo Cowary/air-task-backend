@@ -135,6 +135,19 @@ pipeline {
             }
         }
 
+        stage('Deploy to Home Server') {
+            steps {
+                sshagent(credentials: ['v1-ssh-server']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no sasha@192.168.1.79 '
+                            cd /home/sasha/docker/air-task &&
+                            docker compose pull &&
+                            docker compose up -d
+                        '
+                    """
+                }
+            }
+        }
 
         // Удаление локальных образов для очистки
         stage('Cleanup') {
