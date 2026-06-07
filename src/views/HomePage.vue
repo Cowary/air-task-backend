@@ -53,6 +53,9 @@ onMounted(async () => {
         <router-link to="/purchases" class="nav-button nav-button-purchases">
           🛒 Покупки
         </router-link>
+        <router-link to="/reminders" class="nav-button nav-button-reminders">
+          ⏰ Напоминания
+        </router-link>
       </div>
     </div>
   </div>
@@ -163,6 +166,14 @@ onMounted(async () => {
 
 .nav-button-purchases:hover {
   box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+}
+
+.nav-button-reminders {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.nav-button-reminders:hover {
+  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
 }
 
 .nav-button:active {

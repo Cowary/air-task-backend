@@ -3,6 +3,7 @@ import HomePage from '../views/HomePage.vue'
 import WeeklyTaskTracker from '../components/WeeklyTaskTracker.vue'
 import TasksPage from '../views/TasksPage.vue'
 import PurchasesPage from '../views/PurchasesPage.vue'
+import RemindersPage from '../views/RemindersPage.vue'
 import LoginPage from '../views/LoginPage.vue'
 import { initAuth, useAuth } from '../store/auth'
 
@@ -33,6 +34,11 @@ const routes = [
     path: '/purchases',
     name: 'purchases',
     component: PurchasesPage
+  },
+  {
+    path: '/reminders',
+    name: 'reminders',
+    component: RemindersPage
   }
 ]
 
