@@ -21,6 +21,22 @@ VITE_BACKEND_URL=http://192.168.1.79:8102 npm run dev
 
 По умолчанию: `http://localhost:8090`
 
+### Таймзона
+
+Приложение использует `Europe/Moscow` (`+03:00`) по умолчанию. Чтобы изменить:
+
+```bash
+VITE_APP_TIMEZONE=Europe/Moscow VITE_APP_TIMEZONE_OFFSET=+03:00 npm run dev
+```
+
+Или добавить переменные в конфигурацию запуска IDEA:
+```
+VITE_APP_TIMEZONE=Asia/Vladivostok
+VITE_APP_TIMEZONE_OFFSET=+10:00
+```
+
+Доступные таймзоны — любой IANA-идентификатор (напр. `Europe/London`, `America/New_York`).
+
 ## Запуск в Production (Docker)
 
 ### Способ 1: docker-compose

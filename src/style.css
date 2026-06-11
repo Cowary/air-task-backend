@@ -34,6 +34,10 @@
   --accent-red-light: #ffe6e6;
   --accent-blue-light: #cce5ff;
   --accent-blue: #007bff;
+  --accent-purple: #9b59b6;
+  --accent-purple-light: #f3e5f5;
+  --accent-gray: #7f8c8d;
+  --accent-gray-light: #f0f0f0;
   --shadow-color: rgba(0, 0, 0, 0.1);
   --spinner-bg: #f3f3f3;
 }
@@ -51,6 +55,8 @@
   --accent-orange-light: #3d2e00;
   --accent-green-light: #1a3320;
   --accent-red-light: #3d1a1a;
+  --accent-purple-light: #2a1a3d;
+  --accent-gray-light: #2a2a2a;
   --shadow-color: rgba(0, 0, 0, 0.3);
   --spinner-bg: #2a2a4a;
 }

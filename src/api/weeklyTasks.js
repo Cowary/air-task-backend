@@ -1,19 +1,5 @@
 import apiClient from './client';
-
-/**
- * Возвращает текущее время в формате ISO с таймзоной Москвы
- */
-const getMoscowTimeISO = () => {
-  return new Date().toLocaleString('sv-SE', {
-    timeZone: 'Europe/Moscow',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  }).replace(' ', 'T') + '+03:00';
-};
+import { nowISOStringWithTz } from '../utils/timezone.js';
 
 /**
  * Получает статистику выполнения задач за текущую неделю
@@ -48,7 +34,7 @@ export const completeWeeklyTask = async (weeklyEntityId) => {
   try {
     const requestBody = {
       weeklyEntityId: weeklyEntityId,
-      completedDate: getMoscowTimeISO()
+      completedDate: nowISOStringWithTz()
     };
     
     const response = await apiClient.post('/completed-weekly/v1', requestBody);
