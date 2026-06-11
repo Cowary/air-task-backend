@@ -233,6 +233,7 @@
 
 <script>
 import { getRemindersCountdown, getReminders, createReminder, updateReminder, deleteReminder } from '../api/reminders.js';
+import { APP_TIMEZONE, APP_TIMEZONE_OFFSET, formatDateInTz, nowISOStringWithTz, buildISOStringWithTz } from '../utils/timezone.js';
 
 export default {
   name: 'RemindersPage',
@@ -372,15 +373,7 @@ export default {
     },
 
     formatDate(dateString) {
-      if (!dateString) return '';
-      const date = new Date(dateString);
-      return date.toLocaleDateString('ru-RU', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      return formatDateInTz(dateString, APP_TIMEZONE);
     },
 
     openCreateModal() {
@@ -399,14 +392,21 @@ export default {
     openEditModal(reminder) {
       this.editingReminder = reminder;
       const dt = new Date(reminder.reminderDateTime);
-      const pad = (n) => String(n).padStart(2, '0');
+      const parts = dt.toLocaleString('sv-SE', {
+        timeZone: APP_TIMEZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).split(' ')
       this.reminderForm = {
         name: reminder.name,
         priority: reminder.priority,
         status: reminder.status,
         type: reminder.type,
-        reminderDate: `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`,
-        reminderTime: `${pad(dt.getHours())}:${pad(dt.getMinutes())}`
+        reminderDate: parts[0],
+        reminderTime: parts[1]
       };
       this.showReminderModal = true;
     },
@@ -434,8 +434,8 @@ export default {
 
       try {
         const dateValue = (this.reminderForm.reminderDate && this.reminderForm.reminderTime)
-          ? new Date(`${this.reminderForm.reminderDate}T${this.reminderForm.reminderTime}:00`).toISOString()
-          : new Date().toISOString();
+          ? buildISOStringWithTz(this.reminderForm.reminderDate, this.reminderForm.reminderTime, APP_TIMEZONE_OFFSET)
+          : nowISOStringWithTz(APP_TIMEZONE, APP_TIMEZONE_OFFSET);
 
         let response;
 

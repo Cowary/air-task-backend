@@ -70,7 +70,7 @@ export const getTasks = async () => {
  * @param {string} taskData.name - Название задачи (обязательно, макс. 200 символов)
  * @param {string} taskData.priority - Приоритет (HIGH, MIDDLE, LOW) - обязательно
  * @param {string} taskData.projectName - Название проекта (обязательно, макс. 100 символов)
- * @param {string} taskData.status - Статус (IN_PROGRESS, DONE, PAUSED) - обязательно
+ * @param {string} taskData.status - Статус (IDEA, BACKLOG, IN_PROGRESS, DONE, PAUSED, CANCELED) - обязательно
  * @param {string} [taskData.description] - Описание задачи (опционально, макс. 10000 символов)
  * @returns {Promise} Промис с данными от сервера
  */
@@ -102,7 +102,7 @@ export const createTask = async (taskData) => {
  * @param {string} taskData.name - Название задачи (обязательно, макс. 200 символов)
  * @param {string} taskData.priority - Приоритет (HIGH, MIDDLE, LOW) - обязательно
  * @param {string} taskData.projectName - Название проекта (обязательно, макс. 100 символов)
- * @param {string} taskData.status - Статус (IN_PROGRESS, DONE, PAUSED) - обязательно
+ * @param {string} taskData.status - Статус (IDEA, BACKLOG, IN_PROGRESS, DONE, PAUSED, CANCELED) - обязательно
  * @param {string} [taskData.description] - Описание задачи (опционально, макс. 1000 символов)
  * @returns {Promise} Промис с данными от сервера
  */

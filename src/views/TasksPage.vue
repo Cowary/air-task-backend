@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" :class="{ 'container-kanban': viewMode === 'kanban' }">
     <!-- Кнопка возврата на главную -->
     <router-link to="/" class="back-button">← На главную</router-link>
 
@@ -19,10 +19,29 @@
       <button @click="loadTasks" class="retry-btn">Повторить</button>
     </div>
 
-    <!-- Основной контент -->
+    <!-- Вкладки переключения режимов -->
     <div v-else class="content">
-      <!-- Панель управления -->
-      <div class="toolbar">
+      <div class="view-tabs">
+        <button
+          class="view-tab"
+          :class="{ active: viewMode === 'list' }"
+          @click="viewMode = 'list'"
+        >
+          📋 Список
+        </button>
+        <button
+          class="view-tab"
+          :class="{ active: viewMode === 'kanban' }"
+          @click="viewMode = 'kanban'"
+        >
+          📊 Канбан
+        </button>
+      </div>
+
+      <!-- Режим списка -->
+      <template v-if="viewMode === 'list'">
+        <!-- Панель управления -->
+        <div class="toolbar">
         <div class="filter-group">
           <label for="filterProject">Проект:</label>
           <select id="filterProject" v-model="filterProject">
@@ -35,9 +54,12 @@
           <label for="filterStatus">Статус:</label>
           <select id="filterStatus" v-model="filterStatus">
             <option value="">Все статусы</option>
+            <option value="IDEA">Идея</option>
+            <option value="BACKLOG">Бэклог</option>
             <option value="IN_PROGRESS">В работе</option>
             <option value="DONE">Выполнено</option>
             <option value="PAUSED">На паузе</option>
+            <option value="CANCELED">Отменено</option>
           </select>
 
           <label for="filterPriority">Приоритет:</label>
@@ -92,6 +114,17 @@
           </div>
         </div>
       </div>
+      </template>
+
+      <!-- Режим канбан -->
+      <template v-else>
+        <KanbanBoard
+          :tasks="tasks"
+          @update-status="handleKanbanUpdate"
+          @edit-task="openEditModal"
+          @create-task="openCreateModal"
+        />
+      </template>
     </div>
 
     <!-- Модальное окно для создания/редактирования задачи -->
@@ -163,9 +196,12 @@
               v-model="taskForm.status"
               required
             >
+              <option value="IDEA">Идея</option>
+              <option value="BACKLOG">Бэклог</option>
               <option value="IN_PROGRESS">В работе</option>
               <option value="DONE">Выполнено</option>
               <option value="PAUSED">На паузе</option>
+              <option value="CANCELED">Отменено</option>
             </select>
           </div>
 
@@ -217,12 +253,14 @@
 <script>
 import { getTasks, createTask, updateTask, deleteTask, getAllProjects, createProject } from '../api/tasks.js';
 import ProjectModal from '../components/ProjectModal.vue';
+import KanbanBoard from '../components/KanbanBoard.vue';
 
 export default {
   name: 'TasksPage',
 
   components: {
-    ProjectModal
+    ProjectModal,
+    KanbanBoard
   },
 
   data() {
@@ -230,6 +268,7 @@ export default {
       tasks: [],
       loading: false,
       error: null,
+      viewMode: 'list',
 
       // Проекты
       projects: [],
@@ -337,9 +376,12 @@ export default {
 
     getStatusLabel(status) {
       const labels = {
+        'IDEA': 'Идея',
+        'BACKLOG': 'Бэклог',
         'IN_PROGRESS': 'В работе',
         'DONE': 'Выполнено',
-        'PAUSED': 'На паузе'
+        'PAUSED': 'На паузе',
+        'CANCELED': 'Отменено'
       };
       return labels[status] || status;
     },
@@ -470,6 +512,31 @@ export default {
       }
     },
 
+    async handleKanbanUpdate({ taskId, newStatus }) {
+      const task = this.tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      try {
+        const response = await updateTask({
+          id: taskId,
+          name: task.name,
+          projectName: task.project?.name || '',
+          priority: task.priority,
+          status: newStatus,
+          description: task.description || ''
+        });
+
+        if (response.isSuccess) {
+          await this.loadTasks();
+        } else {
+          alert('Не удалось обновить статус: ' + (response.errorMessage || 'Неизвестная ошибка'));
+        }
+      } catch (err) {
+        alert('Ошибка при обновлении статуса');
+        console.error('Ошибка обновления статуса:', err);
+      }
+    },
+
     openProjectModal() {
       this.showProjectModal = true;
     },
@@ -571,6 +638,67 @@ h1 {
 
 .back-button:hover {
   background-color: var(--border-color);
+}
+
+.container-kanban {
+  max-width: 90vw;
+  width: 90vw;
+  margin: 0 auto;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 8px;
+  min-height: 90vh;
+}
+
+.container-kanban h1 {
+  margin-bottom: 2px;
+  font-size: 1.8em;
+}
+
+.container-kanban .subtitle {
+  margin-bottom: 12px;
+}
+
+.container-kanban .view-tabs {
+  margin-bottom: 12px;
+}
+
+/* Вкладки режимов */
+.view-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background-color: var(--bg-secondary);
+  border-radius: 10px;
+  padding: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.view-tab {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-tab:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.view-tab.active {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+.view-tab.active:hover {
+  background-color: #5a6fd6;
 }
 
 /* Панель управления */
@@ -720,6 +848,16 @@ h1 {
 }
 
 /* Статусы */
+.status-idea {
+  background-color: var(--accent-purple-light);
+  color: var(--accent-purple);
+}
+
+.status-backlog {
+  background-color: var(--accent-gray-light);
+  color: var(--accent-gray);
+}
+
 .status-in_progress {
   background-color: var(--accent-blue-light);
   color: var(--accent-blue);
@@ -731,6 +869,11 @@ h1 {
 }
 
 .status-paused {
+  background-color: var(--accent-orange-light);
+  color: var(--accent-orange);
+}
+
+.status-canceled {
   background-color: var(--accent-red-light);
   color: var(--accent-red);
 }
