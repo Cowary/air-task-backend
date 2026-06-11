@@ -516,6 +516,13 @@ export default {
       const task = this.tasks.find(t => t.id === taskId);
       if (!task) return;
 
+      const previousStatus = task.status;
+
+      // Оптимистичное обновление: сразу меняем статус в локальном массиве
+      this.tasks = this.tasks.map(t =>
+        t.id === taskId ? { ...t, status: newStatus } : t
+      );
+
       try {
         const response = await updateTask({
           id: taskId,
@@ -526,12 +533,20 @@ export default {
           description: task.description || ''
         });
 
-        if (response.isSuccess) {
+        if (!response.isSuccess) {
+          // Откат при ошибке API
+          this.tasks = this.tasks.map(t =>
+            t.id === taskId ? { ...t, status: previousStatus } : t
+          );
           await this.loadTasks();
-        } else {
           alert('Не удалось обновить статус: ' + (response.errorMessage || 'Неизвестная ошибка'));
         }
       } catch (err) {
+        // Откат при сетевой ошибке
+        this.tasks = this.tasks.map(t =>
+          t.id === taskId ? { ...t, status: previousStatus } : t
+        );
+        await this.loadTasks();
         alert('Ошибка при обновлении статуса');
         console.error('Ошибка обновления статуса:', err);
       }
