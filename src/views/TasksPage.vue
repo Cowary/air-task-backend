@@ -268,7 +268,7 @@ export default {
       tasks: [],
       loading: false,
       error: null,
-      viewMode: 'list',
+      viewMode: 'kanban',
 
       // Проекты
       projects: [],
