@@ -57,6 +57,33 @@
               просрочено на {{ Math.abs(item.daysBeforeEvent) }} {{ pluralDays(Math.abs(item.daysBeforeEvent)) }}
             </span>
           </div>
+          <div class="menu-wrapper">
+            <button class="menu-btn" @click.stop="toggleMenu(index)" title="Действия">
+              <span class="menu-icon-bar"></span>
+              <span class="menu-icon-bar"></span>
+              <span class="menu-icon-bar"></span>
+            </button>
+            <div
+              v-if="openMenuIndex === index"
+              class="popup-menu"
+              @click.stop
+            >
+              <button
+                class="popup-btn popup-refresh-btn"
+                :disabled="countdownActionLoading"
+                @click="handleCountdownRefresh(item)"
+              >
+                Обновить
+              </button>
+              <button
+                class="popup-btn popup-delete-btn"
+                :disabled="countdownActionLoading"
+                @click="handleCountdownDelete(item)"
+              >
+                Удалить
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -232,7 +259,7 @@
 </template>
 
 <script>
-import { getRemindersCountdown, getReminders, createReminder, updateReminder, deleteReminder } from '../api/reminders.js';
+import { getRemindersCountdown, getReminders, createReminder, updateReminder, deleteReminder, refreshReminder } from '../api/reminders.js';
 import { APP_TIMEZONE, APP_TIMEZONE_OFFSET, formatDateInTz, nowISOStringWithTz, buildISOStringWithTz } from '../utils/timezone.js';
 
 export default {
@@ -269,6 +296,10 @@ export default {
         reminderDate: '',
         reminderTime: ''
       },
+
+      // Popup menu (countdown tab)
+      openMenuIndex: -1,
+      countdownActionLoading: false,
 
       // Modal delete
       showDeleteModal: false,
@@ -472,6 +503,56 @@ export default {
       }
     },
 
+    toggleMenu(index) {
+      this.openMenuIndex = this.openMenuIndex === index ? -1 : index;
+    },
+
+    closeMenu() {
+      this.openMenuIndex = -1;
+    },
+
+    onDocumentClick(event) {
+      const menuWrappers = this.$el.querySelectorAll('.menu-wrapper');
+      for (const wrapper of menuWrappers) {
+        if (wrapper.contains(event.target)) {
+          return;
+        }
+      }
+      this.closeMenu();
+    },
+
+    async handleCountdownRefresh(item) {
+      this.countdownActionLoading = true;
+      try {
+        await refreshReminder(item.id);
+        this.closeMenu();
+        await this.loadCountdown();
+      } catch (err) {
+        alert('Ошибка при обновлении напоминания');
+        console.error('Ошибка обновления countdown:', err);
+      } finally {
+        this.countdownActionLoading = false;
+      }
+    },
+
+    async handleCountdownDelete(item) {
+      this.countdownActionLoading = true;
+      try {
+        const response = await deleteReminder(item.id);
+        if (response.isSuccess) {
+          this.closeMenu();
+          await this.loadCountdown();
+        } else {
+          alert('Не удалось удалить напоминание: ' + (response.errorMessage || 'Неизвестная ошибка'));
+        }
+      } catch (err) {
+        alert('Ошибка при удалении напоминания');
+        console.error('Ошибка удаления countdown:', err);
+      } finally {
+        this.countdownActionLoading = false;
+      }
+    },
+
     confirmDelete(reminder) {
       this.reminderToDelete = reminder;
       this.showDeleteModal = true;
@@ -507,6 +588,12 @@ export default {
 
   mounted() {
     this.loadCountdown();
+    this._onDocumentClick = (event) => this.onDocumentClick(event);
+    document.addEventListener('click', this._onDocumentClick);
+  },
+
+  beforeUnmount() {
+    document.removeEventListener('click', this._onDocumentClick);
   }
 };
 </script>
@@ -880,6 +967,95 @@ h1 {
 
 .delete-btn:hover {
   background-color: var(--accent-red-light);
+}
+
+/* Menu button (hamburger) */
+.menu-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.menu-btn {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  transition: background-color 0.2s;
+}
+
+.menu-btn:hover {
+  background-color: var(--border-color);
+}
+
+.menu-btn:focus,
+.popup-btn:focus {
+  outline: none;
+}
+
+.menu-btn:focus-visible,
+.popup-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent-primary);
+}
+
+.menu-icon-bar {
+  display: block;
+  width: 16px;
+  height: 2px;
+  background-color: var(--text-secondary);
+  border-radius: 1px;
+}
+
+/* Popup menu */
+.popup-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  min-width: 130px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  z-index: 100;
+  padding: 4px;
+  animation: fadeIn 0.15s ease;
+}
+
+.popup-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  background: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s;
+  font-family: inherit;
+}
+
+.popup-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.popup-refresh-btn:hover:not(:disabled) {
+  background-color: var(--accent-blue-light);
+}
+
+.popup-delete-btn:hover:not(:disabled) {
+  background-color: var(--accent-red-light);
+  color: var(--accent-red);
 }
 
 /* Modal */

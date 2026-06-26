@@ -375,6 +375,7 @@
           "Reminder Management"
         ],
         "summary": "Update a reminder",
+        "description": "Updates an existing reminder. Returns 404 if the reminder is not found, 400 if validation fails.",
         "operationId": "update_1",
         "requestBody": {
           "content": {
@@ -388,14 +389,20 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Reminder successfully updated",
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponseReminderRs"
+                  "$ref": "#/components/schemas/ReminderRs"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request body — validation failed"
+          },
+          "404": {
+            "description": "Reminder not found with the specified ID"
           }
         }
       }
@@ -406,6 +413,7 @@
           "Reminder Management"
         ],
         "summary": "Create a new reminder",
+        "description": "Creates a new reminder in the system. Returns 400 if validation fails.",
         "operationId": "save_1",
         "requestBody": {
           "content": {
@@ -418,15 +426,56 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "OK",
+          "201": {
+            "description": "Reminder successfully created",
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponseReminderRs"
+                  "$ref": "#/components/schemas/ReminderRs"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid request body — validation failed"
+          }
+        }
+      }
+    },
+    "/api/v1/reminder/refresh": {
+      "post": {
+        "tags": [
+          "Reminder Management"
+        ],
+        "summary": "Refresh a reminder",
+        "description": "Refreshes the updated timestamp of an existing reminder. Returns 404 if the reminder is not found.",
+        "operationId": "refresh",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshReminderRq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Reminder successfully refreshed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReminderRs"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body — validation failed"
+          },
+          "404": {
+            "description": "Reminder not found with the specified ID"
           }
         }
       }
@@ -725,14 +774,15 @@
           "Reminder Management"
         ],
         "summary": "Get all reminders",
+        "description": "Returns the list of all reminders in the system.",
         "operationId": "list_1",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "List of reminders successfully retrieved",
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponseListReminderRs"
+                  "$ref": "#/components/schemas/ReminderRs"
                 }
               }
             }
@@ -745,15 +795,16 @@
         "tags": [
           "Reminder Management"
         ],
-        "summary": "Get time before reminder",
+        "summary": "Get time before reminders",
+        "description": "Returns the list of reminders with calculated time remaining before each event.",
         "operationId": "beforeReminder",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "List of reminders with time before event successfully retrieved",
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponseListBeforeReminderRs"
+                  "$ref": "#/components/schemas/BeforeReminderRs"
                 }
               }
             }
@@ -1025,6 +1076,7 @@
           "Reminder Management"
         ],
         "summary": "Delete a reminder",
+        "description": "Deletes a reminder by its ID. Returns 404 if the reminder is not found.",
         "operationId": "delete_2",
         "parameters": [
           {
@@ -1039,14 +1091,10 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseVoid"
-                }
-              }
-            }
+            "description": "Reminder successfully deleted"
+          },
+          "404": {
+            "description": "Reminder not found with the specified ID"
           }
         }
       }
@@ -1269,7 +1317,8 @@
               "LOW",
               "MEDIUM",
               "HIGH"
-            ]
+            ],
+            "example": "HIGH"
           },
           "status": {
             "type": "string",
@@ -1278,7 +1327,8 @@
               "IN_PROGRESS",
               "DONE",
               "PAUSED"
-            ]
+            ],
+            "example": "IN_PROGRESS"
           }
         },
         "required": [
@@ -1388,21 +1438,32 @@
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "description": "Reminder ID",
+            "example": 1,
+            "minimum": 1
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Reminder name",
+            "example": "Buy groceries",
+            "minLength": 1
           },
           "status": {
             "type": "string",
+            "description": "Task status",
             "enum": [
+              "IDEA",
+              "BACKLOG",
               "IN_PROGRESS",
               "DONE",
-              "PAUSED"
+              "PAUSED",
+              "CANCELED"
             ]
           },
           "priority": {
             "type": "string",
+            "description": "Task priority",
             "enum": [
               "HIGH",
               "MIDDLE",
@@ -1411,10 +1472,13 @@
           },
           "reminderDateTime": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Date and time when the reminder should trigger",
+            "example": "2026-06-28T10:00:00"
           },
           "type": {
             "type": "string",
+            "description": "Reminder recurrence type",
             "enum": [
               "ONCE",
               "REPEATABLE"
@@ -1430,44 +1494,36 @@
           "type"
         ]
       },
-      "ApiResponseReminderRs": {
-        "type": "object",
-        "properties": {
-          "isSuccess": {
-            "type": "boolean"
-          },
-          "errorMessage": {
-            "type": "string"
-          },
-          "errorType": {
-            "type": "string"
-          },
-          "data": {
-            "$ref": "#/components/schemas/ReminderRs"
-          }
-        }
-      },
       "ReminderRs": {
         "type": "object",
         "description": "Reminder response data",
         "properties": {
           "id": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "description": "Reminder ID",
+            "example": 1
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Reminder name",
+            "example": "Buy groceries"
           },
           "status": {
             "type": "string",
+            "description": "Reminder status",
             "enum": [
+              "IDEA",
+              "BACKLOG",
               "IN_PROGRESS",
               "DONE",
-              "PAUSED"
+              "PAUSED",
+              "CANCELED"
             ]
           },
           "priority": {
             "type": "string",
+            "description": "Reminder priority",
             "enum": [
               "HIGH",
               "MIDDLE",
@@ -1476,10 +1532,13 @@
           },
           "reminderDateTime": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Date and time when the reminder should trigger",
+            "example": "2026-06-28T10:00:00"
           },
           "type": {
             "type": "string",
+            "description": "Reminder recurrence type",
             "enum": [
               "ONCE",
               "REPEATABLE"
@@ -1487,11 +1546,15 @@
           },
           "createdTs": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Timestamp when the reminder was created",
+            "example": "2026-06-27T15:30:00"
           },
           "updatedTs": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Timestamp when the reminder was last updated",
+            "example": "2026-06-27T16:00:00"
           }
         },
         "required": [
@@ -1510,18 +1573,26 @@
         "description": "Request to create a new reminder",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Reminder name",
+            "example": "Buy groceries",
+            "minLength": 1
           },
           "status": {
             "type": "string",
+            "description": "Reminder status",
             "enum": [
+              "IDEA",
+              "BACKLOG",
               "IN_PROGRESS",
               "DONE",
-              "PAUSED"
+              "PAUSED",
+              "CANCELED"
             ]
           },
           "priority": {
             "type": "string",
+            "description": "Reminder priority",
             "enum": [
               "HIGH",
               "MIDDLE",
@@ -1530,10 +1601,13 @@
           },
           "reminderDateTime": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Date and time when the reminder should trigger",
+            "example": "2026-06-28T10:00:00"
           },
           "type": {
             "type": "string",
+            "description": "Reminder recurrence type",
             "enum": [
               "ONCE",
               "REPEATABLE"
@@ -1547,6 +1621,19 @@
           "status",
           "type"
         ]
+      },
+      "RefreshReminderRq": {
+        "type": "object",
+        "description": "Request to refresh a reminder's updated timestamp",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Reminder ID",
+            "example": 1,
+            "minimum": 1
+          }
+        }
       },
       "LinkDto": {
         "type": "object",
@@ -1836,59 +1923,32 @@
           }
         }
       },
-      "ApiResponseListReminderRs": {
-        "type": "object",
-        "properties": {
-          "isSuccess": {
-            "type": "boolean"
-          },
-          "errorMessage": {
-            "type": "string"
-          },
-          "errorType": {
-            "type": "string"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ReminderRs"
-            }
-          }
-        }
-      },
-      "ApiResponseListBeforeReminderRs": {
-        "type": "object",
-        "properties": {
-          "isSuccess": {
-            "type": "boolean"
-          },
-          "errorMessage": {
-            "type": "string"
-          },
-          "errorType": {
-            "type": "string"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BeforeReminderRs"
-            }
-          }
-        }
-      },
       "BeforeReminderRs": {
         "type": "object",
+        "description": "Response containing reminder information with days remaining before the event",
         "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Riminder id",
+            "example": 1
+          },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Reminder name",
+            "example": "Buy groceries"
           },
           "reminderDateTime": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Date and time when the reminder triggers",
+            "example": "2026-06-28T10:00:00"
           },
           "daysBeforeEvent": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "description": "Number of days remaining before the event",
+            "example": 1
           }
         }
       },

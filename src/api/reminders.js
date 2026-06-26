@@ -66,3 +66,13 @@ export const deleteReminder = async (id) => {
     throw error;
   }
 };
+
+export const refreshReminder = async (id) => {
+  try {
+    const response = await apiClient.post('/v1/reminder/refresh', { id });
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при обновлении напоминания:', error);
+    throw error;
+  }
+};
