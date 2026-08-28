@@ -47,6 +47,9 @@ onMounted(async () => {
         <router-link to="/weekly-tasks" class="nav-button">
           📊 Еженедельные задачи
         </router-link>
+        <router-link to="/projects" class="nav-button nav-button-projects">
+          📁 Проекты
+        </router-link>
         <router-link to="/tasks" class="nav-button nav-button-tasks">
           📝 Задачи
         </router-link>
@@ -149,6 +152,14 @@ onMounted(async () => {
 
 .nav-button-tasks {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.nav-button-projects {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.nav-button-projects:hover {
+  box-shadow: 0 6px 20px rgba(67, 233, 123, 0.4);
 }
 
 .nav-button-purchases {
