@@ -16,8 +16,6 @@ FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-RUN apk add --no-cache openssl
-
 ENV BACKEND_URL=http://192.168.1.79:8102
 
 COPY nginx.conf.template /etc/nginx/conf.d/default.conf.template
