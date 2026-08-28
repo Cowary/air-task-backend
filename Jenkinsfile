@@ -38,8 +38,6 @@ pipeline {
 
     // Переменные окружения
     environment {
-        DOCKER_IMAGE = "${params.DOCKER_REGISTRY}/${params.IMAGE_NAME}"
-
         // === Docker Registry (Forgejo) ===
         REGISTRY        = '192.168.1.77:3002'
         REGISTRY_USER   = 'cowary'
@@ -47,9 +45,8 @@ pipeline {
 
         // === Image Names & Tags ===
         IMAGE_NAME      = 'air-task-front'
-        IMAGE_TAG       = 'latest'
+        IMAGE_TAG       = "${params.DOCKER_TAG}"
         FULL_IMAGE      = "${REGISTRY}/${REGISTRY_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
-        DHUB_IMAGE      = "${DHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
     }
 
     // Этапы сборки
@@ -76,7 +73,7 @@ pipeline {
         // Сборка Docker образа
         stage('Build Docker Image') {
             steps {
-                echo "Сборка образа ${DOCKER_IMAGE}:${params.DOCKER_TAG}..."
+                echo "Сборка образа ${IMAGE_NAME}:${IMAGE_TAG}..."
                 sh """
                     docker build \
                         -t ${IMAGE_NAME}:${IMAGE_TAG} \
@@ -154,8 +151,8 @@ pipeline {
             steps {
                 echo 'Очистка локальных образов...'
                 sh """
-                    docker rmi ${DOCKER_IMAGE}:${params.DOCKER_TAG} || true
-                    docker rmi ${DOCKER_IMAGE}:${env.BUILD_NUMBER} || true
+                    docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true
+                    docker rmi ${IMAGE_NAME}:${env.BUILD_NUMBER} || true
                 """
             }
         }
