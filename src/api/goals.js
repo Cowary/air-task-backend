@@ -76,7 +76,7 @@ export const deleteGoal = async (id) => {
 /**
  * Меняет только статус выполнения цели
  *
- * API endpoint: PATCH /api/goal/v1/{id}/status
+ * API endpoint: POST /api/goal/v1/{id}/status
  *
  * @param {number} id - ID цели
  * @param {boolean} isCompleted - Новый статус выполнения
@@ -84,7 +84,7 @@ export const deleteGoal = async (id) => {
  */
 export const updateGoalStatus = async (id, isCompleted) => {
   try {
-    const response = await apiClient.patch(`/goal/v1/${id}/status`, {
+    const response = await apiClient.post(`/goal/v1/${id}/status`, {
       isCompleted: !!isCompleted
     });
     return response.data;

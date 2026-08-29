@@ -178,7 +178,7 @@
           "Project Management"
         ],
         "summary": "Get project by ID",
-        "description": "Returns project with specified ID, including its weekly tasks, tasks and goals",
+        "description": "Returns project with specified ID, including its weekly tasks, tasks with their sub-tasks (steps) and goals",
         "operationId": "getProjectById",
         "parameters": [
           {
@@ -493,13 +493,65 @@
         }
       }
     },
+    "/api/v1/task/{id}/subtask/{subTaskId}/toggle": {
+      "post": {
+        "tags": [
+          "Task Management"
+        ],
+        "summary": "Toggle sub-task completion",
+        "description": "Switches the completion flag of the specified sub-task of a task",
+        "operationId": "toggleSubTask",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "subTaskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sub-task completion flag successfully switched",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task or sub-task not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiRsTaskResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/task/update": {
       "post": {
         "tags": [
           "Task Management"
         ],
         "summary": "Update a task",
-        "description": "Updates task information with the specified ID",
+        "description": "Updates task information with the specified ID; sub-tasks are omitted when null, replaced by id when a list is provided",
         "operationId": "update",
         "requestBody": {
           "content": {
@@ -531,7 +583,7 @@
           "Task Management"
         ],
         "summary": "Create a new task",
-        "description": "Creates a new task in the system",
+        "description": "Creates a new task in the system, optionally along with its sub-tasks",
         "operationId": "save",
         "requestBody": {
           "content": {
@@ -921,6 +973,89 @@
         }
       }
     },
+    "/api/goal/v1/{id}/status": {
+      "post": {
+        "tags": [
+          "Goal Management"
+        ],
+        "summary": "Change goal completion status",
+        "description": "Updates only the completion status of the goal with the specified ID. Returns 404 if the goal does not exist.",
+        "operationId": "updateGoalStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoalStatusUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Goal status successfully updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalResponse"
+                },
+                "example": {
+                  "id": 30,
+                  "name": "Release 2.8.0",
+                  "project": {
+                    "id": 1,
+                    "name": "Website Redesign"
+                  },
+                  "isCompleted": true,
+                  "createdTs": "2026-08-29T10:30:00",
+                  "updatedTs": "2026-08-29T12:00:00"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request — validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiRs"
+                },
+                "example": {
+                  "isSuccess": false,
+                  "errorType": "VALIDATION_ERROR",
+                  "errorMessage": "isCompleted: must not be null"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Goal not found with the specified ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiRs"
+                },
+                "example": {
+                  "isSuccess": false,
+                  "errorMessage": "Goal not found with id: 30"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/completed-weekly/v1": {
       "post": {
         "tags": [
@@ -998,89 +1133,6 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/AuthResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/goal/v1/{id}/status": {
-      "patch": {
-        "tags": [
-          "Goal Management"
-        ],
-        "summary": "Change goal completion status",
-        "description": "Updates only the completion status of the goal with the specified ID. Returns 404 if the goal does not exist.",
-        "operationId": "updateGoalStatus",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GoalStatusUpdateRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Goal status successfully updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GoalResponse"
-                },
-                "example": {
-                  "id": 30,
-                  "name": "Release 2.8.0",
-                  "project": {
-                    "id": 1,
-                    "name": "Website Redesign"
-                  },
-                  "isCompleted": true,
-                  "createdTs": "2026-08-29T10:30:00",
-                  "updatedTs": "2026-08-29T12:00:00"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request — validation failed",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiRs"
-                },
-                "example": {
-                  "isSuccess": false,
-                  "errorType": "VALIDATION_ERROR",
-                  "errorMessage": "isCompleted: must not be null"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Goal not found with the specified ID",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiRs"
-                },
-                "example": {
-                  "isSuccess": false,
-                  "errorMessage": "Goal not found with id: 30"
                 }
               }
             }
@@ -1438,7 +1490,7 @@
           "Project Management"
         ],
         "summary": "Get all projects",
-        "description": "Returns a list of all projects in the system, each including its weekly tasks, tasks and goals",
+        "description": "Returns a list of all projects in the system, each including its weekly tasks, tasks with their sub-tasks (steps) and goals",
         "operationId": "getAllProjects",
         "responses": {
           "200": {
@@ -1930,6 +1982,31 @@
           }
         }
       },
+      "SubTaskDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "isCompleted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "position"
+        ]
+      },
       "TaskInfo": {
         "type": "object",
         "description": "Task linked to the project",
@@ -1972,6 +2049,10 @@
               "CANCELED"
             ],
             "example": "BACKLOG"
+          },
+          "subTasks": {
+            "$ref": "#/components/schemas/SubTaskDto",
+            "description": "Task steps (sub-tasks), ordered by position"
           },
           "createdTs": {
             "type": "string",
@@ -2181,33 +2262,6 @@
           "name"
         ]
       },
-      "TaskUpdateRequest": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "projectName": {
-            "type": "string"
-          },
-          "priority": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
       "ProjectInfo": {
         "type": "object",
         "properties": {
@@ -2245,8 +2299,72 @@
           },
           "description": {
             "type": "string"
+          },
+          "subTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubTaskDto"
+            }
           }
         }
+      },
+      "ApiRsTaskResponse": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "errorType": {
+            "type": "string",
+            "enum": [
+              "VALIDATION_ERROR",
+              "BAD_REQUEST",
+              "NOT_FOUND",
+              "DATA_INTEGRITY_ERROR",
+              "ACCESS_DENIED",
+              "INTERNAL_ERROR"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/TaskResponse"
+          }
+        }
+      },
+      "TaskUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "subTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubTaskDto"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ]
       },
       "TaskCreateRequest": {
         "type": "object",
@@ -2266,6 +2384,12 @@
           },
           "description": {
             "type": "string"
+          },
+          "subTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubTaskDto"
+            }
           }
         },
         "required": [
@@ -2592,6 +2716,20 @@
           "projectId"
         ]
       },
+      "GoalStatusUpdateRequest": {
+        "type": "object",
+        "description": "Request body for changing the completion status of a project goal",
+        "properties": {
+          "isCompleted": {
+            "type": "boolean",
+            "description": "New completion status of the goal",
+            "example": true
+          }
+        },
+        "required": [
+          "isCompleted"
+        ]
+      },
       "CompletedWeeklyCreateRequest": {
         "type": "object",
         "properties": {
@@ -2705,20 +2843,6 @@
             "format": "int64"
           }
         }
-      },
-      "GoalStatusUpdateRequest": {
-        "type": "object",
-        "description": "Request body for changing the completion status of a project goal",
-        "properties": {
-          "isCompleted": {
-            "type": "boolean",
-            "description": "New completion status of the goal",
-            "example": true
-          }
-        },
-        "required": [
-          "isCompleted"
-        ]
       },
       "ApiRsListWeeklyResponse": {
         "type": "object",

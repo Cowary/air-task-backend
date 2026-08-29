@@ -69,6 +69,34 @@
                 </span>
               </div>
               <div class="card-title">{{ task.name }}</div>
+              <div v-if="task.subTasks?.length" class="card-subtasks">
+                <button
+                  type="button"
+                  class="card-subtask-summary"
+                  @click="toggleExpand(task.id)"
+                >
+                  <span
+                    class="card-subtask-count"
+                    :class="{ done: subTaskProgress(task).allDone }"
+                  >
+                    ✓ {{ subTaskProgress(task).done }}/{{ subTaskProgress(task).total }}
+                  </span>
+                  <span class="card-subtask-bar">
+                    <span
+                      class="card-subtask-bar-fill"
+                      :style="{ width: subTaskProgress(task).percent + '%' }"
+                    ></span>
+                  </span>
+                  <span class="card-subtask-arrow">{{ isExpanded(task.id) ? '▲' : '▼' }}</span>
+                </button>
+                <div v-if="isExpanded(task.id)" class="card-subtask-list">
+                  <SubTasksChecklist
+                    compact
+                    :task="task"
+                    @updated="updatedTask => emit('subtask-updated', updatedTask)"
+                  />
+                </div>
+              </div>
               <div class="card-footer">
                 <button
                   class="card-edit-btn"
@@ -93,15 +121,31 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, shallowRef, computed } from 'vue'
 import draggable from 'vuedraggable'
+import SubTasksChecklist from './SubTasksChecklist.vue'
+import { progress } from '../utils/subtasks.js'
 
 const props = defineProps({
   tasks: { type: Array, required: true },
   showToolbar: { type: Boolean, default: true }
 })
 
-const emit = defineEmits(['update-status', 'edit-task', 'create-task'])
+const emit = defineEmits(['update-status', 'edit-task', 'create-task', 'subtask-updated'])
+
+const expandedIds = shallowRef({})
+
+function toggleExpand(id) {
+  expandedIds.value = { ...expandedIds.value, [id]: !expandedIds.value[id] }
+}
+
+function isExpanded(id) {
+  return !!expandedIds.value[id]
+}
+
+function subTaskProgress(task) {
+  return progress(task)
+}
 
 const filterProject = ref('')
 const filterStatus = ref('')
@@ -311,6 +355,69 @@ function onDragChange(evt, targetStatus) {
   color: var(--text-primary);
   line-height: 1.4;
   word-break: break-word;
+}
+
+.card-subtasks {
+  margin-top: 8px;
+}
+
+.card-subtask-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-secondary);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.card-subtask-summary:hover {
+  border-color: var(--accent-primary);
+}
+
+.card-subtask-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.card-subtask-count.done {
+  color: var(--accent-green);
+}
+
+.card-subtask-bar {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background-color: var(--border-color);
+  overflow: hidden;
+}
+
+.card-subtask-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background-color: var(--accent-primary);
+  transition: width 0.3s ease;
+}
+
+.card-subtask-arrow {
+  font-size: 10px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.card-subtask-list {
+  margin-top: 6px;
+  padding: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-secondary);
 }
 
 .card-footer {

@@ -94,6 +94,28 @@
 
             <div class="task-name">{{ task.name }}</div>
 
+            <div v-if="task.subTasks?.length" class="task-subtasks">
+              <button
+                type="button"
+                class="subtask-summary"
+                @click="toggleExpand(task.id)"
+              >
+                <span class="subtask-count" :class="{ 'subtask-done-all': subtaskProgress(task).allDone }">
+                  ✓ {{ subtaskProgress(task).done }}/{{ subtaskProgress(task).total }}
+                </span>
+                <span class="subtask-bar">
+                  <span
+                    class="subtask-bar-fill"
+                    :style="{ width: subtaskProgress(task).percent + '%' }"
+                  ></span>
+                </span>
+                <span class="subtask-toggle">{{ expandedTasks[task.id] ? 'Скрыть шаги ▲' : 'Шаги ▼' }}</span>
+              </button>
+              <div v-if="expandedTasks[task.id]" class="subtask-expanded">
+                <SubTasksChecklist :task="task" @updated="handleSubTaskUpdated" />
+              </div>
+            </div>
+
             <div v-if="task.description" class="task-description">
               {{ task.description }}
             </div>
@@ -123,6 +145,7 @@
           @update-status="handleKanbanUpdate"
           @edit-task="openEditModal"
           @create-task="openCreateModal"
+          @subtask-updated="handleSubTaskUpdated"
         />
       </template>
     </div>
@@ -216,6 +239,10 @@
             ></textarea>
           </div>
 
+          <div class="form-group">
+            <SubTasksEditor v-model="taskForm.subTasks" />
+          </div>
+
           <div class="form-actions">
             <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
             <button type="submit" class="save-btn" :disabled="saving">
@@ -254,13 +281,18 @@
 import { getTasks, createTask, updateTask, deleteTask, getAllProjects, createProject } from '../api/tasks.js';
 import ProjectModal from '../components/ProjectModal.vue';
 import KanbanBoard from '../components/KanbanBoard.vue';
+import SubTasksChecklist from '../components/SubTasksChecklist.vue';
+import SubTasksEditor from '../components/SubTasksEditor.vue';
+import { progress, normalize, toPayload, validate } from '../utils/subtasks.js';
 
 export default {
   name: 'TasksPage',
 
   components: {
     ProjectModal,
-    KanbanBoard
+    KanbanBoard,
+    SubTasksChecklist,
+    SubTasksEditor
   },
 
   data() {
@@ -288,8 +320,12 @@ export default {
         projectName: '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS',
-        description: ''
+        description: '',
+        subTasks: []
       },
+
+      // Раскрытые чек-листы шагов (id -> boolean)
+      expandedTasks: {},
 
       // Модальное окно удаления
       showDeleteModal: false,
@@ -405,7 +441,8 @@ export default {
         projectName: this.projects.length > 0 ? this.projects[0].name : '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS',
-        description: ''
+        description: '',
+        subTasks: []
       };
       this.showTaskModal = true;
     },
@@ -417,7 +454,8 @@ export default {
         projectName: task.project?.name || '',
         priority: task.priority,
         status: task.status,
-        description: task.description || ''
+        description: task.description || '',
+        subTasks: normalize(task.subTasks)
       };
       this.showTaskModal = true;
     },
@@ -430,13 +468,21 @@ export default {
         projectName: this.projects.length > 0 ? this.projects[0].name : '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS',
-        description: ''
+        description: '',
+        subTasks: []
       };
     },
 
     async saveTask() {
       if (!this.taskForm.name || !this.taskForm.projectName) {
         alert('Пожалуйста, заполните все обязательные поля');
+        return;
+      }
+
+      const subTasks = toPayload(this.taskForm.subTasks);
+      const validationError = validate(subTasks);
+      if (validationError) {
+        alert(validationError);
         return;
       }
 
@@ -452,7 +498,8 @@ export default {
             projectName: this.taskForm.projectName,
             priority: this.taskForm.priority,
             status: this.taskForm.status,
-            description: this.taskForm.description
+            description: this.taskForm.description,
+            subTasks
           });
         } else {
           response = await createTask({
@@ -460,7 +507,8 @@ export default {
             projectName: this.taskForm.projectName,
             priority: this.taskForm.priority,
             status: this.taskForm.status,
-            description: this.taskForm.description
+            description: this.taskForm.description,
+            ...(subTasks.length ? { subTasks } : {})
           });
         }
 
@@ -550,6 +598,20 @@ export default {
         alert('Ошибка при обновлении статуса');
         console.error('Ошибка обновления статуса:', err);
       }
+    },
+
+    subtaskProgress(task) {
+      return progress(task);
+    },
+
+    toggleExpand(id) {
+      this.expandedTasks = { ...this.expandedTasks, [id]: !this.expandedTasks[id] };
+    },
+
+    handleSubTaskUpdated(updatedTask) {
+      this.tasks = this.tasks.map(t =>
+        t.id === updatedTask.id ? updatedTask : t
+      );
     },
 
     openProjectModal() {
@@ -829,6 +891,70 @@ h1 {
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.task-subtasks {
+  margin-bottom: 10px;
+}
+
+.subtask-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.subtask-summary:hover {
+  border-color: var(--accent-primary);
+}
+
+.subtask-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.subtask-count.subtask-done-all {
+  color: var(--accent-green);
+}
+
+.subtask-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--border-color);
+  overflow: hidden;
+}
+
+.subtask-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background-color: var(--accent-primary);
+  transition: width 0.3s ease;
+}
+
+.subtask-toggle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.subtask-expanded {
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
 }
 
 .task-meta {
