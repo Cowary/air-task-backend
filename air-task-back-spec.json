@@ -1684,7 +1684,7 @@
             "description": "Priority level of the weekly task",
             "enum": [
               "LOW",
-              "MEDIUM",
+              "MIDDLE",
               "HIGH"
             ]
           },
@@ -1719,6 +1719,7 @@
             "enum": [
               "VALIDATION_ERROR",
               "BAD_REQUEST",
+              "NOT_FOUND",
               "DATA_INTEGRITY_ERROR",
               "ACCESS_DENIED",
               "INTERNAL_ERROR"
@@ -1771,7 +1772,7 @@
             "description": "Task priority level",
             "enum": [
               "LOW",
-              "MEDIUM",
+              "MIDDLE",
               "HIGH"
             ]
           },
@@ -2124,6 +2125,7 @@
             "enum": [
               "VALIDATION_ERROR",
               "BAD_REQUEST",
+              "NOT_FOUND",
               "DATA_INTEGRITY_ERROR",
               "ACCESS_DENIED",
               "INTERNAL_ERROR"
@@ -2150,16 +2152,15 @@
           },
           "projectName": {
             "type": "string",
-            "description": "Name of the project this task belongs to",
-            "example": "Development",
-            "minLength": 1
+            "description": "Name of the project this task belongs to. If not specified, the task is assigned to the default project 'Без проекта'",
+            "example": "Development"
           },
           "priority": {
             "type": "string",
             "description": "Task priority level",
             "enum": [
               "LOW",
-              "MEDIUM",
+              "MIDDLE",
               "HIGH"
             ],
             "example": "HIGH"
@@ -2177,8 +2178,7 @@
         },
         "required": [
           "count",
-          "name",
-          "projectName"
+          "name"
         ]
       },
       "TaskUpdateRequest": {
@@ -2256,8 +2256,7 @@
             "minLength": 1
           },
           "projectName": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "priority": {
             "type": "string"
@@ -2272,7 +2271,6 @@
         "required": [
           "name",
           "priority",
-          "projectName",
           "status"
         ]
       },
@@ -2624,6 +2622,7 @@
             "enum": [
               "VALIDATION_ERROR",
               "BAD_REQUEST",
+              "NOT_FOUND",
               "DATA_INTEGRITY_ERROR",
               "ACCESS_DENIED",
               "INTERNAL_ERROR"
@@ -2735,6 +2734,7 @@
             "enum": [
               "VALIDATION_ERROR",
               "BAD_REQUEST",
+              "NOT_FOUND",
               "DATA_INTEGRITY_ERROR",
               "ACCESS_DENIED",
               "INTERNAL_ERROR"
@@ -2784,6 +2784,7 @@
             "enum": [
               "VALIDATION_ERROR",
               "BAD_REQUEST",
+              "NOT_FOUND",
               "DATA_INTEGRITY_ERROR",
               "ACCESS_DENIED",
               "INTERNAL_ERROR"
@@ -2914,6 +2915,7 @@
             "enum": [
               "VALIDATION_ERROR",
               "BAD_REQUEST",
+              "NOT_FOUND",
               "DATA_INTEGRITY_ERROR",
               "ACCESS_DENIED",
               "INTERNAL_ERROR"
@@ -2941,6 +2943,7 @@
             "enum": [
               "VALIDATION_ERROR",
               "BAD_REQUEST",
+              "NOT_FOUND",
               "DATA_INTEGRITY_ERROR",
               "ACCESS_DENIED",
               "INTERNAL_ERROR"

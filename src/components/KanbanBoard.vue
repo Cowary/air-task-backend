@@ -1,6 +1,6 @@
 <template>
   <div class="kanban-wrapper">
-    <div class="toolbar">
+    <div v-if="showToolbar" class="toolbar">
       <div class="filter-group">
         <label for="kanbanFilterProject">Проект:</label>
         <select id="kanbanFilterProject" v-model="filterProject">
@@ -97,7 +97,8 @@ import { ref, computed } from 'vue'
 import draggable from 'vuedraggable'
 
 const props = defineProps({
-  tasks: { type: Array, required: true }
+  tasks: { type: Array, required: true },
+  showToolbar: { type: Boolean, default: true }
 })
 
 const emit = defineEmits(['update-status', 'edit-task', 'create-task'])

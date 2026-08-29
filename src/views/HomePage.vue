@@ -44,6 +44,9 @@ onMounted(async () => {
       </div>
 
       <div class="navigation">
+        <router-link to="/workspace" class="nav-button nav-button-workspace">
+          🚀 Рабочее место
+        </router-link>
         <router-link to="/weekly-tasks" class="nav-button">
           📊 Еженедельные задачи
         </router-link>
@@ -148,6 +151,15 @@ onMounted(async () => {
   font-size: 1.1rem;
   font-weight: 600;
   transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.nav-button-workspace {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  color: #333;
+}
+
+.nav-button-workspace:hover {
+  box-shadow: 0 6px 20px rgba(250, 112, 154, 0.45);
 }
 
 .nav-button-tasks {
