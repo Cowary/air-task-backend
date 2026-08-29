@@ -3,6 +3,7 @@ import HomePage from '../views/HomePage.vue'
 import WeeklyTaskTracker from '../components/WeeklyTaskTracker.vue'
 import TasksPage from '../views/TasksPage.vue'
 import ProjectsPage from '../views/ProjectsPage.vue'
+import WorkspacePage from '../views/WorkspacePage.vue'
 import PurchasesPage from '../views/PurchasesPage.vue'
 import RemindersPage from '../views/RemindersPage.vue'
 import LoginPage from '../views/LoginPage.vue'
@@ -20,6 +21,11 @@ const routes = [
     path: '/',
     name: 'home',
     component: HomePage
+  },
+  {
+    path: '/workspace',
+    name: 'workspace',
+    component: WorkspacePage
   },
   {
     path: '/weekly-tasks',
