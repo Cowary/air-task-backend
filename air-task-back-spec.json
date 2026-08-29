@@ -765,8 +765,29 @@
           "Weekly Task Management"
         ],
         "summary": "Get all weekly tasks",
-        "description": "Returns a list of all weekly tasks in the system",
+        "description": "Returns a list of all weekly tasks in the system, optionally filtered by an array of statuses",
         "operationId": "getAllWeeklyTasks",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "IDEA",
+                  "BACKLOG",
+                  "IN_PROGRESS",
+                  "DONE",
+                  "PAUSED",
+                  "CANCELED"
+                ]
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -851,8 +872,29 @@
           "Task Management"
         ],
         "summary": "Get all tasks",
-        "description": "Returns a list of all tasks in the system",
+        "description": "Returns a list of all tasks in the system, optionally filtered by an array of statuses",
         "operationId": "list",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "IDEA",
+                  "BACKLOG",
+                  "IN_PROGRESS",
+                  "DONE",
+                  "PAUSED",
+                  "CANCELED"
+                ]
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of tasks successfully retrieved",

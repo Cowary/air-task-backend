@@ -49,11 +49,18 @@ export const createProject = async (projectData) => {
  *
  * API endpoint: GET /v1/task/list
  *
+ * @param {string[]} [statuses] - Опциональный массив статусов для фильтрации (IDEA, BACKLOG, IN_PROGRESS, DONE, PAUSED, CANCELED)
  * @returns {Promise} Промис с данными от сервера
  */
-export const getTasks = async () => {
+export const getTasks = async (statuses = null) => {
   try {
-    const response = await apiClient.get('/v1/task/list');
+    const config = statuses?.length
+      ? {
+          params: { status: statuses },
+          paramsSerializer: { status: { indexes: null } }
+        }
+      : {};
+    const response = await apiClient.get('/v1/task/list', config);
     return response.data;
   } catch (error) {
     console.error('Ошибка при получении списка задач:', error);
