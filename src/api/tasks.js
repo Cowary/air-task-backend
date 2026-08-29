@@ -135,20 +135,14 @@ export const updateTask = async (taskData) => {
 /**
  * Удаляет задачу
  *
- * API endpoint: DELETE /v1/task
+ * API endpoint: DELETE /v1/task/{id}
  *
  * @param {number} id - ID задачи для удаления
  * @returns {Promise} Промис с данными от сервера
  */
 export const deleteTask = async (id) => {
   try {
-    const requestBody = {
-      id: id
-    };
-
-    const response = await apiClient.delete('/v1/task', {
-      data: requestBody
-    });
+    const response = await apiClient.delete(`/v1/task/${id}`);
     return response.data;
   } catch (error) {
     console.error('Ошибка при удалении задачи:', error);
