@@ -33,6 +33,27 @@
 
         <div class="detail-section">
           <h4>
+            🎯 Цели
+            <span class="section-count">{{ completedGoalsCount }}/{{ goalList.length }}</span>
+          </h4>
+          <div v-if="goalList.length === 0" class="section-empty">Нет целей</div>
+          <div v-else class="goal-checklist">
+            <label v-for="goal in goalList" :key="goal.id" class="goal-check-item">
+              <input
+                type="checkbox"
+                :checked="goal.isCompleted"
+                :disabled="togglingGoals.includes(goal.id)"
+                @change="toggleGoal(goal, $event)"
+              />
+              <span class="goal-check-name" :class="{ 'goal-done': goal.isCompleted }">
+                {{ goal.name }}
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>
             📊 Еженедельные задачи
             <span class="section-count">{{ weeklyList.length }}</span>
           </h4>
@@ -109,6 +130,7 @@
 
 <script>
 import { getProjectById } from '../api/projects.js';
+import { updateGoalStatus } from '../api/goals.js';
 
 export default {
   name: 'ProjectDetailModal',
@@ -130,7 +152,8 @@ export default {
     return {
       project: null,
       loading: false,
-      error: null
+      error: null,
+      togglingGoals: []
     };
   },
 
@@ -141,6 +164,14 @@ export default {
 
     taskList() {
       return this.project?.taskList || [];
+    },
+
+    goalList() {
+      return this.project?.goalList || [];
+    },
+
+    completedGoalsCount() {
+      return this.goalList.filter(g => g.isCompleted).length;
     }
   },
 
@@ -176,6 +207,29 @@ export default {
 
     closeModal() {
       this.$emit('close');
+    },
+
+    async toggleGoal(goal, event) {
+      const newStatus = event.target.checked;
+
+      this.togglingGoals.push(goal.id);
+
+      try {
+        const response = await updateGoalStatus(goal.id, newStatus);
+
+        if (response.isSuccess) {
+          goal.isCompleted = newStatus;
+        } else {
+          event.target.checked = !newStatus;
+          alert('Не удалось изменить статус цели: ' + (response.errorMessage || 'Неизвестная ошибка'));
+        }
+      } catch (err) {
+        event.target.checked = !newStatus;
+        alert('Ошибка при изменении статуса цели');
+        console.error('Ошибка изменения статуса цели:', err);
+      } finally {
+        this.togglingGoals = this.togglingGoals.filter(id => id !== goal.id);
+      }
     },
 
     getStatusLabel(status) {
@@ -396,6 +450,50 @@ export default {
   padding: 10px;
   background-color: var(--bg-tertiary);
   border-radius: 6px;
+}
+
+.goal-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.goal-check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.goal-check-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.goal-check-item input[type="checkbox"] {
+  accent-color: var(--accent-green);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.goal-check-item input[type="checkbox"]:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.goal-check-name {
+  font-size: 14px;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.goal-check-name.goal-done {
+  text-decoration: line-through;
+  color: var(--text-muted);
 }
 
 .detail-table {

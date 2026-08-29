@@ -36,6 +36,36 @@
           </div>
         </div>
 
+        <!-- Цели проекта -->
+        <div class="link-section">
+          <div class="link-section-header">
+            <span class="link-section-title">🎯 Цели</span>
+            <span class="link-count">{{ goals.length }}</span>
+            <button type="button" @click="addGoal" class="add-goal-btn">+ Добавить цель</button>
+          </div>
+          <div v-if="goals.length === 0" class="link-empty">Нет целей. Добавьте первую цель проекта.</div>
+          <div v-else class="goal-list">
+            <div v-for="(goal, index) in goals" :key="goal.key" class="goal-item">
+              <input type="checkbox" v-model="goal.isCompleted" class="goal-checkbox" title="Цель достигнута" />
+              <input
+                v-model.trim="goal.name"
+                type="text"
+                class="goal-name-input"
+                maxlength="100"
+                placeholder="Название цели"
+              />
+              <button
+                type="button"
+                @click="removeGoal(index)"
+                class="goal-remove-btn"
+                title="Удалить цель"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Привязка еженедельных задач -->
         <div class="link-section">
           <div class="link-section-header">
@@ -116,6 +146,7 @@
 import { createProject, updateProject } from '../api/projects.js';
 import { getAllWeeklyTasks } from '../api/weeklyTasks.js';
 import { getTasks } from '../api/tasks.js';
+import { createGoal, updateGoal, deleteGoal } from '../api/goals.js';
 
 const PROJECT_FILTER_STATUSES = ['IDEA', 'BACKLOG', 'IN_PROGRESS', 'PAUSED'];
 
@@ -150,6 +181,9 @@ export default {
       taskSearch: '',
       loadingWeekly: false,
       loadingTasks: false,
+      goals: [],
+      initialGoals: [],
+      goalKeyCounter: 0,
       saving: false
     };
   },
@@ -191,6 +225,12 @@ export default {
         };
         this.selectedWeeklyIds = (this.project.weeklyList || []).map(w => w.id);
         this.selectedTaskIds = (this.project.taskList || []).map(t => t.id);
+        this.goals = (this.project.goalList || []).map(g => ({
+          key: ++this.goalKeyCounter,
+          id: g.id,
+          name: g.name || '',
+          isCompleted: !!g.isCompleted
+        }));
       } else {
         this.form = {
           name: '',
@@ -199,9 +239,28 @@ export default {
         };
         this.selectedWeeklyIds = [];
         this.selectedTaskIds = [];
+        this.goals = [];
       }
+      this.initialGoals = this.goals.map(g => ({
+        id: g.id,
+        name: g.name,
+        isCompleted: g.isCompleted
+      }));
       this.weeklySearch = '';
       this.taskSearch = '';
+    },
+
+    addGoal() {
+      this.goals.push({
+        key: ++this.goalKeyCounter,
+        id: null,
+        name: '',
+        isCompleted: false
+      });
+    },
+
+    removeGoal(index) {
+      this.goals.splice(index, 1);
     },
 
     async loadOptions() {
@@ -245,9 +304,11 @@ export default {
 
       try {
         let response;
+        let projectId;
 
         if (this.isEdit) {
-          response = await updateProject(this.project.id, {
+          projectId = this.project.id;
+          response = await updateProject(projectId, {
             name: this.form.name,
             status: this.form.status,
             priority: this.form.priority,
@@ -258,9 +319,10 @@ export default {
           response = await createProject(this.form);
 
           if (response.isSuccess && response.data?.id) {
+            projectId = response.data.id;
             const hasLinks = this.selectedWeeklyIds.length > 0 || this.selectedTaskIds.length > 0;
             if (hasLinks) {
-              response = await updateProject(response.data.id, {
+              response = await updateProject(projectId, {
                 name: this.form.name,
                 status: this.form.status,
                 priority: this.form.priority,
@@ -271,18 +333,84 @@ export default {
           }
         }
 
-        if (response.isSuccess) {
-          this.$emit('saved', response.data);
-          this.closeModal();
-        } else {
+        if (!response.isSuccess) {
           alert('Не удалось сохранить проект: ' + (response.errorMessage || 'Неизвестная ошибка'));
+          return;
         }
+
+        if (projectId) {
+          const goalErrors = await this.saveGoals(projectId);
+          if (goalErrors.length > 0) {
+            alert('Проект сохранён, но с целями возникли ошибки:\n' + goalErrors.join('\n'));
+          }
+        }
+
+        this.$emit('saved', response.data);
+        this.closeModal();
       } catch (err) {
         alert('Ошибка при сохранении проекта');
         console.error('Ошибка сохранения проекта:', err);
       } finally {
         this.saving = false;
       }
+    },
+
+    async saveGoals(projectId) {
+      const errors = [];
+      const currentIds = new Set(
+        this.goals.filter(g => g.id != null).map(g => g.id)
+      );
+
+      for (const old of this.initialGoals) {
+        if (!currentIds.has(old.id)) {
+          try {
+            const res = await deleteGoal(old.id);
+            if (!res.isSuccess) {
+              errors.push(`Не удалось удалить цель «${old.name}»: ${res.errorMessage || 'ошибка'}`);
+            }
+          } catch (err) {
+            errors.push(`Ошибка при удалении цели «${old.name}»`);
+          }
+        }
+      }
+
+      for (const goal of this.goals) {
+        if (!goal.name) {
+          continue;
+        }
+
+        try {
+          if (goal.id == null) {
+            const res = await createGoal({
+              name: goal.name,
+              projectId,
+              isCompleted: goal.isCompleted
+            });
+            if (!res.isSuccess) {
+              errors.push(`Не удалось создать цель «${goal.name}»: ${res.errorMessage || 'ошибка'}`);
+            }
+          } else {
+            const original = this.initialGoals.find(g => g.id === goal.id);
+            const changed = !original
+              || original.name !== goal.name
+              || original.isCompleted !== goal.isCompleted;
+            if (changed) {
+              const res = await updateGoal(goal.id, {
+                name: goal.name,
+                projectId,
+                isCompleted: goal.isCompleted
+              });
+              if (!res.isSuccess) {
+                errors.push(`Не удалось обновить цель «${goal.name}»: ${res.errorMessage || 'ошибка'}`);
+              }
+            }
+          }
+        } catch (err) {
+          errors.push(`Ошибка при сохранении цели «${goal.name}»`);
+        }
+      }
+
+      return errors;
     }
   }
 };
@@ -494,6 +622,79 @@ export default {
   color: var(--text-muted);
   font-style: italic;
   padding: 8px 0;
+}
+
+/* Цели проекта */
+.add-goal-btn {
+  margin-left: auto;
+  padding: 5px 12px;
+  border: 1px dashed var(--accent-primary);
+  border-radius: 5px;
+  background-color: transparent;
+  color: var(--accent-primary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-goal-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.goal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.goal-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-checkbox {
+  accent-color: var(--accent-green);
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.goal-name-input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.goal-name-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.goal-remove-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}
+
+.goal-remove-btn:hover {
+  background-color: var(--accent-red-light);
 }
 
 .form-actions {
