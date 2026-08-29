@@ -47,14 +47,21 @@ export const completeWeeklyTask = async (weeklyEntityId) => {
 
 /**
  * Получает список всех недельных задач
- * 
+ *
  * API endpoint: GET /api/weekly/v1/list
- * 
+ *
+ * @param {string[]} [statuses] - Опциональный массив статусов для фильтрации (IDEA, BACKLOG, IN_PROGRESS, DONE, PAUSED, CANCELED)
  * @returns {Promise} Промис с данными от сервера
  */
-export const getAllWeeklyTasks = async () => {
+export const getAllWeeklyTasks = async (statuses = null) => {
   try {
-    const response = await apiClient.get('/weekly/v1/list');
+    const config = statuses?.length
+      ? {
+          params: { status: statuses },
+          paramsSerializer: { status: { indexes: null } }
+        }
+      : {};
+    const response = await apiClient.get('/weekly/v1/list', config);
     return response.data;
   } catch (error) {
     console.error('Ошибка при получении списка задач:', error);

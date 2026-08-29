@@ -117,6 +117,8 @@ import { createProject, updateProject } from '../api/projects.js';
 import { getAllWeeklyTasks } from '../api/weeklyTasks.js';
 import { getTasks } from '../api/tasks.js';
 
+const PROJECT_FILTER_STATUSES = ['IDEA', 'BACKLOG', 'IN_PROGRESS', 'PAUSED'];
+
 export default {
   name: 'ProjectFormModal',
 
@@ -207,7 +209,7 @@ export default {
       this.loadingTasks = true;
 
       try {
-        const weeklyResponse = await getAllWeeklyTasks();
+        const weeklyResponse = await getAllWeeklyTasks(PROJECT_FILTER_STATUSES);
         if (weeklyResponse.isSuccess) {
           this.weeklyOptions = weeklyResponse.data || [];
         }
@@ -218,7 +220,7 @@ export default {
       }
 
       try {
-        const taskResponse = await getTasks();
+        const taskResponse = await getTasks(PROJECT_FILTER_STATUSES);
         if (taskResponse.isSuccess) {
           this.taskOptions = taskResponse.data || [];
         }
