@@ -70,7 +70,45 @@
         <div class="link-section">
           <div class="link-section-header">
             <span class="link-section-title">📊 Еженедельные задачи</span>
-            <span class="link-count">{{ selectedWeeklyIds.length }}</span>
+            <span class="link-count">{{ selectedWeeklyIds.length + newWeeklies.length }}</span>
+            <button type="button" @click="addWeeklyDraft" class="add-goal-btn">+ Добавить задачу</button>
+          </div>
+          <div v-if="newWeeklies.length > 0" class="draft-list">
+            <div v-for="(draft, index) in newWeeklies" :key="draft.key" class="draft-item">
+              <span class="draft-badge">новая</span>
+              <input
+                v-model.trim="draft.name"
+                type="text"
+                class="goal-name-input"
+                maxlength="100"
+                placeholder="Название задачи"
+              />
+              <input
+                v-model.number="draft.count"
+                type="number"
+                min="1"
+                class="draft-count"
+                title="Раз в неделю"
+              />
+              <select v-model="draft.priority" class="draft-select" title="Приоритет">
+                <option value="LOW">Низкий</option>
+                <option value="MIDDLE">Средний</option>
+                <option value="HIGH">Высокий</option>
+              </select>
+              <select v-model="draft.status" class="draft-select" title="Статус">
+                <option value="IN_PROGRESS">В работе</option>
+                <option value="DONE">Выполнено</option>
+                <option value="PAUSED">На паузе</option>
+              </select>
+              <button
+                type="button"
+                @click="removeWeeklyDraft(index)"
+                class="goal-remove-btn"
+                title="Убрать"
+              >
+                🗑️
+              </button>
+            </div>
           </div>
           <input
             v-model.trim="weeklySearch"
@@ -103,7 +141,41 @@
         <div class="link-section">
           <div class="link-section-header">
             <span class="link-section-title">📝 Задачи</span>
-            <span class="link-count">{{ selectedTaskIds.length }}</span>
+            <span class="link-count">{{ selectedTaskIds.length + newTasks.length }}</span>
+            <button type="button" @click="addTaskDraft" class="add-goal-btn">+ Добавить задачу</button>
+          </div>
+          <div v-if="newTasks.length > 0" class="draft-list">
+            <div v-for="(draft, index) in newTasks" :key="draft.key" class="draft-item">
+              <span class="draft-badge">новая</span>
+              <input
+                v-model.trim="draft.name"
+                type="text"
+                class="goal-name-input"
+                maxlength="200"
+                placeholder="Название задачи"
+              />
+              <select v-model="draft.priority" class="draft-select" title="Приоритет">
+                <option value="HIGH">Высокий</option>
+                <option value="MIDDLE">Средний</option>
+                <option value="LOW">Низкий</option>
+              </select>
+              <select v-model="draft.status" class="draft-select" title="Статус">
+                <option value="IDEA">Идея</option>
+                <option value="BACKLOG">Бэклог</option>
+                <option value="IN_PROGRESS">В работе</option>
+                <option value="DONE">Выполнено</option>
+                <option value="PAUSED">На паузе</option>
+                <option value="CANCELED">Отменено</option>
+              </select>
+              <button
+                type="button"
+                @click="removeTaskDraft(index)"
+                class="goal-remove-btn"
+                title="Убрать"
+              >
+                🗑️
+              </button>
+            </div>
           </div>
           <input
             v-model.trim="taskSearch"
@@ -144,8 +216,8 @@
 
 <script>
 import { createProject, updateProject } from '../api/projects.js';
-import { getAllWeeklyTasks } from '../api/weeklyTasks.js';
-import { getTasks } from '../api/tasks.js';
+import { getAllWeeklyTasks, createWeeklyTask } from '../api/weeklyTasks.js';
+import { getTasks, createTask } from '../api/tasks.js';
 import { createGoal, updateGoal, deleteGoal } from '../api/goals.js';
 
 const PROJECT_FILTER_STATUSES = ['IDEA', 'BACKLOG', 'IN_PROGRESS', 'PAUSED'];
@@ -184,6 +256,9 @@ export default {
       goals: [],
       initialGoals: [],
       goalKeyCounter: 0,
+      newWeeklies: [],
+      newTasks: [],
+      itemKeyCounter: 0,
       saving: false
     };
   },
@@ -246,8 +321,37 @@ export default {
         name: g.name,
         isCompleted: g.isCompleted
       }));
+      this.newWeeklies = [];
+      this.newTasks = [];
       this.weeklySearch = '';
       this.taskSearch = '';
+    },
+
+    addWeeklyDraft() {
+      this.newWeeklies.push({
+        key: ++this.itemKeyCounter,
+        name: '',
+        count: 3,
+        priority: 'MIDDLE',
+        status: 'IN_PROGRESS'
+      });
+    },
+
+    removeWeeklyDraft(index) {
+      this.newWeeklies.splice(index, 1);
+    },
+
+    addTaskDraft() {
+      this.newTasks.push({
+        key: ++this.itemKeyCounter,
+        name: '',
+        priority: 'MIDDLE',
+        status: 'IDEA'
+      });
+    },
+
+    removeTaskDraft(index) {
+      this.newTasks.splice(index, 1);
     },
 
     addGoal() {
@@ -320,16 +424,6 @@ export default {
 
           if (response.isSuccess && response.data?.id) {
             projectId = response.data.id;
-            const hasLinks = this.selectedWeeklyIds.length > 0 || this.selectedTaskIds.length > 0;
-            if (hasLinks) {
-              response = await updateProject(projectId, {
-                name: this.form.name,
-                status: this.form.status,
-                priority: this.form.priority,
-                weeklyIds: this.selectedWeeklyIds,
-                taskIds: this.selectedTaskIds
-              });
-            }
           }
         }
 
@@ -338,11 +432,41 @@ export default {
           return;
         }
 
+        const errors = [];
+        const newWeeklyIds = [];
+        const newTaskIds = [];
+
         if (projectId) {
-          const goalErrors = await this.saveGoals(projectId);
-          if (goalErrors.length > 0) {
-            alert('Проект сохранён, но с целями возникли ошибки:\n' + goalErrors.join('\n'));
+          const draftResult = await this.createDrafts(this.form.name);
+          newWeeklyIds.push(...draftResult.weeklyIds);
+          newTaskIds.push(...draftResult.taskIds);
+          errors.push(...draftResult.errors);
+
+          const weeklyIds = [...this.selectedWeeklyIds, ...newWeeklyIds];
+          const taskIds = [...this.selectedTaskIds, ...newTaskIds];
+          const needLink = newWeeklyIds.length > 0 || newTaskIds.length > 0
+            || (!this.isEdit && (weeklyIds.length > 0 || taskIds.length > 0));
+
+          if (needLink) {
+            response = await updateProject(projectId, {
+              name: this.form.name,
+              status: this.form.status,
+              priority: this.form.priority,
+              weeklyIds,
+              taskIds
+            });
+
+            if (!response.isSuccess) {
+              errors.push(`Не удалось привязать задачи к проекту: ${response.errorMessage || 'ошибка'}`);
+            }
           }
+
+          const goalErrors = await this.saveGoals(projectId);
+          errors.push(...goalErrors);
+        }
+
+        if (errors.length > 0) {
+          alert('Проект сохранён, но возникли ошибки:\n' + errors.join('\n'));
         }
 
         this.$emit('saved', response.data);
@@ -353,6 +477,63 @@ export default {
       } finally {
         this.saving = false;
       }
+    },
+
+    async createDrafts(projectName) {
+      const weeklyIds = [];
+      const taskIds = [];
+      const errors = [];
+
+      for (const draft of this.newWeeklies) {
+        if (!draft.name) {
+          continue;
+        }
+
+        try {
+          const res = await createWeeklyTask({
+            name: draft.name,
+            count: Number(draft.count) || 1,
+            projectName,
+            priority: draft.priority,
+            status: draft.status
+          });
+          if (res.isSuccess) {
+            if (res.data?.id) {
+              weeklyIds.push(res.data.id);
+            }
+          } else {
+            errors.push(`Не удалось создать еженедельную задачу «${draft.name}»: ${res.errorMessage || 'ошибка'}`);
+          }
+        } catch (err) {
+          errors.push(`Ошибка при создании еженедельной задачи «${draft.name}»`);
+        }
+      }
+
+      for (const draft of this.newTasks) {
+        if (!draft.name) {
+          continue;
+        }
+
+        try {
+          const res = await createTask({
+            name: draft.name,
+            priority: draft.priority,
+            projectName,
+            status: draft.status
+          });
+          if (res.isSuccess) {
+            if (res.data?.id) {
+              taskIds.push(res.data.id);
+            }
+          } else {
+            errors.push(`Не удалось создать задачу «${draft.name}»: ${res.errorMessage || 'ошибка'}`);
+          }
+        } catch (err) {
+          errors.push(`Ошибка при создании задачи «${draft.name}»`);
+        }
+      }
+
+      return { weeklyIds, taskIds, errors };
     },
 
     async saveGoals(projectId) {
@@ -695,6 +876,69 @@ export default {
 
 .goal-remove-btn:hover {
   background-color: var(--accent-red-light);
+}
+
+/* Черновики новых задач */
+.draft-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.draft-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 6px;
+  border: 1px dashed var(--accent-primary);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+}
+
+.draft-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+  background-color: var(--accent-blue-light);
+  padding: 2px 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.draft-item .goal-name-input {
+  min-width: 140px;
+  background-color: var(--bg-secondary);
+}
+
+.draft-count {
+  width: 52px;
+  padding: 7px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.draft-select {
+  padding: 7px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.draft-count:focus,
+.draft-select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
 }
 
 .form-actions {
