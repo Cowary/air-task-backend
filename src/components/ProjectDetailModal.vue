@@ -99,6 +99,7 @@
                 <th>Описание</th>
                 <th>Приоритет</th>
                 <th>Статус</th>
+                <th>Шаги</th>
               </tr>
             </thead>
             <tbody>
@@ -114,6 +115,23 @@
                   <span class="badge status-badge" :class="`status-${(task.status || '').toLowerCase()}`">
                     {{ getStatusLabel(task.status) }}
                   </span>
+                </td>
+                <td class="cell-subtasks">
+                  <template v-if="task.subTasks?.length">
+                    <button
+                      type="button"
+                      class="subtask-summary"
+                      :class="{ 'subtask-done-all': subtaskProgress(task).allDone }"
+                      @click="toggleExpand(task.id)"
+                    >
+                      ✓ {{ subtaskProgress(task).done }}/{{ subtaskProgress(task).total }}
+                      <span class="subtask-arrow">{{ expandedTasks[task.id] ? '▲' : '▼' }}</span>
+                    </button>
+                    <div v-if="expandedTasks[task.id]" class="subtask-expanded">
+                      <SubTasksChecklist :task="task" @updated="handleSubTaskUpdated" />
+                    </div>
+                  </template>
+                  <span v-else class="cell-muted">—</span>
                 </td>
               </tr>
             </tbody>
@@ -131,9 +149,15 @@
 <script>
 import { getProjectById } from '../api/projects.js';
 import { updateGoalStatus } from '../api/goals.js';
+import SubTasksChecklist from './SubTasksChecklist.vue';
+import { progress } from '../utils/subtasks.js';
 
 export default {
   name: 'ProjectDetailModal',
+
+  components: {
+    SubTasksChecklist
+  },
 
   props: {
     visible: {
@@ -153,7 +177,8 @@ export default {
       project: null,
       loading: false,
       error: null,
-      togglingGoals: []
+      togglingGoals: [],
+      expandedTasks: {}
     };
   },
 
@@ -229,6 +254,25 @@ export default {
         console.error('Ошибка изменения статуса цели:', err);
       } finally {
         this.togglingGoals = this.togglingGoals.filter(id => id !== goal.id);
+      }
+    },
+
+    subtaskProgress(task) {
+      return progress(task);
+    },
+
+    toggleExpand(id) {
+      this.expandedTasks = { ...this.expandedTasks, [id]: !this.expandedTasks[id] };
+    },
+
+    handleSubTaskUpdated(updatedTask) {
+      if (!this.project) {
+        return;
+      }
+      const list = this.project.taskList || [];
+      const idx = list.findIndex(t => t.id === updatedTask.id);
+      if (idx !== -1) {
+        list.splice(idx, 1, updatedTask);
       }
     },
 
@@ -532,6 +576,49 @@ export default {
   color: var(--text-secondary);
   max-width: 220px;
   word-break: break-word;
+}
+
+.cell-muted {
+  color: var(--text-muted);
+}
+
+.cell-subtasks {
+  min-width: 90px;
+}
+
+.subtask-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.subtask-summary:hover {
+  border-color: var(--accent-primary);
+}
+
+.subtask-summary.subtask-done-all {
+  color: var(--accent-green);
+}
+
+.subtask-arrow {
+  font-size: 10px;
+}
+
+.subtask-expanded {
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
 }
 
 .detail-loading {

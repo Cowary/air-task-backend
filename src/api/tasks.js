@@ -91,6 +91,10 @@ export const createTask = async (taskData) => {
       description: taskData.description
     };
 
+    if (Array.isArray(taskData.subTasks)) {
+      requestBody.subTasks = taskData.subTasks;
+    }
+
     const response = await apiClient.post('/v1/task/save', requestBody);
     return response.data;
   } catch (error) {
@@ -124,6 +128,10 @@ export const updateTask = async (taskData) => {
       description: taskData.description
     };
 
+    if (Array.isArray(taskData.subTasks)) {
+      requestBody.subTasks = taskData.subTasks;
+    }
+
     const response = await apiClient.post('/v1/task/update', requestBody);
     return response.data;
   } catch (error) {
@@ -146,6 +154,25 @@ export const deleteTask = async (id) => {
     return response.data;
   } catch (error) {
     console.error('Ошибка при удалении задачи:', error);
+    throw error;
+  }
+};
+
+/**
+ * Инвертирует флаг выполнения шага задачи
+ *
+ * API endpoint: POST /v1/task/{id}/subtask/{subTaskId}/toggle
+ *
+ * @param {number} taskId - ID задачи
+ * @param {number} subTaskId - ID шага
+ * @returns {Promise} Промис с обновлённой задачей (ApiRs<TaskResponse>)
+ */
+export const toggleSubTask = async (taskId, subTaskId) => {
+  try {
+    const response = await apiClient.post(`/v1/task/${taskId}/subtask/${subTaskId}/toggle`);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при переключении шага задачи:', error);
     throw error;
   }
 };

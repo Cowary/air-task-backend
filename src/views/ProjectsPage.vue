@@ -97,6 +97,13 @@
             </span>
             <span v-for="task in (project.taskList || []).slice(0, 2)" :key="'t' + task.id" class="preview-tag">
               📝 {{ task.name }}
+              <span
+                v-if="task.subTasks?.length"
+                class="tag-subtasks"
+                :class="{ 'tag-subtasks-done': task.subTasks.every(s => s.isCompleted) }"
+              >
+                ✓ {{ task.subTasks.filter(s => s.isCompleted).length }}/{{ task.subTasks.length }}
+              </span>
             </span>
             <span
               v-for="goal in (project.goalList || []).slice(0, 2)"
@@ -652,6 +659,16 @@ h1 {
 .more-tag {
   color: var(--accent-primary);
   font-weight: 600;
+}
+
+.tag-subtasks {
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+.tag-subtasks-done {
+  color: var(--accent-green);
 }
 
 .goal-preview-tag.goal-completed {

@@ -81,6 +81,10 @@
           ></textarea>
         </div>
 
+        <div class="form-group">
+          <SubTasksEditor v-model="form.subTasks" />
+        </div>
+
         <div class="form-actions">
           <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
           <button type="submit" class="save-btn" :disabled="saving">
@@ -94,9 +98,15 @@
 
 <script>
 import { createTask, updateTask } from '../../api/tasks.js';
+import SubTasksEditor from '../SubTasksEditor.vue';
+import { normalize, toPayload, validate } from '../../utils/subtasks.js';
 
 export default {
   name: 'TaskFormModal',
+
+  components: {
+    SubTasksEditor
+  },
 
   props: {
     visible: {
@@ -128,7 +138,8 @@ export default {
         customProjectName: '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS',
-        description: ''
+        description: '',
+        subTasks: []
       }
     };
   },
@@ -170,14 +181,15 @@ export default {
         const projectName = this.task.project?.name || '';
 
         if (!projectName) {
-          this.form = {
-            name: this.task.name || '',
-            projectName: this.noProjectName() || '__custom__',
-            customProjectName: this.noProjectName() ? '' : projectName,
-            priority: this.task.priority || 'MIDDLE',
-            status: this.task.status || 'IN_PROGRESS',
-            description: this.task.description || ''
-          };
+this.form = {
+          name: this.task.name || '',
+          projectName: this.noProjectName() || '__custom__',
+          customProjectName: this.noProjectName() ? '' : projectName,
+          priority: this.task.priority || 'MIDDLE',
+          status: this.task.status || 'IN_PROGRESS',
+          description: this.task.description || '',
+          subTasks: normalize(this.task?.subTasks)
+        };
           return;
         }
 
@@ -189,7 +201,8 @@ export default {
           customProjectName: known ? '' : projectName,
           priority: this.task.priority || 'MIDDLE',
           status: this.task.status || 'IN_PROGRESS',
-          description: this.task.description || ''
+          description: this.task.description || '',
+          subTasks: normalize(this.task?.subTasks)
         };
         return;
       }
@@ -205,7 +218,8 @@ export default {
           customProjectName: known ? '' : explicitDefault,
           priority: 'MIDDLE',
           status: 'IN_PROGRESS',
-          description: ''
+          description: '',
+          subTasks: []
         };
         return;
       }
@@ -218,7 +232,8 @@ export default {
         customProjectName: '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS',
-        description: ''
+        description: '',
+        subTasks: []
       };
     },
 
@@ -229,6 +244,13 @@ export default {
     async handleSave() {
       if (!this.form.name || !this.resolvedProjectName) {
         alert('Пожалуйста, заполните все обязательные поля');
+        return;
+      }
+
+      const subTasks = toPayload(this.form.subTasks);
+      const validationError = validate(subTasks);
+      if (validationError) {
+        alert(validationError);
         return;
       }
 
@@ -244,8 +266,15 @@ export default {
         };
 
         const response = this.isEdit
-          ? await updateTask({ id: this.task.id, ...payload })
-          : await createTask(payload);
+          ? await updateTask({
+              id: this.task.id,
+              ...payload,
+              subTasks
+            })
+          : await createTask({
+              ...payload,
+              ...(subTasks.length ? { subTasks } : {})
+            });
 
         if (response.isSuccess) {
           this.$emit('saved', response.data);

@@ -58,6 +58,7 @@
       @update-status="handleKanbanUpdate"
       @edit-task="openEditModal"
       @create-task="openCreateModal"
+      @subtask-updated="handleSubTaskUpdated"
     />
 
     <!-- Список -->
@@ -79,6 +80,28 @@
             </div>
 
             <div class="task-name">{{ task.name }}</div>
+
+            <div v-if="task.subTasks?.length" class="task-subtasks">
+              <button
+                type="button"
+                class="subtask-summary"
+                @click="toggleExpand(task.id)"
+              >
+                <span class="subtask-count" :class="{ 'subtask-done-all': subtaskProgress(task).allDone }">
+                  ✓ {{ subtaskProgress(task).done }}/{{ subtaskProgress(task).total }}
+                </span>
+                <span class="subtask-bar">
+                  <span
+                    class="subtask-bar-fill"
+                    :style="{ width: subtaskProgress(task).percent + '%' }"
+                  ></span>
+                </span>
+                <span class="subtask-toggle">{{ expandedTasks[task.id] ? 'Скрыть шаги ▲' : 'Шаги ▼' }}</span>
+              </button>
+              <div v-if="expandedTasks[task.id]" class="subtask-expanded">
+                <SubTasksChecklist :task="task" @updated="handleSubTaskUpdated" />
+              </div>
+            </div>
 
             <div v-if="task.description" class="task-description">
               {{ task.description }}
@@ -129,6 +152,8 @@
 <script>
 import KanbanBoard from '../KanbanBoard.vue';
 import TaskFormModal from './TaskFormModal.vue';
+import SubTasksChecklist from '../SubTasksChecklist.vue';
+import { progress } from '../../utils/subtasks.js';
 import { deleteTask, updateTask } from '../../api/tasks.js';
 
 export default {
@@ -136,7 +161,8 @@ export default {
 
   components: {
     KanbanBoard,
-    TaskFormModal
+    TaskFormModal,
+    SubTasksChecklist
   },
 
   props: {
@@ -180,6 +206,10 @@ export default {
 
       // Локальные оптимистичные изменения статуса (id -> статус)
       statusOverrides: {},
+      // Локальные изменения шагов (id -> subTasks)
+      subTaskOverrides: {},
+      // Раскрытые чек-листы шагов (id -> boolean)
+      expandedTasks: {},
 
       showDeleteModal: false,
       taskToDelete: null,
@@ -199,11 +229,16 @@ export default {
     },
 
     tasksWithOverrides() {
-      return this.tasks.map(task =>
-        this.statusOverrides[task.id]
-          ? { ...task, status: this.statusOverrides[task.id] }
-          : task
-      );
+      return this.tasks.map(task => {
+        let updated = task;
+        if (this.statusOverrides[task.id]) {
+          updated = { ...updated, status: this.statusOverrides[task.id] };
+        }
+        if (this.subTaskOverrides[task.id]) {
+          updated = { ...updated, subTasks: this.subTaskOverrides[task.id] };
+        }
+        return updated;
+      });
     },
 
     filteredTasks() {
@@ -274,6 +309,21 @@ export default {
 
     handleTaskSaved() {
       this.$emit('changed');
+    },
+
+    subtaskProgress(task) {
+      return progress(task);
+    },
+
+    toggleExpand(id) {
+      this.expandedTasks = { ...this.expandedTasks, [id]: !this.expandedTasks[id] };
+    },
+
+    handleSubTaskUpdated(updatedTask) {
+      this.subTaskOverrides = {
+        ...this.subTaskOverrides,
+        [updatedTask.id]: updatedTask.subTasks || []
+      };
     },
 
     confirmDelete(task) {
@@ -496,6 +546,70 @@ export default {
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.task-subtasks {
+  margin-bottom: 8px;
+}
+
+.subtask-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.subtask-summary:hover {
+  border-color: var(--accent-primary);
+}
+
+.subtask-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.subtask-count.subtask-done-all {
+  color: var(--accent-green);
+}
+
+.subtask-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--border-color);
+  overflow: hidden;
+}
+
+.subtask-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background-color: var(--accent-primary);
+  transition: width 0.3s ease;
+}
+
+.subtask-toggle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.subtask-expanded {
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
 }
 
 .task-meta {
