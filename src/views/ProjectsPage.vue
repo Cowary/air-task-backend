@@ -85,6 +85,10 @@
               <span class="counter-value">{{ project.taskList?.length || 0 }}</span>
               <span class="counter-label">задач</span>
             </div>
+            <div class="counter-chip goal-chip" v-if="(project.goalList?.length || 0) > 0">
+              <span class="counter-value">{{ completedGoalsCount(project) }}/{{ project.goalList.length }}</span>
+              <span class="counter-label">целей</span>
+            </div>
           </div>
 
           <div class="project-preview" v-if="hasLinkedItems(project)">
@@ -94,12 +98,20 @@
             <span v-for="task in (project.taskList || []).slice(0, 2)" :key="'t' + task.id" class="preview-tag">
               📝 {{ task.name }}
             </span>
+            <span
+              v-for="goal in (project.goalList || []).slice(0, 2)"
+              :key="'g' + goal.id"
+              class="preview-tag goal-preview-tag"
+              :class="{ 'goal-completed': goal.isCompleted }"
+            >
+              🎯 {{ goal.name }}
+            </span>
             <span v-if="hiddenCount(project) > 0" class="preview-tag more-tag">
               +{{ hiddenCount(project) }} ещё
             </span>
           </div>
           <div class="project-preview empty-preview" v-else>
-            Задачи не привязаны
+            Задачи и цели не привязаны
           </div>
 
           <div class="project-footer">
@@ -254,12 +266,20 @@ export default {
     },
 
     hasLinkedItems(project) {
-      return (project.weeklyList?.length || 0) > 0 || (project.taskList?.length || 0) > 0;
+      return (project.weeklyList?.length || 0) > 0
+        || (project.taskList?.length || 0) > 0
+        || (project.goalList?.length || 0) > 0;
+    },
+
+    completedGoalsCount(project) {
+      return (project.goalList || []).filter(g => g.isCompleted).length;
     },
 
     hiddenCount(project) {
-      const total = (project.weeklyList?.length || 0) + (project.taskList?.length || 0);
-      return Math.max(0, total - 4);
+      const total = (project.weeklyList?.length || 0)
+        + (project.taskList?.length || 0)
+        + (project.goalList?.length || 0);
+      return Math.max(0, total - 6);
     },
 
     openCreateModal() {
@@ -606,6 +626,10 @@ h1 {
   border-left: 3px solid var(--accent-purple);
 }
 
+.goal-chip {
+  border-left: 3px solid var(--accent-green);
+}
+
 /* Превью привязанных задач */
 .project-preview {
   display: flex;
@@ -628,6 +652,11 @@ h1 {
 .more-tag {
   color: var(--accent-primary);
   font-weight: 600;
+}
+
+.goal-preview-tag.goal-completed {
+  text-decoration: line-through;
+  opacity: 0.7;
 }
 
 .empty-preview {
