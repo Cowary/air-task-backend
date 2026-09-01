@@ -70,18 +70,7 @@ pipeline {
             }
         }
 
-        // Модульные тесты (Vitest)
-        stage('Unit Tests') {
-            steps {
-                echo 'Запуск модульных тестов...'
-                sh '''
-                    docker run --rm -v "$PWD":/app -w /app node:20-alpine \
-                        sh -c "npm ci --no-audit --no-fund && npm run test"
-                '''
-            }
-        }
-
-        // Сборка Docker образа
+        // Сборка Docker образа (модульные тесты выполняются на builder-стадии Dockerfile: npm run test)
         stage('Build Docker Image') {
             steps {
                 echo "Сборка образа ${IMAGE_NAME}:${IMAGE_TAG}..."
