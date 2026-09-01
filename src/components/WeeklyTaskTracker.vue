@@ -320,6 +320,7 @@ import {
   deleteWeeklyTask,
   createProject
 } from '../api/weeklyTasks.js';
+import { ALL_PROJECT_STATUSES } from '../api/projects.js';
 import ProjectModal from '../components/ProjectModal.vue';
 
 export default {
@@ -454,7 +455,7 @@ export default {
       this.loadingProjects = true;
       
       try {
-        const response = await getAllProjects();
+        const response = await getAllProjects({ statuses: ALL_PROJECT_STATUSES });
         
         if (response.isSuccess) {
           this.projects = response.data.projects || [];

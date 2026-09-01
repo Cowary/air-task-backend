@@ -279,6 +279,7 @@
 
 <script>
 import { getTasks, createTask, updateTask, deleteTask, getAllProjects, createProject } from '../api/tasks.js';
+import { ALL_PROJECT_STATUSES } from '../api/projects.js';
 import ProjectModal from '../components/ProjectModal.vue';
 import KanbanBoard from '../components/KanbanBoard.vue';
 import SubTasksChecklist from '../components/SubTasksChecklist.vue';
@@ -389,7 +390,7 @@ export default {
       this.loadingProjects = true;
 
       try {
-        const response = await getAllProjects();
+        const response = await getAllProjects({ statuses: ALL_PROJECT_STATUSES });
 
         if (response.isSuccess) {
           this.projects = response.data?.projects || [];

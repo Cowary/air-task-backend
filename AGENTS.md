@@ -5,8 +5,9 @@
 - `npm run dev` — Start Vite dev server on port `5173` (requires `VITE_BACKEND_URL`)
 - `npm run build` — Production build to `dist/`
 - `npm run preview` — Preview production build
+- `npm test` — Run Vitest unit tests once (`vitest run`); `npm run test:watch` for watch mode
 
-No test, lint, or typecheck scripts are configured. Use `npm run build` as the basic syntax/compile check.
+Tests use **Vitest + @vue/test-utils + jsdom** (config in `vitest.config.js`, specs at `src/**/*.spec.js`, mostly co-located under `__tests__/`). CI (`Jenkinsfile`) runs them in a `node:20-alpine` container before the Docker build. No lint or typecheck scripts are configured; use `npm run build` as the basic syntax/compile check.
 
 ## Environment
 

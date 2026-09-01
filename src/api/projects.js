@@ -1,15 +1,33 @@
 import apiClient from './client';
 
+// Статусы, которые бэкенд считает «активными» (возвращаются по умолчанию)
+export const ACTIVE_PROJECT_STATUSES = ['ACTIVE', 'IN_PROGRESS'];
+export const ALL_PROJECT_STATUSES = ['ACTIVE', 'IN_PROGRESS', 'DONE', 'ARCHIVED'];
+
 /**
- * Получает список всех проектов
+ * Получает список проектов
  *
  * API endpoint: GET /api/project/v1/list
  *
+ * Бэкенд по умолчанию возвращает только активные проекты (ACTIVE, IN_PROGRESS).
+ *
+ * @param {Object} [options] - Параметры запроса
+ * @param {string[]} [options.statuses] - Статусы проектов для включения в ответ (по умолчанию — активные)
+ * @param {boolean} [options.sortByPriority] - Сортировать по приоритету: HIGH → MIDDLE → LOW, затем по имени
  * @returns {Promise} Промис с данными от сервера
  */
-export const getAllProjects = async () => {
+export const getAllProjects = async ({ statuses = null, sortByPriority = false } = {}) => {
   try {
-    const response = await apiClient.get('/project/v1/list');
+    const params = {};
+
+    if (statuses && statuses.length > 0) {
+      params.statuses = statuses.join(',');
+    }
+    if (sortByPriority) {
+      params.sortByPriority = true;
+    }
+
+    const response = await apiClient.get('/project/v1/list', { params });
     return response.data;
   } catch (error) {
     console.error('Ошибка при получении списка проектов:', error);

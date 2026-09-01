@@ -1,21 +1,11 @@
 import apiClient from './client';
 
 /**
- * Получает список всех проектов
+ * Получает список проектов — реализация в './projects.js'
  *
- * API endpoint: GET /api/project/v1/list
- *
- * @returns {Promise} Промис с данными от сервера
+ * @see module:./projects
  */
-export const getAllProjects = async () => {
-  try {
-    const response = await apiClient.get('/project/v1/list');
-    return response.data;
-  } catch (error) {
-    console.error('Ошибка при получении списка проектов:', error);
-    throw error;
-  }
-};
+export { getAllProjects } from './projects.js';
 
 /**
  * Создаёт новый проект

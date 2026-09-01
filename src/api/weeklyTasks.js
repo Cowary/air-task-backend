@@ -70,21 +70,11 @@ export const getAllWeeklyTasks = async (statuses = null) => {
 };
 
 /**
- * Получает список всех проектов
- * 
- * API endpoint: GET /api/project/v1/list
- * 
- * @returns {Promise} Промис с данными от сервера
+ * Получает список проектов — реализация в './projects.js'
+ *
+ * @see module:./projects
  */
-export const getAllProjects = async () => {
-  try {
-    const response = await apiClient.get('/project/v1/list');
-    return response.data;
-  } catch (error) {
-    console.error('Ошибка при получении списка проектов:', error);
-    throw error;
-  }
-};
+export { getAllProjects } from './projects.js';
 
 /**
  * Создаёт новый проект
