@@ -1490,7 +1490,7 @@
           "Project Management"
         ],
         "summary": "Get all projects",
-        "description": "Returns a list of all projects in the system, each including its weekly tasks, tasks with their sub-tasks (steps) and goals",
+        "description": "Returns a list of projects, each including its weekly tasks, tasks with their sub-tasks (steps) and goals. By default only projects with ACTIVE or IN_PROGRESS status are returned; pass statuses to override the included statuses and sortByPriority=true to sort by priority (HIGH, MIDDLE, LOW, then by name)",
         "operationId": "getAllProjects",
         "responses": {
           "200": {
@@ -1503,7 +1503,39 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "statuses",
+            "in": "query",
+            "required": false,
+            "description": "Project statuses to include in the response. Default: ACTIVE,IN_PROGRESS (inactive projects are excluded)",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ACTIVE",
+                  "IN_PROGRESS",
+                  "DONE",
+                  "ARCHIVED"
+                ]
+              }
+            }
+          },
+          {
+            "name": "sortByPriority",
+            "in": "query",
+            "required": false,
+            "description": "Sort projects by priority: HIGH, MIDDLE, LOW, then by name ascending",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ]
       }
     },
     "/api/health": {

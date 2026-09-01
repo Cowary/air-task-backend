@@ -13,11 +13,11 @@
       </div>
 
       <div class="sidebar-filters">
-        <select v-model="filterStatus" class="filter-select">
-          <option value="">Все статусы</option>
-          <option value="ACTIVE">Активный</option>
-          <option value="COMPLETED">Завершён</option>
-          <option value="ARCHIVED">Архивирован</option>
+        <select v-model="statusFilter" class="filter-select" @change="applyStatusFilter">
+          <option value="ACTIVE">Активные</option>
+          <option value="ALL">Все статусы</option>
+          <option value="DONE">Завершённые</option>
+          <option value="ARCHIVED">Архивированные</option>
         </select>
         <select v-model="filterPriority" class="filter-select">
           <option value="">Все приоритеты</option>
@@ -314,6 +314,14 @@ import { updateGoalStatus } from '../../api/goals.js';
 import ProjectFormModal from '../ProjectFormModal.vue';
 import TaskListSection from './TaskListSection.vue';
 import WeeklyTaskFormModal from './WeeklyTaskFormModal.vue';
+import { ACTIVE_PROJECT_STATUSES, ALL_PROJECT_STATUSES } from '../../api/projects.js';
+
+const STATUS_FILTER_STATUSES = {
+  ACTIVE: ACTIVE_PROJECT_STATUSES,
+  ALL: ALL_PROJECT_STATUSES,
+  DONE: ['DONE'],
+  ARCHIVED: ['ARCHIVED']
+};
 
 export default {
   name: 'ProjectsPanel',
@@ -340,15 +348,16 @@ export default {
     }
   },
 
-  emits: ['changed'],
+  emits: ['changed', 'statuses-changed'],
 
   data() {
     return {
       selectedKey: null,
 
       // Фильтры списка проектов
+      // statusFilter — серверный фильтр по статусам (см. STATUS_FILTER_STATUSES)
+      statusFilter: 'ACTIVE',
       searchQuery: '',
-      filterStatus: '',
       filterPriority: '',
 
       // Форма проекта
@@ -380,9 +389,6 @@ export default {
     filteredProjects() {
       return this.projects.filter(project => {
         if (this.searchQuery && !project.name?.toLowerCase().includes(this.searchQuery.toLowerCase())) {
-          return false;
-        }
-        if (this.filterStatus && project.status !== this.filterStatus) {
           return false;
         }
         if (this.filterPriority && project.priority !== this.filterPriority) {
@@ -442,6 +448,11 @@ export default {
   methods: {
     select(key) {
       this.selectedKey = key;
+    },
+
+    applyStatusFilter() {
+      const statuses = STATUS_FILTER_STATUSES[this.statusFilter] || ACTIVE_PROJECT_STATUSES;
+      this.$emit('statuses-changed', statuses);
     },
 
     getPriorityLabel(priority) {

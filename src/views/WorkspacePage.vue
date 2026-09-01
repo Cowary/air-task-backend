@@ -55,6 +55,7 @@
         :tasks="tasks"
         :week-map="weekMap"
         @changed="refresh"
+        @statuses-changed="handleProjectsStatusesChanged"
       />
 
       <!-- Неделя -->
@@ -78,7 +79,7 @@
 </template>
 
 <script>
-import { getAllProjects } from '../api/projects.js';
+import { getAllProjects, ACTIVE_PROJECT_STATUSES } from '../api/projects.js';
 import { getTasks } from '../api/tasks.js';
 import { getWeeklyTaskStatistics } from '../api/weeklyTasks.js';
 import ProjectsPanel from '../components/workspace/ProjectsPanel.vue';
@@ -101,6 +102,9 @@ export default {
       projects: [],
       tasks: [],
       statistics: null,
+
+      // Статусы проектов для запроса к бэкенду (фильтр в сайдбаре «Проекты»)
+      projectStatuses: ACTIVE_PROJECT_STATUSES,
 
       initialLoading: false,
       refreshing: false,
@@ -136,7 +140,7 @@ export default {
 
       try {
         const [projectsRes, tasksRes, statsRes] = await Promise.all([
-          getAllProjects(),
+          getAllProjects({ statuses: this.projectStatuses, sortByPriority: true }),
           getTasks(),
           getWeeklyTaskStatistics()
         ]);
@@ -188,6 +192,26 @@ export default {
 
     refresh() {
       this.loadAll(true);
+    },
+
+    async handleProjectsStatusesChanged(statuses) {
+      this.projectStatuses = statuses;
+      this.refreshing = true;
+
+      try {
+        const response = await getAllProjects({ statuses, sortByPriority: true });
+
+        if (response.isSuccess) {
+          this.projects = response.data?.projects || [];
+        } else {
+          alert('Не удалось обновить список проектов: ' + (response.errorMessage || 'Неизвестная ошибка'));
+        }
+      } catch (err) {
+        console.error('Ошибка загрузки проектов:', err);
+        alert('Ошибка при загрузке проектов');
+      } finally {
+        this.refreshing = false;
+      }
     }
   },
 
