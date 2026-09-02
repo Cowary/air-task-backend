@@ -82,7 +82,7 @@
               <span class="counter-label">еженедельных</span>
             </div>
             <div class="counter-chip task-chip">
-              <span class="counter-value">{{ project.taskList?.length || 0 }}</span>
+              <span class="counter-value">{{ activeTaskList(project).length }}</span>
               <span class="counter-label">задач</span>
             </div>
             <div class="counter-chip goal-chip" v-if="(project.goalList?.length || 0) > 0">
@@ -95,7 +95,7 @@
             <span v-for="weekly in (project.weeklyList || []).slice(0, 2)" :key="'w' + weekly.id" class="preview-tag">
               📊 {{ weekly.name }}
             </span>
-            <span v-for="task in (project.taskList || []).slice(0, 2)" :key="'t' + task.id" class="preview-tag">
+            <span v-for="task in activeTaskList(project).slice(0, 2)" :key="'t' + task.id" class="preview-tag">
               📝 {{ task.name }}
               <span
                 v-if="task.subTasks?.length"
@@ -272,9 +272,13 @@ export default {
       });
     },
 
+    activeTaskList(project) {
+      return (project.taskList || []).filter(task => !task.isComplete);
+    },
+
     hasLinkedItems(project) {
       return (project.weeklyList?.length || 0) > 0
-        || (project.taskList?.length || 0) > 0
+        || this.activeTaskList(project).length > 0
         || (project.goalList?.length || 0) > 0;
     },
 
@@ -284,7 +288,7 @@ export default {
 
     hiddenCount(project) {
       const total = (project.weeklyList?.length || 0)
-        + (project.taskList?.length || 0)
+        + this.activeTaskList(project).length
         + (project.goalList?.length || 0);
       return Math.max(0, total - 6);
     },

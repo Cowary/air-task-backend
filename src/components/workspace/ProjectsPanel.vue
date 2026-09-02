@@ -28,7 +28,7 @@
       </div>
 
       <div class="project-cards">
-        <div v-if="filteredProjects.length === 0 && orphanTasks.length === 0" class="sidebar-empty">
+        <div v-if="filteredProjects.length === 0 && orphanTasks.length + archivedOrphanTasks.length === 0" class="sidebar-empty">
           <p>{{ projects.length === 0 ? 'Нет проектов. Создайте первый!' : 'Ничего не найдено' }}</p>
         </div>
 
@@ -67,15 +67,15 @@
             <span class="counter counter-weekly" title="Еженедельные задачи">
               📊 {{ project.weeklyList?.length || 0 }}
             </span>
-            <span class="counter counter-tasks" title="Задачи">
-              📝 {{ project.taskList?.length || 0 }}
+            <span class="counter counter-tasks" title="Невыполненные задачи">
+              📝 {{ activeTasksCount(project) }}
             </span>
           </div>
         </div>
 
         <!-- Виртуальная карточка «Без проекта» -->
         <div
-          v-if="orphanTasks.length > 0"
+          v-if="orphanTasks.length + archivedOrphanTasks.length > 0"
           class="project-card orphan-card"
           :class="{ selected: selectedKey === '__none__' }"
           @click="select('__none__')"
@@ -215,15 +215,35 @@
         <div class="detail-section">
           <div class="section-head">
             <h3>📝 Задачи</h3>
-            <span class="section-count">{{ selectedProjectTasks.length }}</span>
+            <div class="tasks-subtabs">
+              <button
+                type="button"
+                class="tasks-subtab"
+                :class="{ active: projectTasksTab === 'active' }"
+                @click="projectTasksTab = 'active'"
+              >
+                Актуальные <span class="subtab-count">{{ selectedProjectTasks.length }}</span>
+              </button>
+              <button
+                type="button"
+                class="tasks-subtab"
+                :class="{ active: projectTasksTab === 'archive' }"
+                @click="projectTasksTab = 'archive'"
+              >
+                🗄 Архив <span class="subtab-count">{{ archivedSelectedProjectTasks.length }}</span>
+              </button>
+            </div>
+            <span class="section-count">{{ visibleProjectTasks.length }}</span>
           </div>
 
           <TaskListSection
-            :tasks="selectedProjectTasks"
+            :tasks="visibleProjectTasks"
             :projects="projects"
             :default-project-name="selectedProject.name"
             :show-project-name="false"
-            empty-text="У проекта пока нет задач — создайте первую!"
+            :empty-text="projectTasksTab === 'archive'
+              ? 'Выполненных задач у проекта пока нет.'
+              : 'Невыполненных задач у проекта нет. Выполненные — в Архиве.'"
             @changed="$emit('changed')"
           />
         </div>
@@ -241,10 +261,35 @@
         </p>
 
         <div class="detail-section">
+          <div class="section-head">
+            <h3>📝 Задачи</h3>
+            <div class="tasks-subtabs">
+              <button
+                type="button"
+                class="tasks-subtab"
+                :class="{ active: projectTasksTab === 'active' }"
+                @click="projectTasksTab = 'active'"
+              >
+                Актуальные <span class="subtab-count">{{ orphanTasks.length }}</span>
+              </button>
+              <button
+                type="button"
+                class="tasks-subtab"
+                :class="{ active: projectTasksTab === 'archive' }"
+                @click="projectTasksTab = 'archive'"
+              >
+                🗄 Архив <span class="subtab-count">{{ archivedOrphanTasks.length }}</span>
+              </button>
+            </div>
+            <span class="section-count">{{ visibleProjectTasks.length }}</span>
+          </div>
+
           <TaskListSection
-            :tasks="orphanTasks"
+            :tasks="visibleProjectTasks"
             :projects="projects"
-            empty-text="Все задачи относятся к проектам."
+            :empty-text="projectTasksTab === 'archive'
+              ? 'Выполненных задач без проекта пока нет.'
+              : 'Все невыполненные задачи относятся к проектам.'"
             @changed="$emit('changed')"
           />
         </div>
@@ -354,6 +399,9 @@ export default {
     return {
       selectedKey: null,
 
+      // Подвкладка секции «Задачи»: 'active' | 'archive'
+      projectTasksTab: 'active',
+
       // Фильтры списка проектов
       // statusFilter — серверный фильтр по статусам (см. STATUS_FILTER_STATUSES)
       statusFilter: 'ACTIVE',
@@ -418,36 +466,62 @@ export default {
     },
 
     orphanTasks() {
-      const names = new Set(this.projects.map(p => p.name));
-      const ids = new Set(this.projects.map(p => p.id));
+      return this.tasks.filter(task => !task.isComplete && this.isOrphanTask(task));
+    },
 
-      return this.tasks.filter(task => {
-        const pid = task.project?.id;
-        if (pid != null) {
-          return !ids.has(pid);
-        }
-        const pname = task.project?.name;
-        return !pname || !names.has(pname);
-      });
+    archivedOrphanTasks() {
+      return this.tasks.filter(task => !!task.isComplete && this.isOrphanTask(task));
     },
 
     selectedProjectTasks() {
-      const project = this.selectedProject;
-      if (!project) {
-        return [];
+      return this.tasks.filter(task => !task.isComplete && this.belongsToSelectedProject(task));
+    },
+
+    archivedSelectedProjectTasks() {
+      return this.tasks.filter(task => !!task.isComplete && this.belongsToSelectedProject(task));
+    },
+
+    visibleProjectTasks() {
+      if (this.selectedKey === '__none__') {
+        return this.projectTasksTab === 'archive' ? this.archivedOrphanTasks : this.orphanTasks;
       }
-      return this.tasks.filter(task => {
-        if (task.project?.id != null) {
-          return task.project.id === project.id;
-        }
-        return task.project?.name === project.name;
-      });
+      return this.projectTasksTab === 'archive'
+        ? this.archivedSelectedProjectTasks
+        : this.selectedProjectTasks;
     }
   },
 
   methods: {
     select(key) {
       this.selectedKey = key;
+      this.projectTasksTab = 'active';
+    },
+
+    isOrphanTask(task) {
+      const names = new Set(this.projects.map(p => p.name));
+      const ids = new Set(this.projects.map(p => p.id));
+
+      const pid = task.project?.id;
+      if (pid != null) {
+        return !ids.has(pid);
+      }
+      const pname = task.project?.name;
+      return !pname || !names.has(pname);
+    },
+
+    belongsToSelectedProject(task) {
+      const project = this.selectedProject;
+      if (!project) {
+        return false;
+      }
+      if (task.project?.id != null) {
+        return task.project.id === project.id;
+      }
+      return task.project?.name === project.name;
+    },
+
+    activeTasksCount(project) {
+      return (project.taskList || []).filter(task => !task.isComplete).length;
     },
 
     applyStatusFilter() {
@@ -964,6 +1038,49 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.tasks-subtabs {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-left: auto;
+}
+
+.tasks-subtab {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tasks-subtab:hover {
+  color: var(--text-primary);
+}
+
+.tasks-subtab.active {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+.subtab-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background-color: var(--bg-secondary);
+  color: inherit;
 }
 
 .section-count.count-done {

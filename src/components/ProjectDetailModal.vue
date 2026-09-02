@@ -98,7 +98,7 @@
                 <th>Название</th>
                 <th>Описание</th>
                 <th>Приоритет</th>
-                <th>Статус</th>
+                <th>Выполнение</th>
                 <th>Шаги</th>
               </tr>
             </thead>
@@ -112,9 +112,18 @@
                   </span>
                 </td>
                 <td>
-                  <span class="badge status-badge" :class="`status-${(task.status || '').toLowerCase()}`">
-                    {{ getStatusLabel(task.status) }}
-                  </span>
+                  <label class="task-check-cell" title="Отметить выполнение">
+                    <input
+                      type="checkbox"
+                      class="task-complete-checkbox"
+                      :checked="!!task.isComplete"
+                      :disabled="togglingTasks.includes(task.id)"
+                      @change="toggleTaskComplete(task, $event)"
+                    />
+                    <span class="task-check-name" :class="{ 'task-done': task.isComplete }">
+                      {{ task.isComplete ? 'Выполнено' : 'Не выполнено' }}
+                    </span>
+                  </label>
                 </td>
                 <td class="cell-subtasks">
                   <template v-if="task.subTasks?.length">
@@ -149,6 +158,7 @@
 <script>
 import { getProjectById } from '../api/projects.js';
 import { updateGoalStatus } from '../api/goals.js';
+import { toggleTask } from '../api/tasks.js';
 import SubTasksChecklist from './SubTasksChecklist.vue';
 import { progress } from '../utils/subtasks.js';
 
@@ -178,6 +188,7 @@ export default {
       loading: false,
       error: null,
       togglingGoals: [],
+      togglingTasks: [],
       expandedTasks: {}
     };
   },
@@ -254,6 +265,33 @@ export default {
         console.error('Ошибка изменения статуса цели:', err);
       } finally {
         this.togglingGoals = this.togglingGoals.filter(id => id !== goal.id);
+      }
+    },
+
+    async toggleTaskComplete(task, event) {
+      const newStatus = event.target.checked;
+
+      this.togglingTasks.push(task.id);
+
+      try {
+        const response = await toggleTask(task.id);
+
+        if (response.isSuccess) {
+          const list = this.project?.taskList || [];
+          const idx = list.findIndex(candidate => candidate.id === task.id);
+          if (idx !== -1) {
+            list.splice(idx, 1, response.data);
+          }
+        } else {
+          event.target.checked = !newStatus;
+          alert('Не удалось изменить статус задачи: ' + (response.errorMessage || 'Неизвестная ошибка'));
+        }
+      } catch (err) {
+        event.target.checked = !newStatus;
+        alert('Ошибка при изменении статуса задачи');
+        console.error('Ошибка изменения статуса задачи:', err);
+      } finally {
+        this.togglingTasks = this.togglingTasks.filter(id => id !== task.id);
       }
     },
 
@@ -536,6 +574,36 @@ export default {
 }
 
 .goal-check-name.goal-done {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.task-check-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.task-complete-checkbox {
+  accent-color: var(--accent-green);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.task-complete-checkbox:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.task-check-name {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.task-check-name.task-done {
   text-decoration: line-through;
   color: var(--text-muted);
 }

@@ -2,41 +2,12 @@
   <div class="task-list-section">
     <!-- Панель управления -->
     <div class="section-toolbar">
-      <div class="view-toggle">
-        <button
-          class="view-btn"
-          :class="{ active: viewMode === 'list' }"
-          @click="viewMode = 'list'"
-          title="Список"
-        >
-          📋 Список
-        </button>
-        <button
-          class="view-btn"
-          :class="{ active: viewMode === 'kanban' }"
-          @click="viewMode = 'kanban'"
-          title="Канбан"
-        >
-          📊 Канбан
-        </button>
-      </div>
-
       <div v-if="showFilters" class="filter-group">
         <select v-model="filterProject" class="filter-select" title="Проект">
           <option value="">Все проекты</option>
           <option v-for="name in uniqueProjects" :key="name" :value="name">
             {{ name }}
           </option>
-        </select>
-
-        <select v-model="filterStatus" class="filter-select" title="Статус">
-          <option value="">Все статусы</option>
-          <option value="IDEA">Идея</option>
-          <option value="BACKLOG">Бэклог</option>
-          <option value="IN_PROGRESS">В работе</option>
-          <option value="DONE">Выполнено</option>
-          <option value="PAUSED">На паузе</option>
-          <option value="CANCELED">Отменено</option>
         </select>
 
         <select v-model="filterPriority" class="filter-select" title="Приоритет">
@@ -50,78 +21,77 @@
       <button @click="openCreateModal" class="create-btn">+ Задача</button>
     </div>
 
-    <!-- Канбан -->
-    <KanbanBoard
-      v-if="viewMode === 'kanban'"
-      :tasks="filteredTasks"
-      :show-toolbar="false"
-      @update-status="handleKanbanUpdate"
-      @edit-task="openEditModal"
-      @create-task="openCreateModal"
-      @subtask-updated="handleSubTaskUpdated"
-    />
-
     <!-- Список -->
-    <template v-else>
-      <div v-if="filteredTasks.length === 0" class="empty-message">
-        <p>{{ tasks.length === 0 ? (emptyText || 'Задач пока нет. Создайте первую!') : 'Нет задач, соответствующих фильтрам' }}</p>
-      </div>
+    <div v-if="filteredTasks.length === 0" class="empty-message">
+      <p>{{ tasks.length === 0 ? (emptyText || 'Задач пока нет. Создайте первую!') : 'Нет задач, соответствующих фильтрам' }}</p>
+    </div>
 
-      <div v-else class="task-list">
-        <div v-for="task in filteredTasks" :key="task.id" class="task-card">
-          <div class="task-info">
-            <div class="task-header">
-              <span class="task-project" v-if="showProjectName && task.project?.name">
-                📁 {{ task.project.name }}
+    <div v-else class="task-list">
+      <div
+        v-for="task in filteredTasks"
+        :key="task.id"
+        class="task-card"
+        :class="{ 'task-completed': task.isComplete }"
+      >
+        <label class="task-check" title="Отметить выполнение">
+          <input
+            type="checkbox"
+            class="task-checkbox"
+            :checked="!!task.isComplete"
+            :disabled="!!togglingTasks[task.id]"
+            @change="handleTaskToggle(task)"
+          >
+        </label>
+
+        <div class="task-info">
+          <div class="task-header">
+            <span class="task-project" v-if="showProjectName && task.project?.name">
+              📁 {{ task.project.name }}
+            </span>
+            <span class="task-priority" :class="`priority-${task.priority.toLowerCase()}`">
+              {{ getPriorityLabel(task.priority) }}
+            </span>
+          </div>
+
+          <div class="task-name">{{ task.name }}</div>
+
+          <div v-if="task.subTasks?.length" class="task-subtasks">
+            <button
+              type="button"
+              class="subtask-summary"
+              @click="toggleExpand(task.id)"
+            >
+              <span class="subtask-count" :class="{ 'subtask-done-all': subtaskProgress(task).allDone }">
+                ✓ {{ subtaskProgress(task).done }}/{{ subtaskProgress(task).total }}
               </span>
-              <span class="task-priority" :class="`priority-${task.priority.toLowerCase()}`">
-                {{ getPriorityLabel(task.priority) }}
+              <span class="subtask-bar">
+                <span
+                  class="subtask-bar-fill"
+                  :style="{ width: subtaskProgress(task).percent + '%' }"
+                ></span>
               </span>
-            </div>
-
-            <div class="task-name">{{ task.name }}</div>
-
-            <div v-if="task.subTasks?.length" class="task-subtasks">
-              <button
-                type="button"
-                class="subtask-summary"
-                @click="toggleExpand(task.id)"
-              >
-                <span class="subtask-count" :class="{ 'subtask-done-all': subtaskProgress(task).allDone }">
-                  ✓ {{ subtaskProgress(task).done }}/{{ subtaskProgress(task).total }}
-                </span>
-                <span class="subtask-bar">
-                  <span
-                    class="subtask-bar-fill"
-                    :style="{ width: subtaskProgress(task).percent + '%' }"
-                  ></span>
-                </span>
-                <span class="subtask-toggle">{{ expandedTasks[task.id] ? 'Скрыть шаги ▲' : 'Шаги ▼' }}</span>
-              </button>
-              <div v-if="expandedTasks[task.id]" class="subtask-expanded">
-                <SubTasksChecklist :task="task" @updated="handleSubTaskUpdated" />
-              </div>
-            </div>
-
-            <div v-if="task.description" class="task-description">
-              {{ task.description }}
-            </div>
-
-            <div class="task-meta">
-              <span class="task-status" :class="`status-${task.status.toLowerCase()}`">
-                {{ getStatusLabel(task.status) }}
-              </span>
-              <span class="task-date">Создано: {{ formatDate(task.createdTs) }}</span>
+              <span class="subtask-toggle">{{ expandedTasks[task.id] ? 'Скрыть шаги ▲' : 'Шаги ▼' }}</span>
+            </button>
+            <div v-if="expandedTasks[task.id]" class="subtask-expanded">
+              <SubTasksChecklist :task="task" @updated="handleSubTaskUpdated" />
             </div>
           </div>
 
-          <div class="task-actions">
-            <button @click="openEditModal(task)" class="action-btn edit-btn" title="Редактировать">✏️</button>
-            <button @click="confirmDelete(task)" class="action-btn delete-btn" title="Удалить">🗑️</button>
+          <div v-if="task.description" class="task-description">
+            {{ task.description }}
+          </div>
+
+          <div class="task-meta">
+            <span class="task-date">Создано: {{ formatDate(task.createdTs) }}</span>
           </div>
         </div>
+
+        <div class="task-actions">
+          <button @click="openEditModal(task)" class="action-btn edit-btn" title="Редактировать">✏️</button>
+          <button @click="confirmDelete(task)" class="action-btn delete-btn" title="Удалить">🗑️</button>
+        </div>
       </div>
-    </template>
+    </div>
 
     <!-- Модальное окно создания/редактирования -->
     <TaskFormModal
@@ -150,17 +120,15 @@
 </template>
 
 <script>
-import KanbanBoard from '../KanbanBoard.vue';
 import TaskFormModal from './TaskFormModal.vue';
 import SubTasksChecklist from '../SubTasksChecklist.vue';
 import { progress } from '../../utils/subtasks.js';
-import { deleteTask, updateTask } from '../../api/tasks.js';
+import { deleteTask, toggleTask } from '../../api/tasks.js';
 
 export default {
   name: 'TaskListSection',
 
   components: {
-    KanbanBoard,
     TaskFormModal,
     SubTasksChecklist
   },
@@ -196,16 +164,16 @@ export default {
 
   data() {
     return {
-      viewMode: 'list',
       filterProject: '',
-      filterStatus: '',
       filterPriority: '',
 
       showTaskModal: false,
       editingTask: null,
 
-      // Локальные оптимистичные изменения статуса (id -> статус)
-      statusOverrides: {},
+      // Локальные оптимистичные изменения флага выполнения (id -> boolean)
+      completeOverrides: {},
+      // Задачи с незавершённым запросом переключения (id -> boolean)
+      togglingTasks: {},
       // Локальные изменения шагов (id -> subTasks)
       subTaskOverrides: {},
       // Раскрытые чек-листы шагов (id -> boolean)
@@ -231,8 +199,8 @@ export default {
     tasksWithOverrides() {
       return this.tasks.map(task => {
         let updated = task;
-        if (this.statusOverrides[task.id]) {
-          updated = { ...updated, status: this.statusOverrides[task.id] };
+        if (task.id in this.completeOverrides) {
+          updated = { ...updated, isComplete: this.completeOverrides[task.id] };
         }
         if (this.subTaskOverrides[task.id]) {
           updated = { ...updated, subTasks: this.subTaskOverrides[task.id] };
@@ -247,15 +215,29 @@ export default {
           if (this.filterProject && task.project?.name !== this.filterProject) {
             return false;
           }
-          if (this.filterStatus && task.status !== this.filterStatus) {
-            return false;
-          }
           if (this.filterPriority && task.priority !== this.filterPriority) {
             return false;
           }
         }
         return true;
       });
+    }
+  },
+
+  watch: {
+    tasks(newTasks) {
+      const overrides = { ...this.completeOverrides };
+      let changed = false;
+      for (const id of Object.keys(overrides)) {
+        const fresh = newTasks.find(candidate => String(candidate.id) === id);
+        if (fresh && !!fresh.isComplete === !!overrides[id]) {
+          delete overrides[id];
+          changed = true;
+        }
+      }
+      if (changed) {
+        this.completeOverrides = overrides;
+      }
     }
   },
 
@@ -268,18 +250,6 @@ export default {
         'LOW': 'Низкий'
       };
       return labels[priority] || priority;
-    },
-
-    getStatusLabel(status) {
-      const labels = {
-        'IDEA': 'Идея',
-        'BACKLOG': 'Бэклог',
-        'IN_PROGRESS': 'В работе',
-        'DONE': 'Выполнено',
-        'PAUSED': 'На паузе',
-        'CANCELED': 'Отменено'
-      };
-      return labels[status] || status;
     },
 
     formatDate(dateString) {
@@ -360,44 +330,45 @@ export default {
       }
     },
 
-    async handleKanbanUpdate({ taskId, newStatus }) {
-      const task = this.tasksWithOverrides.find(t => t.id === taskId);
-      if (!task) {
-        return;
-      }
+    async handleTaskToggle(task) {
+      const next = !task.isComplete;
 
-      // Оптимистичное обновление статуса через локальный override
-      this.statusOverrides = { ...this.statusOverrides, [taskId]: newStatus };
+      // Оптимистичный флап флага выполнения через локальный override
+      this.completeOverrides = { ...this.completeOverrides, [task.id]: next };
+      this.togglingTasks = { ...this.togglingTasks, [task.id]: true };
 
       try {
-        const response = await updateTask({
-          id: taskId,
-          name: task.name,
-          projectName: task.project?.name || '',
-          priority: task.priority,
-          status: newStatus,
-          description: task.description || ''
-        });
+        const response = await toggleTask(task.id);
 
         if (response.isSuccess) {
-          this.statusOverrides = {};
+          this.completeOverrides = {
+            ...this.completeOverrides,
+            [task.id]: !!response.data?.isComplete
+          };
           this.$emit('changed');
         } else {
-          this.rollbackStatus(taskId);
-          alert('Не удалось обновить статус: ' + (response.errorMessage || 'Неизвестная ошибка'));
+          this.rollbackComplete(task.id);
+          alert('Не удалось изменить статус задачи: ' + (response.errorMessage || 'Неизвестная ошибка'));
         }
       } catch (err) {
-        this.rollbackStatus(taskId);
-        alert('Ошибка при обновлении статуса');
-        console.error('Ошибка обновления статуса задачи:', err);
+        this.rollbackComplete(task.id);
+        alert('Ошибка при изменении статуса задачи');
+        console.error('Ошибка переключения статуса задачи:', err);
+      } finally {
+        const toggling = { ...this.togglingTasks };
+        delete toggling[task.id];
+        this.togglingTasks = toggling;
       }
     },
 
-    rollbackStatus(taskId) {
-      const overrides = { ...this.statusOverrides };
+    clearCompleteOverride(taskId) {
+      const overrides = { ...this.completeOverrides };
       delete overrides[taskId];
-      this.statusOverrides = overrides;
-      this.$emit('changed');
+      this.completeOverrides = overrides;
+    },
+
+    rollbackComplete(taskId) {
+      this.clearCompleteOverride(taskId);
     }
   }
 };
@@ -414,35 +385,6 @@ export default {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-}
-
-.view-toggle {
-  display: flex;
-  gap: 4px;
-  padding: 3px;
-  background-color: var(--bg-tertiary);
-  border-radius: 8px;
-}
-
-.view-btn {
-  padding: 7px 14px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.view-btn:hover {
-  color: var(--text-primary);
-}
-
-.view-btn.active {
-  background-color: var(--accent-primary);
-  color: white;
 }
 
 .filter-group {
@@ -485,6 +427,31 @@ export default {
   color: var(--text-muted);
   background-color: var(--bg-tertiary);
   border-radius: 8px;
+}
+
+.task-check {
+  display: flex;
+  align-items: center;
+  padding-top: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.task-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-green);
+  cursor: pointer;
+}
+
+.task-checkbox:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.task-card.task-completed .task-name {
+  text-decoration: line-through;
+  color: var(--text-muted);
 }
 
 .task-list {
@@ -619,8 +586,7 @@ export default {
   flex-wrap: wrap;
 }
 
-.task-priority,
-.task-status {
+.task-priority {
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 12px;
@@ -642,36 +608,6 @@ export default {
 .priority-low {
   background-color: var(--accent-green-light);
   color: var(--accent-green);
-}
-
-.status-idea {
-  background-color: var(--accent-purple-light);
-  color: var(--accent-purple);
-}
-
-.status-backlog {
-  background-color: var(--accent-gray-light);
-  color: var(--accent-gray);
-}
-
-.status-in_progress {
-  background-color: var(--accent-blue-light);
-  color: var(--accent-blue);
-}
-
-.status-done {
-  background-color: var(--accent-green-light);
-  color: var(--accent-green);
-}
-
-.status-paused {
-  background-color: var(--accent-orange-light);
-  color: var(--accent-orange);
-}
-
-.status-canceled {
-  background-color: var(--accent-red-light);
-  color: var(--accent-red);
 }
 
 .task-date {

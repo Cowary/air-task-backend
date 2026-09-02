@@ -1253,26 +1253,15 @@
           "Task Management"
         ],
         "summary": "Get all tasks",
-        "description": "Returns a list of all tasks in the system, optionally filtered by an array of statuses",
+        "description": "Returns a list of all tasks in the system, optionally filtered by the completion flag",
         "operationId": "list",
         "parameters": [
           {
-            "name": "status",
+            "name": "isComplete",
             "in": "query",
             "required": false,
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "IDEA",
-                  "BACKLOG",
-                  "IN_PROGRESS",
-                  "DONE",
-                  "PAUSED",
-                  "CANCELED"
-                ]
-              }
+              "type": "boolean"
             }
           }
         ],
@@ -1738,6 +1727,49 @@
           }
         }
       }
+    },
+    "/api/v1/task/{id}/toggle": {
+      "post": {
+        "tags": [
+          "Task Management"
+        ],
+        "summary": "Toggle task completion",
+        "description": "Switches the completion flag of the specified task",
+        "operationId": "toggleComplete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task completion flag successfully switched",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiRsTaskResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2069,18 +2101,10 @@
             ],
             "example": "LOW"
           },
-          "status": {
-            "type": "string",
-            "description": "Current status of the task",
-            "enum": [
-              "IDEA",
-              "BACKLOG",
-              "IN_PROGRESS",
-              "DONE",
-              "PAUSED",
-              "CANCELED"
-            ],
-            "example": "BACKLOG"
+          "isComplete": {
+            "type": "boolean",
+            "description": "Completion flag of the task",
+            "example": false
           },
           "subTasks": {
             "$ref": "#/components/schemas/SubTaskDto",
@@ -2312,8 +2336,10 @@
           "name": {
             "type": "string"
           },
-          "status": {
-            "type": "string"
+          "isComplete": {
+            "type": "boolean",
+            "description": "Completion flag of the task",
+            "example": false
           },
           "project": {
             "$ref": "#/components/schemas/ProjectInfo"
@@ -2381,8 +2407,10 @@
           "priority": {
             "type": "string"
           },
-          "status": {
-            "type": "string"
+          "isComplete": {
+            "type": "boolean",
+            "description": "Completion flag of the task",
+            "example": false
           },
           "description": {
             "type": "string"
@@ -2411,8 +2439,10 @@
           "priority": {
             "type": "string"
           },
-          "status": {
-            "type": "string"
+          "isComplete": {
+            "type": "boolean",
+            "description": "Completion flag of the task (optional, defaults to false)",
+            "example": false
           },
           "description": {
             "type": "string"
@@ -2426,8 +2456,7 @@
         },
         "required": [
           "name",
-          "priority",
-          "status"
+          "priority"
         ]
       },
       "UpdateReminderRq": {

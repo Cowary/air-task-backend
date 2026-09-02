@@ -39,17 +39,14 @@ export const createProject = async (projectData) => {
  *
  * API endpoint: GET /v1/task/list
  *
- * @param {string[]} [statuses] - Опциональный массив статусов для фильтрации (IDEA, BACKLOG, IN_PROGRESS, DONE, PAUSED, CANCELED)
+ * @param {boolean} [isComplete] - Опциональный флаг выполнения для фильтрации (true — выполненные, false — невыполненные)
  * @returns {Promise} Промис с данными от сервера
  */
-export const getTasks = async (statuses = null) => {
+export const getTasks = async (isComplete = null) => {
   try {
-    const config = statuses?.length
-      ? {
-          params: { status: statuses },
-          paramsSerializer: { status: { indexes: null } }
-        }
-      : {};
+    const config = isComplete === null || isComplete === undefined
+      ? {}
+      : { params: { isComplete } };
     const response = await apiClient.get('/v1/task/list', config);
     return response.data;
   } catch (error) {
@@ -67,7 +64,7 @@ export const getTasks = async (statuses = null) => {
  * @param {string} taskData.name - Название задачи (обязательно, макс. 200 символов)
  * @param {string} taskData.priority - Приоритет (HIGH, MIDDLE, LOW) - обязательно
  * @param {string} taskData.projectName - Название проекта (обязательно, макс. 100 символов)
- * @param {string} taskData.status - Статус (IDEA, BACKLOG, IN_PROGRESS, DONE, PAUSED, CANCELED) - обязательно
+ * @param {boolean} [taskData.isComplete] - Флаг выполнения (опционально, по умолчанию false)
  * @param {string} [taskData.description] - Описание задачи (опционально, макс. 10000 символов)
  * @returns {Promise} Промис с данными от сервера
  */
@@ -77,7 +74,7 @@ export const createTask = async (taskData) => {
       name: taskData.name,
       priority: taskData.priority,
       projectName: taskData.projectName,
-      status: taskData.status,
+      isComplete: taskData.isComplete,
       description: taskData.description
     };
 
@@ -103,7 +100,7 @@ export const createTask = async (taskData) => {
  * @param {string} taskData.name - Название задачи (обязательно, макс. 200 символов)
  * @param {string} taskData.priority - Приоритет (HIGH, MIDDLE, LOW) - обязательно
  * @param {string} taskData.projectName - Название проекта (обязательно, макс. 100 символов)
- * @param {string} taskData.status - Статус (IDEA, BACKLOG, IN_PROGRESS, DONE, PAUSED, CANCELED) - обязательно
+ * @param {boolean} [taskData.isComplete] - Флаг выполнения (опционально)
  * @param {string} [taskData.description] - Описание задачи (опционально, макс. 1000 символов)
  * @returns {Promise} Промис с данными от сервера
  */
@@ -114,7 +111,7 @@ export const updateTask = async (taskData) => {
       name: taskData.name,
       priority: taskData.priority,
       projectName: taskData.projectName,
-      status: taskData.status,
+      isComplete: taskData.isComplete,
       description: taskData.description
     };
 
@@ -163,6 +160,24 @@ export const toggleSubTask = async (taskId, subTaskId) => {
     return response.data;
   } catch (error) {
     console.error('Ошибка при переключении шага задачи:', error);
+    throw error;
+  }
+};
+
+/**
+ * Инвертирует флаг выполнения задачи
+ *
+ * API endpoint: POST /v1/task/{id}/toggle
+ *
+ * @param {number} id - ID задачи
+ * @returns {Promise} Промис с обновлённой задачей (ApiRs<TaskResponse>)
+ */
+export const toggleTask = async (id) => {
+  try {
+    const response = await apiClient.post(`/v1/task/${id}/toggle`);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при переключении статуса задачи:', error);
     throw error;
   }
 };

@@ -57,6 +57,17 @@ Timezone helpers live in `src/utils/timezone.js`.
 - Runtime backend URL is set with `BACKEND_URL` (no `VITE_` prefix), defaulting to `http://192.168.1.79:8102`.
 - `docker-compose.yml` exposes port `8080:80`.
 
+## Git & Commits
+
+- **Agents must NEVER commit or push.** All commits (including version bumps in `package.json`) are made by the user only. Prepare changes in the working tree and stop — the user reviews and commits.
+
+## Versioning & Releases
+
+- Release branches are named `release/X.Y.Z` (e.g. `release/1.10.0`); the version source of truth is the `version` field in `package.json`.
+- **The `version` in `package.json` must always match the current release branch.** Before committing on a `release/X.Y.Z` branch, check `git branch --show-current` and bump `version` to `X.Y.Z` if it is behind (patch releases bump the patch part: `release/1.10.1` → `1.10.1`).
+- Frontend versions are independent of the backend's (frontend is 1.x, backend is 2.x) — track only this repo's branch.
+- Version-bump commits are standalone with message `ver X.Y.Z` (see `git log`).
+
 ## Conventions
 
 - CSS custom properties are defined in `src/style.css`; dark mode is activated by `data-theme="dark"` on `<html>`.
