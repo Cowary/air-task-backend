@@ -43,6 +43,13 @@
         >
           📝 Все задачи
         </button>
+        <button
+          class="tab-btn"
+          :class="{ active: activeTab === 'archive' }"
+          @click="activeTab = 'archive'"
+        >
+          🗄 Архив
+        </button>
       </div>
 
       <!-- Индикатор фонового обновления -->
@@ -66,12 +73,46 @@
       />
 
       <!-- Все задачи -->
+      <template v-else-if="activeTab === 'tasks'">
+        <div class="completion-toggle">
+          <button
+            class="completion-btn"
+            :class="{ active: tasksFilter === 'incomplete' }"
+            @click="tasksFilter = 'incomplete'"
+          >
+            Невыполненные
+          </button>
+          <button
+            class="completion-btn"
+            :class="{ active: tasksFilter === 'completed' }"
+            @click="tasksFilter = 'completed'"
+          >
+            Выполненные
+          </button>
+          <button
+            class="completion-btn"
+            :class="{ active: tasksFilter === 'all' }"
+            @click="tasksFilter = 'all'"
+          >
+            Все
+          </button>
+        </div>
+        <TaskListSection
+          :tasks="filteredAllTasks"
+          :projects="projects"
+          :show-filters="true"
+          empty-text="Задач пока нет. Создайте первую!"
+          @changed="refresh"
+        />
+      </template>
+
+      <!-- Архив выполненных задач -->
       <TaskListSection
         v-else
-        :tasks="tasks"
+        :tasks="archivedTasks"
         :projects="projects"
         :show-filters="true"
-        empty-text="Задач пока нет. Создайте первую!"
+        empty-text="Выполненных задач пока нет."
         @changed="refresh"
       />
     </div>
@@ -98,6 +139,7 @@ export default {
   data() {
     return {
       activeTab: 'projects',
+      tasksFilter: 'incomplete',
 
       projects: [],
       tasks: [],
@@ -113,6 +155,22 @@ export default {
   },
 
   computed: {
+    // Задачи вкладки «Все задачи» с учётом переключателя выполненности
+    filteredAllTasks() {
+      if (this.tasksFilter === 'incomplete') {
+        return this.tasks.filter(task => !task.isComplete);
+      }
+      if (this.tasksFilter === 'completed') {
+        return this.tasks.filter(task => !!task.isComplete);
+      }
+      return this.tasks;
+    },
+
+    // Вкладка «Архив» — только выполненные задачи
+    archivedTasks() {
+      return this.tasks.filter(task => !!task.isComplete);
+    },
+
     // Map weeklyTaskId -> статистика выполнения на текущей неделе
     weekMap() {
       const map = {};
@@ -308,7 +366,7 @@ h1 {
   border-radius: 10px;
   padding: 4px;
   border: 1px solid var(--border-color);
-  max-width: 560px;
+  max-width: 660px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -339,6 +397,37 @@ h1 {
 
 .tab-btn.active:hover {
   background-color: #5a6fd6;
+}
+
+.completion-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  margin-bottom: 15px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.completion-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.completion-btn:hover {
+  color: var(--text-primary);
+}
+
+.completion-btn.active {
+  background-color: var(--accent-primary);
+  color: white;
 }
 
 .refreshing {

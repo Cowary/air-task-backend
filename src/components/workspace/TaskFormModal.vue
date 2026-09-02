@@ -47,27 +47,13 @@
           </span>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="wsTaskPriority">Приоритет *</label>
-            <select id="wsTaskPriority" v-model="form.priority" required>
-              <option value="HIGH">Высокий</option>
-              <option value="MIDDLE">Средний</option>
-              <option value="LOW">Низкий</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="wsTaskStatus">Статус *</label>
-            <select id="wsTaskStatus" v-model="form.status" required>
-              <option value="IDEA">Идея</option>
-              <option value="BACKLOG">Бэклог</option>
-              <option value="IN_PROGRESS">В работе</option>
-              <option value="DONE">Выполнено</option>
-              <option value="PAUSED">На паузе</option>
-              <option value="CANCELED">Отменено</option>
-            </select>
-          </div>
+        <div class="form-group">
+          <label for="wsTaskPriority">Приоритет *</label>
+          <select id="wsTaskPriority" v-model="form.priority" required>
+            <option value="HIGH">Высокий</option>
+            <option value="MIDDLE">Средний</option>
+            <option value="LOW">Низкий</option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -137,7 +123,6 @@ export default {
         projectName: '',
         customProjectName: '',
         priority: 'MIDDLE',
-        status: 'IN_PROGRESS',
         description: '',
         subTasks: []
       }
@@ -186,7 +171,7 @@ this.form = {
           projectName: this.noProjectName() || '__custom__',
           customProjectName: this.noProjectName() ? '' : projectName,
           priority: this.task.priority || 'MIDDLE',
-          status: this.task.status || 'IN_PROGRESS',
+          isComplete: !!this.task.isComplete,
           description: this.task.description || '',
           subTasks: normalize(this.task?.subTasks)
         };
@@ -200,7 +185,7 @@ this.form = {
           projectName: known ? projectName : '__custom__',
           customProjectName: known ? '' : projectName,
           priority: this.task.priority || 'MIDDLE',
-          status: this.task.status || 'IN_PROGRESS',
+          isComplete: !!this.task.isComplete,
           description: this.task.description || '',
           subTasks: normalize(this.task?.subTasks)
         };
@@ -217,7 +202,6 @@ this.form = {
           projectName: known ? explicitDefault : '__custom__',
           customProjectName: known ? '' : explicitDefault,
           priority: 'MIDDLE',
-          status: 'IN_PROGRESS',
           description: '',
           subTasks: []
         };
@@ -231,7 +215,6 @@ this.form = {
         projectName: fallbackDefault || '__custom__',
         customProjectName: '',
         priority: 'MIDDLE',
-        status: 'IN_PROGRESS',
         description: '',
         subTasks: []
       };
@@ -261,7 +244,7 @@ this.form = {
           name: this.form.name,
           projectName: this.resolvedProjectName,
           priority: this.form.priority,
-          status: this.form.status,
+          ...(this.isEdit ? { isComplete: !!this.task.isComplete } : {}),
           description: this.form.description
         };
 

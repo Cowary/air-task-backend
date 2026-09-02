@@ -159,14 +159,6 @@
                 <option value="MIDDLE">Средний</option>
                 <option value="LOW">Низкий</option>
               </select>
-              <select v-model="draft.status" class="draft-select" title="Статус">
-                <option value="IDEA">Идея</option>
-                <option value="BACKLOG">Бэклог</option>
-                <option value="IN_PROGRESS">В работе</option>
-                <option value="DONE">Выполнено</option>
-                <option value="PAUSED">На паузе</option>
-                <option value="CANCELED">Отменено</option>
-              </select>
               <button
                 type="button"
                 @click="removeTaskDraft(index)"
@@ -220,7 +212,7 @@ import { getAllWeeklyTasks, createWeeklyTask } from '../api/weeklyTasks.js';
 import { getTasks, createTask } from '../api/tasks.js';
 import { createGoal, updateGoal, deleteGoal } from '../api/goals.js';
 
-const PROJECT_FILTER_STATUSES = ['IDEA', 'BACKLOG', 'IN_PROGRESS', 'PAUSED'];
+const WEEKLY_FILTER_STATUSES = ['IDEA', 'BACKLOG', 'IN_PROGRESS', 'PAUSED'];
 
 export default {
   name: 'ProjectFormModal',
@@ -345,8 +337,7 @@ export default {
       this.newTasks.push({
         key: ++this.itemKeyCounter,
         name: '',
-        priority: 'MIDDLE',
-        status: 'IDEA'
+        priority: 'MIDDLE'
       });
     },
 
@@ -372,7 +363,7 @@ export default {
       this.loadingTasks = true;
 
       try {
-        const weeklyResponse = await getAllWeeklyTasks(PROJECT_FILTER_STATUSES);
+        const weeklyResponse = await getAllWeeklyTasks(WEEKLY_FILTER_STATUSES);
         if (weeklyResponse.isSuccess) {
           this.weeklyOptions = weeklyResponse.data || [];
         }
@@ -383,7 +374,7 @@ export default {
       }
 
       try {
-        const taskResponse = await getTasks(PROJECT_FILTER_STATUSES);
+        const taskResponse = await getTasks(false);
         if (taskResponse.isSuccess) {
           this.taskOptions = taskResponse.data || [];
         }
@@ -518,8 +509,7 @@ export default {
           const res = await createTask({
             name: draft.name,
             priority: draft.priority,
-            projectName,
-            status: draft.status
+            projectName
           });
           if (res.isSuccess) {
             if (res.data?.id) {

@@ -1,5 +1,5 @@
 <template>
-  <div class="container" :class="{ 'container-kanban': viewMode === 'kanban' }">
+  <div class="container">
     <!-- Кнопка возврата на главную -->
     <router-link to="/" class="back-button">← На главную</router-link>
 
@@ -19,29 +19,10 @@
       <button @click="loadTasks" class="retry-btn">Повторить</button>
     </div>
 
-    <!-- Вкладки переключения режимов -->
+    <!-- Содержимое -->
     <div v-else class="content">
-      <div class="view-tabs">
-        <button
-          class="view-tab"
-          :class="{ active: viewMode === 'list' }"
-          @click="viewMode = 'list'"
-        >
-          📋 Список
-        </button>
-        <button
-          class="view-tab"
-          :class="{ active: viewMode === 'kanban' }"
-          @click="viewMode = 'kanban'"
-        >
-          📊 Канбан
-        </button>
-      </div>
-
-      <!-- Режим списка -->
-      <template v-if="viewMode === 'list'">
-        <!-- Панель управления -->
-        <div class="toolbar">
+      <!-- Панель управления -->
+      <div class="toolbar">
         <div class="filter-group">
           <label for="filterProject">Проект:</label>
           <select id="filterProject" v-model="filterProject">
@@ -51,15 +32,11 @@
             </option>
           </select>
 
-          <label for="filterStatus">Статус:</label>
-          <select id="filterStatus" v-model="filterStatus">
-            <option value="">Все статусы</option>
-            <option value="IDEA">Идея</option>
-            <option value="BACKLOG">Бэклог</option>
-            <option value="IN_PROGRESS">В работе</option>
-            <option value="DONE">Выполнено</option>
-            <option value="PAUSED">На паузе</option>
-            <option value="CANCELED">Отменено</option>
+          <label for="filterCompletion">Выполнение:</label>
+          <select id="filterCompletion" v-model="filterCompletion">
+            <option value="incomplete">Невыполненные</option>
+            <option value="completed">Выполненные</option>
+            <option value="">Все</option>
           </select>
 
           <label for="filterPriority">Приоритет:</label>
@@ -81,7 +58,22 @@
 
       <!-- Список задач -->
       <div v-else class="task-list">
-        <div v-for="task in filteredTasks" :key="task.id" class="task-card">
+        <div
+          v-for="task in filteredTasks"
+          :key="task.id"
+          class="task-card"
+          :class="{ 'task-completed': task.isComplete }"
+        >
+          <label class="task-check" title="Отметить выполнение">
+            <input
+              type="checkbox"
+              class="task-checkbox"
+              :checked="!!task.isComplete"
+              :disabled="!!togglingTasks[task.id]"
+              @change="handleTaskToggle(task)"
+            >
+          </label>
+
           <div class="task-info">
             <div class="task-header">
               <div class="task-project" v-if="task.project?.name">
@@ -121,9 +113,6 @@
             </div>
 
             <div class="task-meta">
-              <span class="task-status" :class="`status-${task.status.toLowerCase().replace(' ', '_')}`">
-                {{ getStatusLabel(task.status) }}
-              </span>
               <span class="task-date">
                 Создано: {{ formatDate(task.createdTs) }}
               </span>
@@ -136,18 +125,6 @@
           </div>
         </div>
       </div>
-      </template>
-
-      <!-- Режим канбан -->
-      <template v-else>
-        <KanbanBoard
-          :tasks="tasks"
-          @update-status="handleKanbanUpdate"
-          @edit-task="openEditModal"
-          @create-task="openCreateModal"
-          @subtask-updated="handleSubTaskUpdated"
-        />
-      </template>
     </div>
 
     <!-- Модальное окно для создания/редактирования задачи -->
@@ -213,22 +190,6 @@
           </div>
 
           <div class="form-group">
-            <label for="taskStatus">Статус *</label>
-            <select
-              id="taskStatus"
-              v-model="taskForm.status"
-              required
-            >
-              <option value="IDEA">Идея</option>
-              <option value="BACKLOG">Бэклог</option>
-              <option value="IN_PROGRESS">В работе</option>
-              <option value="DONE">Выполнено</option>
-              <option value="PAUSED">На паузе</option>
-              <option value="CANCELED">Отменено</option>
-            </select>
-          </div>
-
-          <div class="form-group">
             <label for="taskDescription">Описание</label>
             <textarea
               id="taskDescription"
@@ -278,10 +239,9 @@
 </template>
 
 <script>
-import { getTasks, createTask, updateTask, deleteTask, getAllProjects, createProject } from '../api/tasks.js';
+import { getTasks, createTask, updateTask, deleteTask, toggleTask, getAllProjects, createProject } from '../api/tasks.js';
 import { ALL_PROJECT_STATUSES } from '../api/projects.js';
 import ProjectModal from '../components/ProjectModal.vue';
-import KanbanBoard from '../components/KanbanBoard.vue';
 import SubTasksChecklist from '../components/SubTasksChecklist.vue';
 import SubTasksEditor from '../components/SubTasksEditor.vue';
 import { progress, normalize, toPayload, validate } from '../utils/subtasks.js';
@@ -291,7 +251,6 @@ export default {
 
   components: {
     ProjectModal,
-    KanbanBoard,
     SubTasksChecklist,
     SubTasksEditor
   },
@@ -301,7 +260,9 @@ export default {
       tasks: [],
       loading: false,
       error: null,
-      viewMode: 'kanban',
+
+      // id -> true, пока идёт запрос переключения выполнения
+      togglingTasks: {},
 
       // Проекты
       projects: [],
@@ -309,7 +270,7 @@ export default {
 
       // Фильтры
       filterProject: '',
-      filterStatus: '',
+      filterCompletion: 'incomplete',
       filterPriority: '',
 
       // Модальное окно задачи
@@ -320,7 +281,6 @@ export default {
         name: '',
         projectName: '',
         priority: 'MIDDLE',
-        status: 'IN_PROGRESS',
         description: '',
         subTasks: []
       },
@@ -354,7 +314,10 @@ export default {
         if (this.filterProject && task.project?.name !== this.filterProject) {
           return false;
         }
-        if (this.filterStatus && task.status !== this.filterStatus) {
+        if (this.filterCompletion === 'incomplete' && task.isComplete) {
+          return false;
+        }
+        if (this.filterCompletion === 'completed' && !task.isComplete) {
           return false;
         }
         if (this.filterPriority && task.priority !== this.filterPriority) {
@@ -411,18 +374,6 @@ export default {
       return labels[priority] || priority;
     },
 
-    getStatusLabel(status) {
-      const labels = {
-        'IDEA': 'Идея',
-        'BACKLOG': 'Бэклог',
-        'IN_PROGRESS': 'В работе',
-        'DONE': 'Выполнено',
-        'PAUSED': 'На паузе',
-        'CANCELED': 'Отменено'
-      };
-      return labels[status] || status;
-    },
-
     formatDate(dateString) {
       if (!dateString) return '';
       const date = new Date(dateString);
@@ -441,7 +392,6 @@ export default {
         name: '',
         projectName: this.projects.length > 0 ? this.projects[0].name : '',
         priority: 'MIDDLE',
-        status: 'IN_PROGRESS',
         description: '',
         subTasks: []
       };
@@ -454,7 +404,7 @@ export default {
         name: task.name,
         projectName: task.project?.name || '',
         priority: task.priority,
-        status: task.status,
+        isComplete: !!task.isComplete,
         description: task.description || '',
         subTasks: normalize(task.subTasks)
       };
@@ -468,7 +418,6 @@ export default {
         name: '',
         projectName: this.projects.length > 0 ? this.projects[0].name : '',
         priority: 'MIDDLE',
-        status: 'IN_PROGRESS',
         description: '',
         subTasks: []
       };
@@ -498,7 +447,7 @@ export default {
             name: this.taskForm.name,
             projectName: this.taskForm.projectName,
             priority: this.taskForm.priority,
-            status: this.taskForm.status,
+            isComplete: this.taskForm.isComplete,
             description: this.taskForm.description,
             subTasks
           });
@@ -507,7 +456,6 @@ export default {
             name: this.taskForm.name,
             projectName: this.taskForm.projectName,
             priority: this.taskForm.priority,
-            status: this.taskForm.status,
             description: this.taskForm.description,
             ...(subTasks.length ? { subTasks } : {})
           });
@@ -561,44 +509,41 @@ export default {
       }
     },
 
-    async handleKanbanUpdate({ taskId, newStatus }) {
-      const task = this.tasks.find(t => t.id === taskId);
-      if (!task) return;
+    async handleTaskToggle(task) {
+      const next = !task.isComplete;
 
-      const previousStatus = task.status;
-
-      // Оптимистичное обновление: сразу меняем статус в локальном массиве
+      // Оптимистичный флап: меняем флаг в локальном массиве до ответа сервера
       this.tasks = this.tasks.map(t =>
-        t.id === taskId ? { ...t, status: newStatus } : t
+        t.id === task.id ? { ...t, isComplete: next } : t
       );
+      this.togglingTasks = { ...this.togglingTasks, [task.id]: true };
 
       try {
-        const response = await updateTask({
-          id: taskId,
-          name: task.name,
-          projectName: task.project?.name || '',
-          priority: task.priority,
-          status: newStatus,
-          description: task.description || ''
-        });
+        const response = await toggleTask(task.id);
 
-        if (!response.isSuccess) {
-          // Откат при ошибке API
+        if (response.isSuccess) {
           this.tasks = this.tasks.map(t =>
-            t.id === taskId ? { ...t, status: previousStatus } : t
+            t.id === task.id ? response.data : t
           );
-          await this.loadTasks();
-          alert('Не удалось обновить статус: ' + (response.errorMessage || 'Неизвестная ошибка'));
+        } else {
+          this.rollbackTask(task.id, !next);
+          alert('Не удалось изменить статус задачи: ' + (response.errorMessage || 'Неизвестная ошибка'));
         }
       } catch (err) {
-        // Откат при сетевой ошибке
-        this.tasks = this.tasks.map(t =>
-          t.id === taskId ? { ...t, status: previousStatus } : t
-        );
-        await this.loadTasks();
-        alert('Ошибка при обновлении статуса');
-        console.error('Ошибка обновления статуса:', err);
+        this.rollbackTask(task.id, !next);
+        alert('Ошибка при изменении статуса задачи');
+        console.error('Ошибка переключения статуса задачи:', err);
+      } finally {
+        const toggling = { ...this.togglingTasks };
+        delete toggling[task.id];
+        this.togglingTasks = toggling;
       }
+    },
+
+    rollbackTask(taskId, previous) {
+      this.tasks = this.tasks.map(t =>
+        t.id === taskId ? { ...t, isComplete: previous } : t
+      );
     },
 
     subtaskProgress(task) {
@@ -718,67 +663,6 @@ h1 {
   background-color: var(--border-color);
 }
 
-.container-kanban {
-  max-width: 90vw;
-  width: 90vw;
-  margin: 0 auto;
-  padding-left: 0;
-  padding-right: 0;
-  padding-top: 8px;
-  min-height: 90vh;
-}
-
-.container-kanban h1 {
-  margin-bottom: 2px;
-  font-size: 1.8em;
-}
-
-.container-kanban .subtitle {
-  margin-bottom: 12px;
-}
-
-.container-kanban .view-tabs {
-  margin-bottom: 12px;
-}
-
-/* Вкладки режимов */
-.view-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 20px;
-  background-color: var(--bg-secondary);
-  border-radius: 10px;
-  padding: 4px;
-  border: 1px solid var(--border-color);
-}
-
-.view-tab {
-  flex: 1;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.view-tab:hover {
-  color: var(--text-primary);
-  background-color: var(--bg-tertiary);
-}
-
-.view-tab.active {
-  background-color: var(--accent-primary);
-  color: white;
-}
-
-.view-tab.active:hover {
-  background-color: #5a6fd6;
-}
-
 /* Панель управления */
 .toolbar {
   display: flex;
@@ -864,6 +748,31 @@ h1 {
 
 .task-info {
   flex: 1;
+}
+
+.task-check {
+  display: flex;
+  align-items: center;
+  padding-top: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.task-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-green);
+  cursor: pointer;
+}
+
+.task-checkbox:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.task-card.task-completed .task-name {
+  text-decoration: line-through;
+  color: var(--text-muted);
 }
 
 .task-header {
@@ -965,8 +874,7 @@ h1 {
   flex-wrap: wrap;
 }
 
-.task-priority,
-.task-status {
+.task-priority {
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 12px;
@@ -987,37 +895,6 @@ h1 {
 .priority-low {
   background-color: var(--accent-green-light);
   color: var(--accent-green);
-}
-
-/* Статусы */
-.status-idea {
-  background-color: var(--accent-purple-light);
-  color: var(--accent-purple);
-}
-
-.status-backlog {
-  background-color: var(--accent-gray-light);
-  color: var(--accent-gray);
-}
-
-.status-in_progress {
-  background-color: var(--accent-blue-light);
-  color: var(--accent-blue);
-}
-
-.status-done {
-  background-color: var(--accent-green-light);
-  color: var(--accent-green);
-}
-
-.status-paused {
-  background-color: var(--accent-orange-light);
-  color: var(--accent-orange);
-}
-
-.status-canceled {
-  background-color: var(--accent-red-light);
-  color: var(--accent-red);
 }
 
 .task-date {
