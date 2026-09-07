@@ -5,6 +5,7 @@
       <div v-if="showFilters" class="filter-group">
         <select v-model="filterProject" class="filter-select" title="Проект">
           <option value="">Все проекты</option>
+          <option :value="NO_PROJECT_FILTER">Без проекта</option>
           <option v-for="name in uniqueProjects" :key="name" :value="name">
             {{ name }}
           </option>
@@ -16,19 +17,25 @@
           <option value="MIDDLE">Средний</option>
           <option value="LOW">Низкий</option>
         </select>
+
+        <select v-if="showSort" v-model="sortMode" class="filter-select" title="Сортировка">
+          <option value="priority_desc">Приоритет ↓</option>
+          <option value="priority_asc">Приоритет ↑</option>
+          <option value="name">По названию</option>
+        </select>
       </div>
 
       <button @click="openCreateModal" class="create-btn">+ Задача</button>
     </div>
 
     <!-- Список -->
-    <div v-if="filteredTasks.length === 0" class="empty-message">
+    <div v-if="displayTasks.length === 0" class="empty-message">
       <p>{{ tasks.length === 0 ? (emptyText || 'Задач пока нет. Создайте первую!') : 'Нет задач, соответствующих фильтрам' }}</p>
     </div>
 
     <div v-else class="task-list">
       <div
-        v-for="task in filteredTasks"
+        v-for="task in displayTasks"
         :key="task.id"
         class="task-card"
         :class="{ 'task-completed': task.isComplete }"
@@ -125,6 +132,16 @@ import SubTasksChecklist from '../SubTasksChecklist.vue';
 import { progress } from '../../utils/subtasks.js';
 import { deleteTask, toggleTask } from '../../api/tasks.js';
 
+export const NO_PROJECT_FILTER = '__no_project__';
+const NO_PROJECT_NAME = 'Без проекта';
+
+const PRIORITY_RANK = {
+  HIGH: 0,
+  MIDDLE: 1,
+  MEDIUM: 1,
+  LOW: 2
+};
+
 export default {
   name: 'TaskListSection',
 
@@ -150,6 +167,14 @@ export default {
       type: Boolean,
       default: false
     },
+    showSort: {
+      type: Boolean,
+      default: false
+    },
+    defaultFilterProject: {
+      type: String,
+      default: ''
+    },
     showProjectName: {
       type: Boolean,
       default: true
@@ -164,8 +189,11 @@ export default {
 
   data() {
     return {
-      filterProject: '',
+      NO_PROJECT_FILTER,
+
+      filterProject: this.defaultFilterProject,
       filterPriority: '',
+      sortMode: 'priority_desc',
 
       showTaskModal: false,
       editingTask: null,
@@ -189,7 +217,7 @@ export default {
     uniqueProjects() {
       const names = new Set();
       this.tasks.forEach(task => {
-        if (task.project?.name) {
+        if (task.project?.name && task.project.name !== NO_PROJECT_NAME) {
           names.add(task.project.name);
         }
       });
@@ -212,7 +240,12 @@ export default {
     filteredTasks() {
       return this.tasksWithOverrides.filter(task => {
         if (this.showFilters) {
-          if (this.filterProject && task.project?.name !== this.filterProject) {
+          if (this.filterProject === NO_PROJECT_FILTER) {
+            const name = task.project?.name;
+            if (name && name !== NO_PROJECT_NAME) {
+              return false;
+            }
+          } else if (this.filterProject && task.project?.name !== this.filterProject) {
             return false;
           }
           if (this.filterPriority && task.priority !== this.filterPriority) {
@@ -220,6 +253,28 @@ export default {
           }
         }
         return true;
+      });
+    },
+
+    displayTasks() {
+      const tasks = this.filteredTasks;
+      if (!this.showFilters || !this.showSort || this.sortMode === 'none') {
+        return tasks;
+      }
+
+      const byName = (a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ru');
+      const sorted = [...tasks];
+
+      if (this.sortMode === 'name') {
+        return sorted.sort(byName);
+      }
+
+      const rank = task => (task.priority in PRIORITY_RANK ? PRIORITY_RANK[task.priority] : 9);
+      const direction = this.sortMode === 'priority_asc' ? -1 : 1;
+
+      return sorted.sort((a, b) => {
+        const diff = (rank(a) - rank(b)) * direction;
+        return diff !== 0 ? diff : byName(a, b);
       });
     }
   },

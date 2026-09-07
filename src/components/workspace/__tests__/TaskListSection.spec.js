@@ -7,7 +7,7 @@ vi.mock('../../../api/tasks.js', async (importOriginal) => {
 });
 
 import { toggleTask } from '../../../api/tasks.js';
-import TaskListSection from '../TaskListSection.vue';
+import TaskListSection, { NO_PROJECT_FILTER } from '../TaskListSection.vue';
 
 function task(id, isComplete, extra = {}) {
   return {
@@ -154,5 +154,95 @@ describe('TaskListSection — удаление статусов из UI', () => 
     const wrapper = mountSection([task(1, false)], { showFilters: true });
 
     expect(wrapper.find('select[title="Приоритет"]').exists()).toBe(true);
+  });
+});
+
+describe('TaskListSection — фильтр «Без проекта»', () => {
+  const noProjectTasks = [
+    task(1, false, { project: { name: 'Проект Б' } }),
+    task(2, false, { project: { name: 'Без проекта' } }),
+    task(3, false, { project: null }),
+    task(4, false, { project: undefined })
+  ];
+
+  function visibleNames(wrapper) {
+    return wrapper.findAll('.task-name').map(w => w.text());
+  }
+
+  it('без пропа по умолчанию выбран «Все проекты»', () => {
+    const wrapper = mountSection(noProjectTasks, { showFilters: true });
+
+    expect(wrapper.find('select[title="Проект"]').element.value).toBe('');
+    expect(wrapper.findAll('.task-card')).toHaveLength(4);
+  });
+
+  it('с defaultFilterProject=NO_PROJECT_FILTER по умолчанию выбран «Без проекта»', () => {
+    const wrapper = mountSection(noProjectTasks, {
+      showFilters: true,
+      defaultFilterProject: NO_PROJECT_FILTER
+    });
+
+    expect(wrapper.find('select[title="Проект"]').element.value).toBe(NO_PROJECT_FILTER);
+  });
+
+  it('фильтр «Без проекта» оставляет задачи с проектом «Без проекта» и без проекта', async () => {
+    const wrapper = mountSection(noProjectTasks, { showFilters: true });
+
+    await wrapper.find('select[title="Проект"]').setValue(NO_PROJECT_FILTER);
+
+    expect(visibleNames(wrapper)).toEqual(['Задача 2', 'Задача 3', 'Задача 4']);
+  });
+
+  it('«Без проекта» не дублируется в списке проектов, а «Все проекты» остаются', () => {
+    const wrapper = mountSection(noProjectTasks, { showFilters: true });
+    const options = wrapper.find('select[title="Проект"]').findAll('option');
+    const texts = options.map(o => o.text().trim());
+
+    expect(texts.filter(t => t === 'Без проекта')).toHaveLength(1);
+    expect(texts).toContain('Все проекты');
+    expect(texts).toContain('Проект Б');
+  });
+});
+
+describe('TaskListSection — сортировка по приоритету', () => {
+  const tasks = [
+    task(1, false, { name: 'Дельта', priority: 'LOW', project: { name: 'Проект Б' } }),
+    task(2, false, { name: 'Альфа', priority: 'HIGH', project: { name: 'Проект Б' } }),
+    task(3, false, { name: 'Браво', priority: 'MIDDLE', project: { name: 'Проект Б' } }),
+    task(4, false, { name: 'Антон', priority: 'HIGH', project: { name: 'Проект Б' } })
+  ];
+
+  function visibleNames(wrapper) {
+    return wrapper.findAll('.task-name').map(w => w.text());
+  }
+
+  it('селект сортировки скрыт без showSort, порядок — как от бэкенда', () => {
+    const wrapper = mountSection(tasks, { showFilters: true });
+
+    expect(wrapper.find('select[title="Сортировка"]').exists()).toBe(false);
+    expect(visibleNames(wrapper)).toEqual(['Дельта', 'Альфа', 'Браво', 'Антон']);
+  });
+
+  it('дефолт — Приоритет ↓: от Высокого к Низкому, тай-брейк по названию', () => {
+    const wrapper = mountSection(tasks, { showFilters: true, showSort: true });
+
+    expect(wrapper.find('select[title="Сортировка"]').element.value).toBe('priority_desc');
+    expect(visibleNames(wrapper)).toEqual(['Альфа', 'Антон', 'Браво', 'Дельта']);
+  });
+
+  it('Приоритет ↑ разворачивает порядок', async () => {
+    const wrapper = mountSection(tasks, { showFilters: true, showSort: true });
+
+    await wrapper.find('select[title="Сортировка"]').setValue('priority_asc');
+
+    expect(visibleNames(wrapper)).toEqual(['Дельта', 'Браво', 'Альфа', 'Антон']);
+  });
+
+  it('«По названию» сортирует только по названию', async () => {
+    const wrapper = mountSection(tasks, { showFilters: true, showSort: true });
+
+    await wrapper.find('select[title="Сортировка"]').setValue('name');
+
+    expect(visibleNames(wrapper)).toEqual(['Альфа', 'Антон', 'Браво', 'Дельта']);
   });
 });
