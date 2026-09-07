@@ -1,9 +1,14 @@
-import { describe, it, expect } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { mount, flushPromises } from '@vue/test-utils';
+
+vi.mock('../../../api/projects.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return { ...actual, updateProject: vi.fn() };
+});
 
 import ProjectsPanel from '../ProjectsPanel.vue';
 import TaskListSection from '../TaskListSection.vue';
-import { ACTIVE_PROJECT_STATUSES, ALL_PROJECT_STATUSES } from '../../../api/projects.js';
+import { ACTIVE_PROJECT_STATUSES, ALL_PROJECT_STATUSES, updateProject } from '../../../api/projects.js';
 
 const projects = [
   { id: 1, name: 'Активный проект', status: 'ACTIVE', priority: 'LOW', goalList: [], weeklyList: [], taskList: [] },
@@ -227,5 +232,118 @@ describe('ProjectsPanel — подвкладки «Актуальные | Арх
     });
 
     expect(wrapper.find('.orphan-card').exists()).toBe(true);
+  });
+});
+
+describe('ProjectsPanel — завершение и возврат проекта', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubGlobal('alert', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const project = (status, extra = {}) => ({
+    id: 1, name: 'П1', status, priority: 'LOW',
+    goalList: [], weeklyList: [], taskList: [],
+    ...extra
+  });
+
+  const openTask = { id: 10, name: 'T10', priority: 'LOW', isComplete: false, project: { id: 1, name: 'П1' } };
+  const doneTask = { id: 11, name: 'T11', priority: 'LOW', isComplete: true, project: { id: 1, name: 'П1' } };
+
+  async function mountSelected(projects, tasks = []) {
+    const wrapper = mount(ProjectsPanel, {
+      props: { projects, tasks, weekMap: {} },
+      global: {
+        stubs: { ProjectFormModal: true, TaskListSection: true, WeeklyTaskFormModal: true }
+      }
+    });
+    wrapper.vm.select(1);
+    await wrapper.vm.$nextTick();
+    return wrapper;
+  }
+
+  it('есть незакрытая задача — «Завершить проект» заблокирован', async () => {
+    const wrapper = await mountSelected([project('ACTIVE')], [doneTask, openTask]);
+    const btn = wrapper.find('.status-toggle-btn');
+
+    expect(btn.text()).toContain('Завершить проект');
+    expect(btn.attributes('disabled')).toBeDefined();
+  });
+
+  it('есть невыполненная цель — заблокирован', async () => {
+    const wrapper = await mountSelected(
+      [project('ACTIVE', { goalList: [{ id: 1, name: 'G', isCompleted: false }] })]
+    );
+
+    expect(wrapper.find('.status-toggle-btn').attributes('disabled')).toBeDefined();
+  });
+
+  it('есть еженедельная задача не в DONE — заблокирован', async () => {
+    const wrapper = await mountSelected(
+      [project('IN_PROGRESS', { weeklyList: [{ id: 5, name: 'W', status: 'IN_PROGRESS', count: 1, priority: 'LOW' }] })]
+    );
+    const btn = wrapper.find('.status-toggle-btn');
+
+    expect(btn.text()).toContain('Завершить проект');
+    expect(btn.attributes('disabled')).toBeDefined();
+  });
+
+  it('пустой проект завершить можно', async () => {
+    const wrapper = await mountSelected([project('ACTIVE')]);
+
+    expect(wrapper.find('.status-toggle-btn').attributes('disabled')).toBeUndefined();
+  });
+
+  it('всё выполнено — кнопка активна, клик шлёт status DONE и включает фильтр «Завершённые»', async () => {
+    updateProject.mockResolvedValue({ isSuccess: true, data: project('DONE') });
+    const wrapper = await mountSelected(
+      [project('ACTIVE', {
+        goalList: [{ id: 1, name: 'G', isCompleted: true }],
+        weeklyList: [{ id: 5, name: 'W', status: 'DONE', count: 1, priority: 'LOW' }]
+      })],
+      [doneTask]
+    );
+
+    await wrapper.find('.status-toggle-btn').trigger('click');
+    await flushPromises();
+
+    expect(updateProject).toHaveBeenCalledWith(1, { status: 'DONE' });
+    expect(wrapper.emitted('statuses-changed')).toHaveLength(1);
+    expect(wrapper.emitted('statuses-changed')[0][0]).toEqual(['DONE']);
+  });
+
+  it('для DONE-проекта показывается «Вернуть в работу», клик шлёт ACTIVE', async () => {
+    updateProject.mockResolvedValue({ isSuccess: true, data: project('ACTIVE') });
+    const wrapper = await mountSelected([project('DONE')]);
+    const btn = wrapper.find('.status-toggle-btn');
+
+    expect(btn.text()).toContain('Вернуть в работу');
+
+    await btn.trigger('click');
+    await flushPromises();
+
+    expect(updateProject).toHaveBeenCalledWith(1, { status: 'ACTIVE' });
+    expect(wrapper.emitted('statuses-changed')[0][0]).toEqual(ACTIVE_PROJECT_STATUSES);
+  });
+
+  it('для ARCHIVED-проекта кнопок смены статуса нет', async () => {
+    const wrapper = await mountSelected([project('ARCHIVED')]);
+
+    expect(wrapper.find('.status-toggle-btn').exists()).toBe(false);
+  });
+
+  it('при ошибке смены статуса — alert, фильтр не переключается', async () => {
+    updateProject.mockResolvedValue({ isSuccess: false, errorMessage: 'нет' });
+    const wrapper = await mountSelected([project('ACTIVE')]);
+
+    await wrapper.find('.status-toggle-btn').trigger('click');
+    await flushPromises();
+
+    expect(globalThis.alert).toHaveBeenCalled();
+    expect(wrapper.emitted('statuses-changed')).toBeUndefined();
   });
 });

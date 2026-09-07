@@ -21,7 +21,6 @@
             <label for="projectStatus">Статус</label>
             <select id="projectStatus" v-model="form.status">
               <option value="ACTIVE">Активный</option>
-              <option value="COMPLETED">Завершён</option>
               <option value="ARCHIVED">Архивирован</option>
             </select>
           </div>

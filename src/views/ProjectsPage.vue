@@ -34,7 +34,7 @@
           <select id="filterStatus" v-model="filterStatus">
             <option value="">Все статусы</option>
             <option value="ACTIVE">Активный</option>
-            <option value="COMPLETED">Завершён</option>
+            <option value="DONE">Завершённый</option>
             <option value="ARCHIVED">Архивирован</option>
           </select>
 
@@ -246,7 +246,8 @@ export default {
     getStatusLabel(status) {
       const labels = {
         'ACTIVE': 'Активный',
-        'COMPLETED': 'Завершён',
+        'IN_PROGRESS': 'В работе',
+        'DONE': 'Завершён',
         'ARCHIVED': 'Архивирован'
       };
       return labels[status] || status || '—';
@@ -593,9 +594,15 @@ h1 {
   color: var(--accent-blue);
 }
 
-.status-completed {
+.status-completed,
+.status-done {
   background-color: var(--accent-green-light);
   color: var(--accent-green);
+}
+
+.status-in_progress {
+  background-color: var(--accent-blue-light);
+  color: var(--accent-blue);
 }
 
 .status-archived {

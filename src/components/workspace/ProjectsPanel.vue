@@ -110,6 +110,23 @@
           </div>
 
           <div class="detail-actions">
+            <button
+              v-if="selectedProject.status === 'ACTIVE' || selectedProject.status === 'IN_PROGRESS'"
+              @click="changeProjectStatus(selectedProject, 'DONE')"
+              class="status-toggle-btn"
+              :class="{ 'status-toggle-ready': projectCompletable }"
+              :disabled="!projectCompletable || changingProjectStatus"
+              :title="projectCompletable
+                ? 'Завершить проект'
+                : 'Станет доступно, когда выполнены все задачи, цели и еженедельные задачи'"
+            >✅ Завершить проект</button>
+            <button
+              v-if="selectedProject.status === 'DONE'"
+              @click="changeProjectStatus(selectedProject, 'ACTIVE')"
+              class="status-toggle-btn"
+              :disabled="changingProjectStatus"
+              title="Вернуть проект в активный статус"
+            >↩️ Вернуть в работу</button>
             <button @click="openEditProject(selectedProject)" class="action-btn edit-btn" title="Редактировать проект">✏️</button>
             <button @click="confirmDeleteProject(selectedProject)" class="action-btn delete-btn" title="Удалить проект">🗑️</button>
           </div>
@@ -353,7 +370,7 @@
 </template>
 
 <script>
-import { deleteProject } from '../../api/projects.js';
+import { deleteProject, updateProject } from '../../api/projects.js';
 import { deleteWeeklyTask, completeWeeklyTask } from '../../api/weeklyTasks.js';
 import { updateGoalStatus } from '../../api/goals.js';
 import ProjectFormModal from '../ProjectFormModal.vue';
@@ -427,6 +444,9 @@ export default {
       projectToDelete: null,
       deleting: false,
 
+      // Смена статуса проекта (завершение/возврат в работу)
+      changingProjectStatus: false,
+
       // Удаление еженедельной задачи
       showDeleteWeeklyModal: false,
       weeklyToDelete: null
@@ -488,6 +508,19 @@ export default {
       return this.projectTasksTab === 'archive'
         ? this.archivedSelectedProjectTasks
         : this.selectedProjectTasks;
+    },
+
+    // Проект готов к завершению: нет незакрытых задач, целей и еженедельных задач
+    // (пустые списки считаются выполненными)
+    projectCompletable() {
+      const project = this.selectedProject;
+      if (!project) {
+        return false;
+      }
+      const noOpenTasks = this.selectedProjectTasks.length === 0;
+      const noOpenGoals = (project.goalList || []).every(goal => !!goal.isCompleted);
+      const noOpenWeeklies = (project.weeklyList || []).every(weekly => weekly.status === 'DONE');
+      return noOpenTasks && noOpenGoals && noOpenWeeklies;
     }
   },
 
@@ -527,6 +560,28 @@ export default {
     applyStatusFilter() {
       const statuses = STATUS_FILTER_STATUSES[this.statusFilter] || ACTIVE_PROJECT_STATUSES;
       this.$emit('statuses-changed', statuses);
+    },
+
+    async changeProjectStatus(project, status) {
+      this.changingProjectStatus = true;
+
+      try {
+        const response = await updateProject(project.id, { status });
+
+        if (response.isSuccess) {
+          // Завершённый проект остаётся выбранным и видимым в фильтре «Завершённые»,
+          // возвращённый — в «Активных»
+          this.statusFilter = status === 'ACTIVE' ? 'ACTIVE' : 'DONE';
+          this.applyStatusFilter();
+        } else {
+          alert('Не удалось изменить статус проекта: ' + (response.errorMessage || 'Неизвестная ошибка'));
+        }
+      } catch (err) {
+        alert('Ошибка при изменении статуса проекта');
+        console.error('Ошибка смены статуса проекта:', err);
+      } finally {
+        this.changingProjectStatus = false;
+      }
     },
 
     getPriorityLabel(priority) {
@@ -993,6 +1048,34 @@ export default {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+  align-items: center;
+}
+
+.status-toggle-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status-toggle-btn.status-toggle-ready:not(:disabled) {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.status-toggle-btn.status-toggle-ready:hover:not(:disabled) {
+  background-color: var(--accent-green-light);
 }
 
 .detail-dates {
