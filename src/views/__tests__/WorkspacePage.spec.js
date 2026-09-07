@@ -21,7 +21,7 @@ import { getTasks } from '../../api/tasks.js';
 import { getWeeklyTaskStatistics } from '../../api/weeklyTasks.js';
 import WorkspacePage from '../WorkspacePage.vue';
 import ProjectsPanel from '../../components/workspace/ProjectsPanel.vue';
-import TaskListSection from '../../components/workspace/TaskListSection.vue';
+import TaskListSection, { NO_PROJECT_FILTER } from '../../components/workspace/TaskListSection.vue';
 
 function mockResponses() {
   getAllProjects.mockResolvedValue({ isSuccess: true, data: { projects: [{ id: 1, name: 'A', status: 'ACTIVE' }] } });
@@ -143,5 +143,27 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
     await wrapper.vm.$nextTick();
 
     expect(getTasks).toHaveBeenCalledTimes(1);
+  });
+
+  it('вкладка «Все задачи» получает дефолт «Без проекта» и сортировку', async () => {
+    const wrapper = await mountPage();
+
+    wrapper.findAll('.tab-btn')[2].trigger('click');
+    await wrapper.vm.$nextTick();
+
+    const section = wrapper.findComponent(TaskListSection);
+    expect(section.props('defaultFilterProject')).toBe(NO_PROJECT_FILTER);
+    expect(section.props('showSort')).toBe(true);
+  });
+
+  it('вкладка «Архив» без дефолта фильтра и без сортировки', async () => {
+    const wrapper = await mountPage();
+
+    wrapper.findAll('.tab-btn')[3].trigger('click');
+    await wrapper.vm.$nextTick();
+
+    const section = wrapper.findComponent(TaskListSection);
+    expect(section.props('defaultFilterProject')).toBe('');
+    expect(section.props('showSort')).toBe(false);
   });
 });

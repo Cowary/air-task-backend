@@ -101,6 +101,8 @@
           :tasks="filteredAllTasks"
           :projects="projects"
           :show-filters="true"
+          :show-sort="true"
+          :default-filter-project="NO_PROJECT_FILTER"
           empty-text="Задач пока нет. Создайте первую!"
           @changed="refresh"
         />
@@ -125,7 +127,7 @@ import { getTasks } from '../api/tasks.js';
 import { getWeeklyTaskStatistics } from '../api/weeklyTasks.js';
 import ProjectsPanel from '../components/workspace/ProjectsPanel.vue';
 import WeekPanel from '../components/workspace/WeekPanel.vue';
-import TaskListSection from '../components/workspace/TaskListSection.vue';
+import TaskListSection, { NO_PROJECT_FILTER } from '../components/workspace/TaskListSection.vue';
 
 export default {
   name: 'WorkspacePage',
@@ -138,6 +140,8 @@ export default {
 
   data() {
     return {
+      NO_PROJECT_FILTER,
+
       activeTab: 'projects',
       tasksFilter: 'incomplete',
 
