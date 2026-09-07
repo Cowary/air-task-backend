@@ -23,7 +23,6 @@
             v-model="projectForm.status"
           >
             <option value="ACTIVE">Активный</option>
-            <option value="COMPLETED">Завершён</option>
             <option value="ARCHIVED">Архивирован</option>
           </select>
         </div>
