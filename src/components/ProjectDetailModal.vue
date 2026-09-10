@@ -27,6 +27,14 @@
         </div>
 
         <div class="detail-dates">
+          <span
+            v-if="project.dueDate"
+            class="detail-due"
+            :class="{ 'detail-due-overdue': isOverdue(project) }"
+          >
+            Срок: {{ formatDateOnly(project.dueDate) }}<template v-if="isProjectOpen(project)"> ({{ daysUntil(project.dueDate) }} дн.)</template>
+            <span v-if="isOverdue(project)" class="overdue-badge">Просрочено</span>
+          </span>
           <span>Создан: {{ formatDate(project.createdTs) }}</span>
           <span>Обновлён: {{ formatDate(project.updatedTs) }}</span>
         </div>
@@ -349,6 +357,35 @@ export default {
         hour: '2-digit',
         minute: '2-digit'
       });
+    },
+
+    formatDateOnly(dateString) {
+      if (!dateString) return '';
+      const [year, month, day] = dateString.split('-');
+      return `${day}.${month}.${year}`;
+    },
+
+    isOverdue(project) {
+      if (!project.dueDate) return false;
+      const doneStatuses = ['DONE', 'ARCHIVED'];
+      if (doneStatuses.includes((project.status || '').toUpperCase())) return false;
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      return project.dueDate < today;
+    },
+
+    isProjectOpen(project) {
+      const doneStatuses = ['DONE', 'ARCHIVED'];
+      return !doneStatuses.includes((project.status || '').toUpperCase());
+    },
+
+    daysUntil(dateString) {
+      if (!dateString) return 0;
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const [year, month, day] = dateString.split('-').map(Number);
+      const due = new Date(year, month - 1, day);
+      return Math.round((due - today) / 86400000);
     }
   }
 };
@@ -496,6 +533,21 @@ export default {
   font-size: 12px;
   color: var(--text-muted);
   margin-bottom: 20px;
+}
+
+.detail-due-overdue {
+  color: var(--accent-red);
+  font-weight: 500;
+}
+
+.overdue-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: var(--accent-red-light);
+  color: var(--accent-red);
+  font-weight: 500;
+  margin-left: 6px;
 }
 
 .detail-section {

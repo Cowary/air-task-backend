@@ -57,6 +57,15 @@
         </div>
 
         <div class="form-group">
+          <label for="wsTaskDueDate">Дата выполнения</label>
+          <input
+            id="wsTaskDueDate"
+            v-model="form.dueDate"
+            type="date"
+          />
+        </div>
+
+        <div class="form-group">
           <label for="wsTaskDescription">Описание</label>
           <textarea
             id="wsTaskDescription"
@@ -124,6 +133,7 @@ export default {
         customProjectName: '',
         priority: 'MIDDLE',
         description: '',
+        dueDate: '',
         subTasks: []
       }
     };
@@ -173,6 +183,7 @@ this.form = {
           priority: this.task.priority || 'MIDDLE',
           isComplete: !!this.task.isComplete,
           description: this.task.description || '',
+          dueDate: this.task.dueDate || '',
           subTasks: normalize(this.task?.subTasks)
         };
           return;
@@ -187,6 +198,7 @@ this.form = {
           priority: this.task.priority || 'MIDDLE',
           isComplete: !!this.task.isComplete,
           description: this.task.description || '',
+          dueDate: this.task.dueDate || '',
           subTasks: normalize(this.task?.subTasks)
         };
         return;
@@ -203,6 +215,7 @@ this.form = {
           customProjectName: known ? '' : explicitDefault,
           priority: 'MIDDLE',
           description: '',
+          dueDate: '',
           subTasks: []
         };
         return;
@@ -216,6 +229,7 @@ this.form = {
         customProjectName: '',
         priority: 'MIDDLE',
         description: '',
+        dueDate: '',
         subTasks: []
       };
     },
@@ -245,7 +259,8 @@ this.form = {
           projectName: this.resolvedProjectName,
           priority: this.form.priority,
           ...(this.isEdit ? { isComplete: !!this.task.isComplete } : {}),
-          description: this.form.description
+          description: this.form.description,
+          dueDate: this.form.dueDate || null
         };
 
         const response = this.isEdit

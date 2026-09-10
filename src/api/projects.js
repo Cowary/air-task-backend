@@ -62,6 +62,7 @@ export const getProjectById = async (id) => {
  * @param {string} projectData.name - Название проекта (обязательно)
  * @param {string} [projectData.status] - Статус проекта
  * @param {string} [projectData.priority] - Приоритет проекта
+ * @param {string} [projectData.dueDate] - Дата выполнения (опционально, 'ГГГГ-ММ-ДД')
  * @param {number[]} [projectData.weeklyIds] - ID привязанных еженедельных задач
  * @param {number[]} [projectData.taskIds] - ID привязанных задач
  * @returns {Promise} Промис с данными от сервера
@@ -71,7 +72,8 @@ export const createProject = async (projectData) => {
     const requestBody = {
       name: projectData.name,
       status: projectData.status,
-      priority: projectData.priority
+      priority: projectData.priority,
+      dueDate: projectData.dueDate || null
     };
 
     const response = await apiClient.post('/project/v1', requestBody);
@@ -92,6 +94,7 @@ export const createProject = async (projectData) => {
  * @param {string} projectData.name - Название проекта
  * @param {string} projectData.status - Статус проекта
  * @param {string} projectData.priority - Приоритет проекта
+ * @param {string} [projectData.dueDate] - Дата выполнения (опционально, 'ГГГГ-ММ-ДД'; null — очистить)
  * @param {number[]} projectData.weeklyIds - Полный список ID еженедельных задач
  * @param {number[]} projectData.taskIds - Полный список ID задач
  * @returns {Promise} Промис с данными от сервера
@@ -102,6 +105,7 @@ export const updateProject = async (id, projectData) => {
       name: projectData.name,
       status: projectData.status,
       priority: projectData.priority,
+      dueDate: projectData.dueDate || null,
       weeklyIds: projectData.weeklyIds || [],
       taskIds: projectData.taskIds || []
     };

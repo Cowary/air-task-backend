@@ -39,6 +39,15 @@
           </select>
         </div>
 
+        <div class="form-group">
+          <label for="projectDueDate">Дата выполнения</label>
+          <input
+            id="projectDueDate"
+            v-model="projectForm.dueDate"
+            type="date"
+          />
+        </div>
+
         <div class="form-actions">
           <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
           <button type="submit" class="save-btn" :disabled="saving">
@@ -74,7 +83,8 @@ export default {
       projectForm: {
         name: '',
         status: 'ACTIVE',
-        priority: 'MIDDLE'
+        priority: 'MIDDLE',
+        dueDate: ''
       },
       saving: false
     };
@@ -85,7 +95,8 @@ export default {
       this.projectForm = {
         name: '',
         status: 'ACTIVE',
-        priority: 'MIDDLE'
+        priority: 'MIDDLE',
+        dueDate: ''
       };
       this.$emit('close');
     },
