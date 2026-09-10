@@ -33,6 +33,15 @@
               <option value="LOW">Низкий</option>
             </select>
           </div>
+
+          <div class="form-group">
+            <label for="projectDueDate">Дата выполнения</label>
+            <input
+              id="projectDueDate"
+              v-model="form.dueDate"
+              type="date"
+            />
+          </div>
         </div>
 
         <!-- Цели проекта -->
@@ -234,7 +243,8 @@ export default {
       form: {
         name: '',
         status: 'ACTIVE',
-        priority: 'MIDDLE'
+        priority: 'MIDDLE',
+        dueDate: ''
       },
       weeklyOptions: [],
       taskOptions: [],
@@ -287,7 +297,8 @@ export default {
         this.form = {
           name: this.project.name || '',
           status: this.project.status || 'ACTIVE',
-          priority: this.project.priority || 'MIDDLE'
+          priority: this.project.priority || 'MIDDLE',
+          dueDate: this.project.dueDate || ''
         };
         this.selectedWeeklyIds = (this.project.weeklyList || []).map(w => w.id);
         this.selectedTaskIds = (this.project.taskList || []).map(t => t.id);
@@ -301,7 +312,8 @@ export default {
         this.form = {
           name: '',
           status: 'ACTIVE',
-          priority: 'MIDDLE'
+          priority: 'MIDDLE',
+          dueDate: ''
         };
         this.selectedWeeklyIds = [];
         this.selectedTaskIds = [];
@@ -406,6 +418,7 @@ export default {
             name: this.form.name,
             status: this.form.status,
             priority: this.form.priority,
+            dueDate: this.form.dueDate || null,
             weeklyIds: this.selectedWeeklyIds,
             taskIds: this.selectedTaskIds
           });

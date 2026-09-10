@@ -1947,6 +1947,11 @@
               "type": "integer",
               "format": "int64"
             }
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Due date; null clears it"
           }
         }
       },
@@ -2043,6 +2048,11 @@
           "goalList": {
             "$ref": "#/components/schemas/GoalInfo",
             "description": "Goals used to evaluate the overall project completion"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Due date of the item (optional)"
           }
         }
       },
@@ -2363,6 +2373,11 @@
             "items": {
               "$ref": "#/components/schemas/SubTaskDto"
             }
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Due date of the item (optional)"
           }
         }
       },
@@ -2420,6 +2435,11 @@
             "items": {
               "$ref": "#/components/schemas/SubTaskDto"
             }
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Due date; null clears it"
           }
         },
         "required": [
@@ -2452,6 +2472,11 @@
             "items": {
               "$ref": "#/components/schemas/SubTaskDto"
             }
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Due date of the item (optional)"
           }
         },
         "required": [
@@ -2744,6 +2769,11 @@
           },
           "priority": {
             "type": "string"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Due date of the item (optional)"
           }
         },
         "required": [

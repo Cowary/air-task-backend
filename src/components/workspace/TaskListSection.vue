@@ -89,6 +89,14 @@
           </div>
 
           <div class="task-meta">
+            <span
+              v-if="task.dueDate"
+              class="task-due"
+              :class="{ 'task-due-overdue': isOverdue(task) }"
+            >
+              Срок: {{ formatDateOnly(task.dueDate) }}<template v-if="!task.isComplete"> ({{ daysUntil(task.dueDate) }} дн.)</template>
+            </span>
+            <span v-if="isOverdue(task)" class="overdue-badge">Просрочено</span>
             <span class="task-date">Создано: {{ formatDate(task.createdTs) }}</span>
           </div>
         </div>
@@ -315,6 +323,28 @@ export default {
         month: '2-digit',
         year: 'numeric'
       });
+    },
+
+    formatDateOnly(dateString) {
+      if (!dateString) return '';
+      const [year, month, day] = dateString.split('-');
+      return `${day}.${month}.${year}`;
+    },
+
+    isOverdue(task) {
+      if (!task.dueDate || task.isComplete) return false;
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      return task.dueDate < today;
+    },
+
+    daysUntil(dateString) {
+      if (!dateString) return 0;
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const [year, month, day] = dateString.split('-').map(Number);
+      const due = new Date(year, month - 1, day);
+      return Math.round((due - today) / 86400000);
     },
 
     openCreateModal() {
@@ -668,6 +698,25 @@ export default {
 .task-date {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.task-due {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.task-due-overdue {
+  color: var(--accent-red);
+  font-weight: 500;
+}
+
+.overdue-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: var(--accent-red-light);
+  color: var(--accent-red);
+  font-weight: 500;
 }
 
 .task-actions {

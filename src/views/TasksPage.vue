@@ -113,6 +113,10 @@
             </div>
 
             <div class="task-meta">
+              <span v-if="task.dueDate" class="task-due" :class="{ 'task-due-overdue': isOverdue(task) }">
+                Срок: {{ formatDateOnly(task.dueDate) }}<template v-if="!task.isComplete"> ({{ daysUntil(task.dueDate) }} дн.)</template>
+              </span>
+              <span v-if="isOverdue(task)" class="overdue-badge">Просрочено</span>
               <span class="task-date">
                 Создано: {{ formatDate(task.createdTs) }}
               </span>
@@ -187,6 +191,15 @@
               <option value="MIDDLE">Средний</option>
               <option value="LOW">Низкий</option>
             </select>
+          </div>
+
+          <div class="form-group">
+            <label for="taskDueDate">Дата выполнения</label>
+            <input
+              id="taskDueDate"
+              v-model="taskForm.dueDate"
+              type="date"
+            />
           </div>
 
           <div class="form-group">
@@ -282,6 +295,7 @@ export default {
         projectName: '',
         priority: 'MIDDLE',
         description: '',
+        dueDate: '',
         subTasks: []
       },
 
@@ -386,6 +400,28 @@ export default {
       });
     },
 
+    formatDateOnly(dateString) {
+      if (!dateString) return '';
+      const [year, month, day] = dateString.split('-');
+      return `${day}.${month}.${year}`;
+    },
+
+    isOverdue(task) {
+      if (!task.dueDate || task.isComplete) return false;
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      return task.dueDate < today;
+    },
+
+    daysUntil(dateString) {
+      if (!dateString) return 0;
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const [year, month, day] = dateString.split('-').map(Number);
+      const due = new Date(year, month - 1, day);
+      return Math.round((due - today) / 86400000);
+    },
+
     openCreateModal() {
       this.editingTask = null;
       this.taskForm = {
@@ -393,6 +429,7 @@ export default {
         projectName: this.projects.length > 0 ? this.projects[0].name : '',
         priority: 'MIDDLE',
         description: '',
+        dueDate: '',
         subTasks: []
       };
       this.showTaskModal = true;
@@ -406,6 +443,7 @@ export default {
         priority: task.priority,
         isComplete: !!task.isComplete,
         description: task.description || '',
+        dueDate: task.dueDate || '',
         subTasks: normalize(task.subTasks)
       };
       this.showTaskModal = true;
@@ -419,6 +457,7 @@ export default {
         projectName: this.projects.length > 0 ? this.projects[0].name : '',
         priority: 'MIDDLE',
         description: '',
+        dueDate: '',
         subTasks: []
       };
     },
@@ -449,6 +488,7 @@ export default {
             priority: this.taskForm.priority,
             isComplete: this.taskForm.isComplete,
             description: this.taskForm.description,
+            dueDate: this.taskForm.dueDate || null,
             subTasks
           });
         } else {
@@ -457,6 +497,7 @@ export default {
             projectName: this.taskForm.projectName,
             priority: this.taskForm.priority,
             description: this.taskForm.description,
+            dueDate: this.taskForm.dueDate || null,
             ...(subTasks.length ? { subTasks } : {})
           });
         }
@@ -900,6 +941,25 @@ h1 {
 .task-date {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.task-due {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.task-due-overdue {
+  color: var(--accent-red);
+  font-weight: 500;
+}
+
+.overdue-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: var(--accent-red-light);
+  color: var(--accent-red);
+  font-weight: 500;
 }
 
 /* Кнопки действий */

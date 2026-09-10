@@ -122,6 +122,14 @@
           </div>
 
           <div class="project-footer">
+            <span
+              v-if="project.dueDate"
+              class="project-due"
+              :class="{ 'project-due-overdue': isOverdue(project) }"
+            >
+              Срок: {{ formatDateOnly(project.dueDate) }}<template v-if="isProjectOpen(project)"> ({{ daysUntil(project.dueDate) }} дн.)</template>
+            </span>
+            <span v-if="isOverdue(project)" class="overdue-badge">Просрочено</span>
             <span class="project-date">Создан: {{ formatDate(project.createdTs) }}</span>
             <div class="project-actions" @click.stop>
               <button @click="openEditModal(project)" class="action-btn edit-btn" title="Редактировать">✏️</button>
@@ -271,6 +279,35 @@ export default {
         month: '2-digit',
         year: 'numeric'
       });
+    },
+
+    formatDateOnly(dateString) {
+      if (!dateString) return '';
+      const [year, month, day] = dateString.split('-');
+      return `${day}.${month}.${year}`;
+    },
+
+    isOverdue(project) {
+      if (!project.dueDate) return false;
+      const doneStatuses = ['DONE', 'ARCHIVED'];
+      if (doneStatuses.includes((project.status || '').toUpperCase())) return false;
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      return project.dueDate < today;
+    },
+
+    isProjectOpen(project) {
+      const doneStatuses = ['DONE', 'ARCHIVED'];
+      return !doneStatuses.includes((project.status || '').toUpperCase());
+    },
+
+    daysUntil(dateString) {
+      if (!dateString) return 0;
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const [year, month, day] = dateString.split('-').map(Number);
+      const due = new Date(year, month - 1, day);
+      return Math.round((due - today) / 86400000);
     },
 
     activeTaskList(project) {
@@ -697,12 +734,33 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
   margin-top: auto;
 }
 
 .project-date {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.project-due {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.project-due-overdue {
+  color: var(--accent-red);
+  font-weight: 500;
+}
+
+.overdue-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: var(--accent-red-light);
+  color: var(--accent-red);
+  font-weight: 500;
 }
 
 .project-actions {

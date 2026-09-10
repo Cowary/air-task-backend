@@ -66,6 +66,7 @@ export const getTasks = async (isComplete = null) => {
  * @param {string} taskData.projectName - Название проекта (обязательно, макс. 100 символов)
  * @param {boolean} [taskData.isComplete] - Флаг выполнения (опционально, по умолчанию false)
  * @param {string} [taskData.description] - Описание задачи (опционально, макс. 10000 символов)
+ * @param {string} [taskData.dueDate] - Дата выполнения (опционально, 'ГГГГ-ММ-ДД')
  * @returns {Promise} Промис с данными от сервера
  */
 export const createTask = async (taskData) => {
@@ -75,7 +76,8 @@ export const createTask = async (taskData) => {
       priority: taskData.priority,
       projectName: taskData.projectName,
       isComplete: taskData.isComplete,
-      description: taskData.description
+      description: taskData.description,
+      dueDate: taskData.dueDate || null
     };
 
     if (Array.isArray(taskData.subTasks)) {
@@ -102,6 +104,7 @@ export const createTask = async (taskData) => {
  * @param {string} taskData.projectName - Название проекта (обязательно, макс. 100 символов)
  * @param {boolean} [taskData.isComplete] - Флаг выполнения (опционально)
  * @param {string} [taskData.description] - Описание задачи (опционально, макс. 1000 символов)
+ * @param {string} [taskData.dueDate] - Дата выполнения (опционально, 'ГГГГ-ММ-ДД'; null — очистить)
  * @returns {Promise} Промис с данными от сервера
  */
 export const updateTask = async (taskData) => {
@@ -112,7 +115,8 @@ export const updateTask = async (taskData) => {
       priority: taskData.priority,
       projectName: taskData.projectName,
       isComplete: taskData.isComplete,
-      description: taskData.description
+      description: taskData.description,
+      dueDate: taskData.dueDate || null
     };
 
     if (Array.isArray(taskData.subTasks)) {
