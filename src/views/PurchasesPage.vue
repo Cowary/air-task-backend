@@ -1,10 +1,10 @@
 <template>
   <div class="container">
     <!-- Кнопка возврата на главную -->
-    <router-link to="/" class="back-button">← На главную</router-link>
+    <router-link to="/" class="back-button"><AppIcon name="arrow-left" :size="15" /> На главную</router-link>
 
     <!-- Заголовок страницы -->
-    <h1>🛒 Управление покупками</h1>
+    <h1><AppIcon name="shopping-cart" :size="28" /> Управление покупками</h1>
     <p class="subtitle">Создание, редактирование и удаление покупок</p>
 
     <!-- Состояние загрузки -->
@@ -15,7 +15,7 @@
 
     <!-- Состояние ошибки -->
     <div v-else-if="error" class="error-message">
-      <p>❌ {{ error }}</p>
+      <p><AppIcon name="triangle-alert" :size="16" /> {{ error }}</p>
       <button @click="loadPurchases" class="retry-btn">Повторить</button>
     </div>
 
@@ -62,12 +62,12 @@
           <div class="purchase-info">
             <div class="purchase-header">
               <div class="purchase-category" v-if="purchase.category">
-                🏷️ {{ purchase.category }}
+                <AppIcon name="tag" :size="16" /> {{ purchase.category }}
               </div>
               <span class="purchase-priority" :class="`priority-${purchase.priority.toLowerCase()}`">
                 {{ getPriorityLabel(purchase.priority) }}
               </span>
-              <span v-if="purchase.isComplete" class="complete-badge">✓ Завершено</span>
+              <span v-if="purchase.isComplete" class="complete-badge"><AppIcon name="check" :size="14" /> Завершено</span>
             </div>
 
             <div class="purchase-name">{{ purchase.name }}</div>
@@ -80,7 +80,7 @@
 
             <!-- Список цен -->
             <div v-if="purchase.priceList && purchase.priceList.length > 0" class="price-list">
-              <div class="meta-title">💰 Цены:</div>
+              <div class="meta-title"><AppIcon name="wallet" :size="16" /> Цены:</div>
               <div v-for="price in purchase.priceList" :key="price.id" class="price-item">
                 <span class="price-amount">{{ formatPrice(price.amount) }} {{ price.currency }}</span>
                 <span v-if="price.isActual" class="price-actual-badge">Актуальная</span>
@@ -90,7 +90,7 @@
 
             <!-- Список ссылок -->
             <div v-if="purchase.linkList && purchase.linkList.length > 0" class="link-list">
-              <div class="meta-title">🔗 Ссылки:</div>
+              <div class="meta-title"><AppIcon name="link-2" :size="16" /> Ссылки:</div>
               <div v-for="link in purchase.linkList" :key="link.id" class="link-item">
                 <a :href="link.link" target="_blank" rel="noopener noreferrer" class="link-url">
                   {{ truncateUrl(link.link) }}
@@ -100,8 +100,8 @@
           </div>
 
           <div class="purchase-actions">
-            <button @click="openEditModal(purchase)" class="action-btn edit-btn" title="Редактировать">✏️</button>
-            <button @click="confirmDelete(purchase)" class="action-btn delete-btn" title="Удалить">🗑️</button>
+            <button @click="openEditModal(purchase)" class="action-btn edit-btn" title="Редактировать" aria-label="Редактировать"><AppIcon name="pencil" :size="15" /></button>
+            <button @click="confirmDelete(purchase)" class="action-btn delete-btn" title="Удалить" aria-label="Удалить"><AppIcon name="trash-2" :size="15" /></button>
           </div>
         </div>
       </div>
@@ -151,8 +151,8 @@
                 @keyup.enter="confirmNewCategory"
                 @blur="confirmNewCategory"
               />
-              <button type="button" @click="cancelNewCategoryMode" class="btn-cancel-category">
-                ✕
+              <button type="button" @click="cancelNewCategoryMode" class="btn-cancel-category" aria-label="Отменить">
+                <AppIcon name="x" :size="15" />
               </button>
             </div>
           </div>
@@ -195,7 +195,7 @@
 
           <!-- Управление ценами -->
           <div class="form-section">
-            <label>💰 Цены:</label>
+            <label><AppIcon name="wallet" :size="16" /> Цены:</label>
             <div class="list-manager">
               <div v-for="(price, index) in purchaseForm.priceList" :key="index" class="list-item">
                 <div class="list-item-content">
@@ -217,7 +217,7 @@
                     <span>Актуальная</span>
                   </label>
                 </div>
-                <button @click="removePrice(index)" class="btn-remove" type="button" title="Удалить цену">✕</button>
+                <button @click="removePrice(index)" class="btn-remove" type="button" title="Удалить цену" aria-label="Удалить цену"><AppIcon name="x" :size="15" /></button>
               </div>
               <button @click="addPrice" class="btn-add" type="button">+ Добавить цену</button>
             </div>
@@ -225,7 +225,7 @@
 
           <!-- Управление ссылками -->
           <div class="form-section">
-            <label>🔗 Ссылки:</label>
+            <label><AppIcon name="link-2" :size="16" /> Ссылки:</label>
             <div class="list-manager">
               <div v-for="(link, index) in purchaseForm.linkList" :key="index" class="list-item">
                 <div class="list-item-content">
@@ -236,7 +236,7 @@
                     class="inline-input"
                   />
                 </div>
-                <button @click="removeLink(index)" class="btn-remove" type="button" title="Удалить ссылку">✕</button>
+                <button @click="removeLink(index)" class="btn-remove" type="button" title="Удалить ссылку" aria-label="Удалить ссылку"><AppIcon name="x" :size="15" /></button>
               </div>
               <button @click="addLink" class="btn-add" type="button">+ Добавить ссылку</button>
             </div>
@@ -594,7 +594,7 @@ export default {
   max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-body);
 }
 
 h1 {
@@ -641,14 +641,14 @@ h1 {
   margin-top: 15px;
   padding: 10px 20px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
 .retry-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .back-button {
@@ -704,7 +704,7 @@ h1 {
 .create-btn {
   padding: 10px 20px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -714,7 +714,7 @@ h1 {
 }
 
 .create-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 /* Пустое состояние */
@@ -734,19 +734,20 @@ h1 {
 }
 
 /* Карточка покупки */
-.purchase-card {
+.purchase-card{
   padding: 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background-color: var(--bg-secondary);
   border: 2px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   transition: all 0.2s ease;
+  border-left: 3px solid var(--accent-primary);
 }
 
-.purchase-card:hover {
-  box-shadow: 0 2px 8px var(--shadow-color);
+.purchase-card:hover{
+  box-shadow: var(--glow-cyan);
   border-color: var(--accent-primary);
 }
 
@@ -783,11 +784,15 @@ h1 {
 }
 
 .purchase-priority,
-.complete-badge {
+.complete-badge{
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 12px;
   font-weight: 500;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
 }
 
 /* Приоритеты */
@@ -843,12 +848,16 @@ h1 {
   color: var(--text-primary);
 }
 
-.price-actual-badge {
+.price-actual-badge{
   background-color: var(--accent-green-light);
   color: var(--accent-green);
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 8px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
 }
 
 .price-date {
@@ -912,12 +921,13 @@ h1 {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  animation: screen-fade var(--transition-base);
 }
 
 @keyframes fadeIn {
@@ -927,14 +937,15 @@ h1 {
 
 .modal-content {
   background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
   padding: 30px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px var(--shadow-color);
-  animation: slideUp 0.3s ease;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
 }
 
 @keyframes slideUp {
@@ -1029,7 +1040,7 @@ h1 {
 .btn-new-category {
   padding: 10px 15px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -1039,7 +1050,7 @@ h1 {
 }
 
 .btn-new-category:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .category-input-wrapper {
@@ -1067,7 +1078,7 @@ h1 {
 .btn-cancel-category {
   padding: 8px 12px;
   background-color: var(--accent-red);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -1075,7 +1086,7 @@ h1 {
 }
 
 .btn-cancel-category:hover {
-  background-color: #e74c3c;
+  filter: brightness(1.12);
 }
 
 /* Менеджер списков */
@@ -1101,7 +1112,7 @@ h1 {
   gap: 8px;
 }
 
-.inline-input {
+.inline-input{
   padding: 6px 10px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
@@ -1109,11 +1120,13 @@ h1 {
   color: var(--text-primary);
   font-size: 13px;
   flex: 1;
+  font-family: var(--font-mono);
 }
 
-.inline-input:focus {
+.inline-input:focus{
   outline: none;
   border-color: var(--accent-primary);
+  box-shadow: var(--glow-cyan);
 }
 
 .inline-input-short {
@@ -1156,7 +1169,7 @@ h1 {
 
 .btn-remove:hover {
   background-color: var(--accent-red);
-  color: white;
+  color: var(--on-neon);
 }
 
 .btn-add {
@@ -1220,11 +1233,11 @@ h1 {
 
 .save-btn {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
 }
 
 .save-btn:hover:not(:disabled) {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .save-btn:disabled {
@@ -1234,11 +1247,11 @@ h1 {
 
 .delete-btn-confirm {
   background-color: var(--accent-red);
-  color: white;
+  color: var(--on-neon);
 }
 
 .delete-btn-confirm:hover:not(:disabled) {
-  background-color: #c0392b;
+  filter: brightness(1.12);
 }
 
 .delete-btn-confirm:disabled {

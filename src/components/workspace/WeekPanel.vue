@@ -33,7 +33,7 @@
     <!-- Секция невыполненных задач -->
     <div class="section">
       <div class="section-header">
-        <h2>⏳ Осталось выполнить</h2>
+        <h2><AppIcon name="hourglass" :size="22" /> Осталось выполнить</h2>
         <button
           v-if="incompleteTasks.length > 0"
           @click="completeTask"
@@ -45,7 +45,7 @@
       </div>
 
       <div v-if="incompleteTasks.length === 0" class="empty-message">
-        <p>Все задачи на этой неделе выполнены! 🎉</p>
+        <p>Все задачи на этой неделе выполнены! <AppIcon name="party-popper" :size="16" /></p>
       </div>
 
       <div v-else class="task-list">
@@ -57,8 +57,8 @@
           @click="selectTask(task)"
         >
           <div class="task-card-top">
-            <span class="task-project" v-if="task.projectName">📁 {{ task.projectName }}</span>
-            <span v-if="task.completedToday" class="today-badge">✓ сегодня</span>
+            <span class="task-project" v-if="task.projectName"><AppIcon name="folder" :size="16" /> {{ task.projectName }}</span>
+            <span v-if="task.completedToday" class="today-badge"><AppIcon name="check" :size="14" /> сегодня</span>
           </div>
 
           <div class="task-name">{{ task.weeklyTaskName }}</div>
@@ -73,7 +73,7 @@
           </div>
 
           <div v-if="selectedTaskId === task.weeklyTaskId" class="selected-indicator">
-            ✓ Выбрано — нажмите «Отметить выполненной»
+            <AppIcon name="check" :size="14" /> Выбрано — нажмите «Отметить выполненной»
           </div>
         </div>
       </div>
@@ -82,7 +82,7 @@
     <!-- Секция выполненных задач -->
     <div class="section">
       <div class="section-header">
-        <h2>✅ Выполнено на этой неделе</h2>
+        <h2><AppIcon name="circle-check-big" :size="22" /> Выполнено на этой неделе</h2>
       </div>
 
       <div v-if="completedTasks.length === 0" class="empty-message">
@@ -96,8 +96,8 @@
           class="task-card completed"
         >
           <div class="task-card-top">
-            <span class="task-project" v-if="task.projectName">📁 {{ task.projectName }}</span>
-            <span v-if="task.completedToday" class="today-badge">✓ сегодня</span>
+            <span class="task-project" v-if="task.projectName"><AppIcon name="folder" :size="16" /> {{ task.projectName }}</span>
+            <span v-if="task.completedToday" class="today-badge"><AppIcon name="check" :size="14" /> сегодня</span>
           </div>
 
           <div class="task-name">{{ task.weeklyTaskName }}</div>
@@ -247,15 +247,16 @@ export default {
   flex-wrap: wrap;
 }
 
-.week-summary-card {
+.week-summary-card{
   flex: 1;
   min-width: 260px;
   padding: 16px 20px;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
+  border-left: 3px solid var(--accent-primary);
 }
 
 .summary-progress {
@@ -274,7 +275,7 @@ export default {
 
 .summary-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-green), #7ed957);
+  background: linear-gradient(90deg, var(--accent-green), var(--neon-cyan));
   border-radius: 6px;
   transition: width 0.4s ease;
 }
@@ -294,7 +295,7 @@ export default {
   gap: 10px;
 }
 
-.chip {
+.chip{
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -304,6 +305,9 @@ export default {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   min-width: 80px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .chip-value {
@@ -352,7 +356,7 @@ export default {
 .complete-btn {
   padding: 9px 18px;
   background-color: var(--accent-green);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 8px;
   font-size: 13px;
@@ -362,7 +366,7 @@ export default {
 }
 
 .complete-btn:hover:not(:disabled) {
-  background-color: #3d8b40;
+  filter: brightness(1.08);
 }
 
 .complete-btn:disabled {
@@ -385,13 +389,14 @@ export default {
   gap: 10px;
 }
 
-.task-card {
+.task-card{
   padding: 14px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background-color: var(--bg-secondary);
   border: 2px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
+  border-left: 3px solid var(--accent-primary);
 }
 
 .task-card.incomplete:hover {
@@ -423,7 +428,7 @@ export default {
   color: var(--text-secondary);
 }
 
-.today-badge {
+.today-badge{
   font-size: 11px;
   font-weight: 600;
   color: var(--accent-green);
@@ -431,6 +436,10 @@ export default {
   padding: 2px 10px;
   border-radius: 10px;
   white-space: nowrap;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
 }
 
 .task-name {
@@ -462,13 +471,13 @@ export default {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-blue), var(--accent-primary));
+  background: linear-gradient(90deg, var(--neon-violet), var(--neon-cyan));
   border-radius: 5px;
   transition: width 0.4s ease;
 }
 
 .progress-fill.full {
-  background: linear-gradient(90deg, var(--accent-green), #7ed957);
+  background: linear-gradient(90deg, var(--accent-green), var(--neon-cyan));
 }
 
 .progress-text {

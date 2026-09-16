@@ -47,7 +47,7 @@
         <!-- Цели проекта -->
         <div class="link-section">
           <div class="link-section-header">
-            <span class="link-section-title">🎯 Цели</span>
+            <span class="link-section-title"><AppIcon name="target" :size="16" /> Цели</span>
             <span class="link-count">{{ goals.length }}</span>
             <button type="button" @click="addGoal" class="add-goal-btn">+ Добавить цель</button>
           </div>
@@ -67,8 +67,9 @@
                 @click="removeGoal(index)"
                 class="goal-remove-btn"
                 title="Удалить цель"
+                aria-label="Удалить цель"
               >
-                🗑️
+                <AppIcon name="trash-2" :size="15" />
               </button>
             </div>
           </div>
@@ -77,7 +78,7 @@
         <!-- Привязка еженедельных задач -->
         <div class="link-section">
           <div class="link-section-header">
-            <span class="link-section-title">📊 Еженедельные задачи</span>
+            <span class="link-section-title"><AppIcon name="chart-column" :size="16" /> Еженедельные задачи</span>
             <span class="link-count">{{ selectedWeeklyIds.length + newWeeklies.length }}</span>
             <button type="button" @click="addWeeklyDraft" class="add-goal-btn">+ Добавить задачу</button>
           </div>
@@ -113,8 +114,9 @@
                 @click="removeWeeklyDraft(index)"
                 class="goal-remove-btn"
                 title="Убрать"
+                aria-label="Убрать"
               >
-                🗑️
+                <AppIcon name="trash-2" :size="15" />
               </button>
             </div>
           </div>
@@ -148,7 +150,7 @@
         <!-- Привязка задач -->
         <div class="link-section">
           <div class="link-section-header">
-            <span class="link-section-title">📝 Задачи</span>
+            <span class="link-section-title"><AppIcon name="list-checks" :size="16" /> Задачи</span>
             <span class="link-count">{{ selectedTaskIds.length + newTasks.length }}</span>
             <button type="button" @click="addTaskDraft" class="add-goal-btn">+ Добавить задачу</button>
           </div>
@@ -172,8 +174,9 @@
                 @click="removeTaskDraft(index)"
                 class="goal-remove-btn"
                 title="Убрать"
+                aria-label="Убрать"
               >
-                🗑️
+                <AppIcon name="trash-2" :size="15" />
               </button>
             </div>
           </div>
@@ -606,12 +609,13 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1001;
-  animation: fadeIn 0.2s ease;
+  animation: screen-fade var(--transition-base);
 }
 
 @keyframes fadeIn {
@@ -621,14 +625,15 @@ export default {
 
 .modal-content {
   background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
   padding: 30px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 640px;
   width: 92%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px var(--shadow-color);
-  animation: slideUp 0.3s ease;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
 }
 
 @keyframes slideUp {
@@ -714,18 +719,21 @@ export default {
   color: var(--text-primary);
 }
 
-.link-count {
+.link-count{
   min-width: 22px;
   height: 22px;
   padding: 0 6px;
   border-radius: 11px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   font-size: 12px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .link-search {
@@ -847,7 +855,7 @@ export default {
   height: 16px;
 }
 
-.goal-name-input {
+.goal-name-input{
   flex: 1;
   padding: 7px 10px;
   border: 1px solid var(--border-color);
@@ -858,9 +866,10 @@ export default {
   font-family: inherit;
 }
 
-.goal-name-input:focus {
+.goal-name-input:focus{
   outline: none;
   border-color: var(--accent-primary);
+  box-shadow: var(--glow-cyan);
 }
 
 .goal-remove-btn {
@@ -898,7 +907,7 @@ export default {
   background-color: var(--bg-tertiary);
 }
 
-.draft-badge {
+.draft-badge{
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -907,6 +916,8 @@ export default {
   padding: 2px 6px;
   border-radius: 8px;
   flex-shrink: 0;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
 }
 
 .draft-item .goal-name-input {
@@ -914,7 +925,7 @@ export default {
   background-color: var(--bg-secondary);
 }
 
-.draft-count {
+.draft-count{
   width: 52px;
   padding: 7px 6px;
   border: 1px solid var(--border-color);
@@ -924,6 +935,8 @@ export default {
   font-size: 13px;
   font-family: inherit;
   flex-shrink: 0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .draft-select {
@@ -972,11 +985,11 @@ export default {
 
 .save-btn {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
 }
 
 .save-btn:hover:not(:disabled) {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .save-btn:disabled {

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { SquareTerminal, LogIn, User, Lock, TriangleAlert } from 'lucide-vue-next'
 import { useAuth, login } from '../store/auth'
 
 const router = useRouter()
@@ -20,38 +21,53 @@ async function handleSubmit() {
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h1 class="login-title">Air-Task</h1>
-      <p class="login-subtitle">Вход в систему</p>
+      <div class="login-brand">
+        <SquareTerminal :size="26" aria-hidden="true" />
+        <span class="login-brand-text">Air&nbsp;Task</span>
+      </div>
+
+      <h1 class="login-title">Вход в систему</h1>
+      <p class="login-subtitle hud-label">Authorize // доступ к терминалу</p>
 
       <form @submit.prevent="handleSubmit" class="login-form">
         <div class="form-group">
           <label for="login">Логин</label>
-          <input
-            id="login"
-            v-model="loginField"
-            type="text"
-            placeholder="Введите логин"
-            required
-            autocomplete="username"
-          />
+          <div class="input-wrap">
+            <User class="input-icon" :size="16" aria-hidden="true" />
+            <input
+              id="login"
+              v-model="loginField"
+              type="text"
+              placeholder="Введите логин"
+              required
+              autocomplete="username"
+            />
+          </div>
         </div>
 
         <div class="form-group">
           <label for="password">Пароль</label>
-          <input
-            id="password"
-            v-model="password"
-            type="password"
-            placeholder="Введите пароль"
-            required
-            autocomplete="current-password"
-          />
+          <div class="input-wrap">
+            <Lock class="input-icon" :size="16" aria-hidden="true" />
+            <input
+              id="password"
+              v-model="password"
+              type="password"
+              placeholder="Введите пароль"
+              required
+              autocomplete="current-password"
+            />
+          </div>
         </div>
 
-        <p v-if="auth.loginError" class="error-message">{{ auth.loginError }}</p>
+        <p v-if="auth.loginError" class="error-message" role="alert">
+          <TriangleAlert :size="15" aria-hidden="true" />
+          <span>{{ auth.loginError }}</span>
+        </p>
 
         <button type="submit" class="login-button" :disabled="auth.isLoading">
-          {{ auth.isLoading ? 'Вход...' : 'Войти' }}
+          <LogIn :size="18" aria-hidden="true" />
+          <span>{{ auth.isLoading ? 'Вход...' : 'Войти' }}</span>
         </button>
       </form>
     </div>
@@ -64,33 +80,76 @@ async function handleSubmit() {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 24px;
 }
 
 .login-card {
-  text-align: center;
-  padding: 40px;
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 32px 34px;
   background: var(--bg-secondary);
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  max-width: 380px;
-  width: 90%;
-  transition: background-color 0.3s ease;
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow) both;
+}
+
+/* HUD-скобки по углам */
+.login-card::before,
+.login-card::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--neon-violet);
+  pointer-events: none;
+}
+
+.login-card::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+  border-top-left-radius: var(--radius-lg);
+}
+
+.login-card::after {
+  right: -1px;
+  bottom: -1px;
+  border-left: none;
+  border-top: none;
+  border-bottom-right-radius: var(--radius-lg);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--neon-violet);
+  margin-bottom: 18px;
+}
+
+.login-brand-text {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-primary);
 }
 
 .login-title {
-  font-size: 2.5rem;
-  margin: 0 0 5px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 1.9rem;
+  margin: 0 0 6px 0;
+  text-align: center;
+  color: var(--text-primary);
 }
 
 .login-subtitle {
-  color: var(--text-secondary);
-  font-size: 1rem;
-  margin: 0 0 24px 0;
+  margin: 0 0 28px 0;
+  text-align: center;
 }
 
 .login-form {
@@ -107,48 +166,87 @@ async function handleSubmit() {
 }
 
 .form-group label {
-  color: var(--text-primary);
-  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
 }
 
 .form-group input {
-  padding: 10px 14px;
+  width: 100%;
+  padding: 11px 14px 11px 38px;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 1rem;
-  background: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  background: var(--bg-void);
   color: var(--text-primary);
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.form-group input::placeholder {
+  color: var(--text-muted);
 }
 
 .form-group input:focus {
   border-color: var(--accent-primary);
+  box-shadow: var(--glow-cyan);
 }
 
 .error-message {
-  color: var(--accent-red);
-  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
-  text-align: center;
+  padding: 8px 10px;
+  color: var(--neon-red);
+  background: var(--accent-red-light);
+  border: 1px solid var(--accent-red);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
 }
 
 .login-button {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 13px 24px;
+  background: var(--neon-magenta);
+  color: var(--on-neon);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--glow-magenta);
+  transition: transform var(--transition-base), box-shadow var(--transition-base),
+    filter var(--transition-base);
 }
 
 .login-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 1px rgba(255, 47, 179, 0.5), 0 0 26px rgba(255, 47, 179, 0.42);
 }
 
 .login-button:active:not(:disabled) {
@@ -156,7 +254,8 @@ async function handleSubmit() {
 }
 
 .login-button:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
+  box-shadow: none;
 }
 </style>

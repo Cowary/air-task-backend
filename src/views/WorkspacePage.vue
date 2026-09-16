@@ -1,11 +1,21 @@
 <template>
   <div class="container">
     <!-- Кнопка возврата на главную -->
-    <router-link to="/" class="back-button">← На главную</router-link>
+    <router-link to="/" class="back-button">
+      <ArrowLeft :size="16" aria-hidden="true" />
+      <span>На главную</span>
+    </router-link>
 
     <!-- Заголовок страницы -->
-    <h1>🚀 Рабочее место</h1>
-    <p class="subtitle">Проекты, цели, еженедельные задачи и задачи — всё в одном месте</p>
+    <header class="page-head">
+      <div class="page-head-icon">
+        <Rocket :size="22" aria-hidden="true" />
+      </div>
+      <div>
+        <h1>Рабочее место</h1>
+        <p class="subtitle">Проекты, цели, еженедельные задачи и задачи — всё в одном месте</p>
+      </div>
+    </header>
 
     <!-- Первичная загрузка -->
     <div v-if="initialLoading" class="loading">
@@ -14,46 +24,64 @@
     </div>
 
     <!-- Ошибка первичной загрузки -->
-    <div v-else-if="error" class="error-message">
-      <p>❌ {{ error }}</p>
+    <div v-else-if="error" class="error-message" role="alert">
+      <p class="error-text">
+        <TriangleAlert :size="18" aria-hidden="true" />
+        <span>{{ error }}</span>
+      </p>
       <button @click="loadAll()" class="retry-btn">Повторить</button>
     </div>
 
     <div v-else class="content">
       <!-- Вкладки -->
-      <div class="workspace-tabs">
+      <div class="workspace-tabs" role="tablist">
         <button
           class="tab-btn"
           :class="{ active: activeTab === 'projects' }"
+          role="tab"
+          :aria-selected="activeTab === 'projects'"
           @click="activeTab = 'projects'"
         >
-          📁 Проекты
+          <FolderKanban :size="16" aria-hidden="true" />
+          <span>Проекты</span>
         </button>
         <button
           class="tab-btn"
           :class="{ active: activeTab === 'week' }"
+          role="tab"
+          :aria-selected="activeTab === 'week'"
           @click="activeTab = 'week'"
         >
-          📅 Неделя
+          <CalendarDays :size="16" aria-hidden="true" />
+          <span>Неделя</span>
         </button>
         <button
           class="tab-btn"
           :class="{ active: activeTab === 'tasks' }"
+          role="tab"
+          :aria-selected="activeTab === 'tasks'"
           @click="activeTab = 'tasks'"
         >
-          📝 Все задачи
+          <ListChecks :size="16" aria-hidden="true" />
+          <span>Все задачи</span>
         </button>
         <button
           class="tab-btn"
           :class="{ active: activeTab === 'archive' }"
+          role="tab"
+          :aria-selected="activeTab === 'archive'"
           @click="activeTab = 'archive'"
         >
-          🗄 Архив
+          <Archive :size="16" aria-hidden="true" />
+          <span>Архив</span>
         </button>
       </div>
 
       <!-- Индикатор фонового обновления -->
-      <div v-if="refreshing" class="refreshing">Обновление данных...</div>
+      <div v-if="refreshing" class="refreshing">
+        <span class="refreshing-dot" aria-hidden="true"></span>
+        Обновление данных...
+      </div>
 
       <!-- Проекты -->
       <ProjectsPanel
@@ -122,6 +150,15 @@
 </template>
 
 <script>
+import {
+  ArrowLeft,
+  Rocket,
+  FolderKanban,
+  CalendarDays,
+  ListChecks,
+  Archive,
+  TriangleAlert
+} from 'lucide-vue-next';
 import { getAllProjects, ACTIVE_PROJECT_STATUSES } from '../api/projects.js';
 import { getTasks } from '../api/tasks.js';
 import { getWeeklyTaskStatistics } from '../api/weeklyTasks.js';
@@ -133,6 +170,13 @@ export default {
   name: 'WorkspacePage',
 
   components: {
+    ArrowLeft,
+    Rocket,
+    FolderKanban,
+    CalendarDays,
+    ListChecks,
+    Archive,
+    TriangleAlert,
     ProjectsPanel,
     WeekPanel,
     TaskListSection
@@ -288,35 +332,67 @@ export default {
   max-width: 1280px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding-top: 64px;
+}
+
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.page-head-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  color: var(--neon-violet);
+  background: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 45%, var(--border-light));
+  border-radius: var(--radius-sm);
+  box-shadow: var(--glow-violet);
 }
 
 h1 {
-  text-align: center;
+  font-size: 1.9rem;
+  margin: 0;
   color: var(--text-primary);
-  margin-bottom: 5px;
 }
 
 .subtitle {
-  text-align: center;
+  margin: 4px 0 0 0;
   color: var(--text-secondary);
-  margin-bottom: 25px;
+  font-size: 0.92rem;
 }
 
 .back-button {
-  display: inline-block;
-  padding: 8px 16px;
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   text-decoration: none;
-  border-radius: 5px;
-  font-size: 14px;
-  margin-bottom: 15px;
-  transition: background-color 0.2s;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color var(--transition-base), border-color var(--transition-base),
+    box-shadow var(--transition-base);
 }
 
 .back-button:hover {
-  background-color: var(--border-color);
+  text-decoration: none;
+  color: var(--neon-cyan);
+  border-color: var(--accent-primary);
+  box-shadow: var(--glow-cyan);
 }
 
 .loading {
@@ -332,6 +408,7 @@ h1 {
   height: 40px;
   animation: spin 1s linear infinite;
   margin: 0 auto 20px;
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.25);
 }
 
 @keyframes spin {
@@ -341,24 +418,36 @@ h1 {
 
 .error-message {
   text-align: center;
-  padding: 30px;
+  padding: 26px;
   background-color: var(--accent-red-light);
-  border-radius: 8px;
-  color: var(--accent-red);
+  border: 1px solid var(--accent-red);
+  border-radius: var(--radius-md);
+  color: var(--neon-red);
+}
+
+.error-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--neon-red);
 }
 
 .retry-btn {
   margin-top: 15px;
   padding: 10px 20px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
   cursor: pointer;
+  transition: filter var(--transition-base), box-shadow var(--transition-base);
 }
 
 .retry-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.1);
+  box-shadow: var(--glow-cyan);
 }
 
 /* Вкладки */
@@ -367,7 +456,7 @@ h1 {
   gap: 4px;
   margin-bottom: 20px;
   background-color: var(--bg-secondary);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 4px;
   border: 1px solid var(--border-color);
   max-width: 660px;
@@ -377,15 +466,20 @@ h1 {
 
 .tab-btn {
   flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 10px 18px;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color var(--transition-base), background-color var(--transition-base),
+    border-color var(--transition-base), box-shadow var(--transition-base);
   white-space: nowrap;
 }
 
@@ -395,12 +489,10 @@ h1 {
 }
 
 .tab-btn.active {
-  background-color: var(--accent-primary);
-  color: white;
-}
-
-.tab-btn.active:hover {
-  background-color: #5a6fd6;
+  background-color: var(--accent-purple-light);
+  border-color: var(--accent-purple);
+  color: var(--neon-violet);
+  box-shadow: var(--glow-violet);
 }
 
 .completion-toggle {
@@ -410,19 +502,20 @@ h1 {
   margin-bottom: 15px;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .completion-btn {
   padding: 6px 14px;
-  border: none;
-  border-radius: 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color var(--transition-base), background-color var(--transition-base),
+    border-color var(--transition-base);
 }
 
 .completion-btn:hover {
@@ -430,25 +523,52 @@ h1 {
 }
 
 .completion-btn.active {
-  background-color: var(--accent-primary);
-  color: white;
+  background-color: var(--accent-purple-light);
+  border-color: var(--accent-purple);
+  color: var(--neon-violet);
 }
 
 .refreshing {
-  text-align: center;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 10px;
 }
 
+.refreshing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--neon-cyan);
+  box-shadow: 0 0 10px var(--neon-cyan);
+  animation: pulse-glow 1.2s ease-in-out infinite;
+}
+
 @media (max-width: 600px) {
+  .page-head {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
   .workspace-tabs {
     max-width: none;
+    overflow-x: auto;
   }
 
   .tab-btn {
-    padding: 10px 8px;
-    font-size: 13px;
+    padding: 10px 10px;
+    font-size: 12.5px;
+    gap: 6px;
   }
 }
 </style>

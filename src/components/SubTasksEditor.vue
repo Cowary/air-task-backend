@@ -26,20 +26,23 @@
         :disabled="index === 0"
         @click="move(index, -1)"
         title="Выше"
-      >↑</button>
+        aria-label="Переместить шаг выше"
+      ><AppIcon name="chevron-up" :size="15" /></button>
       <button
         type="button"
         class="step-btn"
         :disabled="index === local.length - 1"
         @click="move(index, 1)"
         title="Ниже"
-      >↓</button>
+        aria-label="Переместить шаг ниже"
+      ><AppIcon name="chevron-down" :size="15" /></button>
       <button
         type="button"
         class="step-btn step-del"
         @click="removeStep(index)"
         title="Удалить шаг"
-      >🗑️</button>
+        aria-label="Удалить шаг"
+      ><AppIcon name="trash-2" :size="15" /></button>
     </div>
 
     <div v-if="hasEmptyName" class="editor-error">Заполните название каждого шага.</div>
@@ -203,7 +206,7 @@ export default {
   cursor: pointer;
 }
 
-.step-name-input {
+.step-name-input{
   flex: 1;
   min-width: 0;
   padding: 8px 10px;
@@ -215,9 +218,10 @@ export default {
   font-family: inherit;
 }
 
-.step-name-input:focus {
+.step-name-input:focus{
   outline: none;
   border-color: var(--accent-primary);
+  box-shadow: var(--glow-cyan);
 }
 
 .step-name-input.step-invalid {

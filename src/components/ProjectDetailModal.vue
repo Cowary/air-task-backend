@@ -7,14 +7,14 @@
       </div>
 
       <div v-else-if="error" class="detail-error">
-        <p>❌ {{ error }}</p>
+        <p><AppIcon name="triangle-alert" :size="16" /> {{ error }}</p>
         <button @click="loadProject" class="retry-btn">Повторить</button>
       </div>
 
       <template v-else-if="project">
         <div class="detail-header">
           <h3>{{ project.name }}</h3>
-          <button class="close-x" @click="closeModal" title="Закрыть">✕</button>
+          <button class="close-x" @click="closeModal" title="Закрыть" aria-label="Закрыть"><AppIcon name="x" :size="15" /></button>
         </div>
 
         <div class="detail-badges">
@@ -41,7 +41,7 @@
 
         <div class="detail-section">
           <h4>
-            🎯 Цели
+            <AppIcon name="target" :size="18" /> Цели
             <span class="section-count">{{ completedGoalsCount }}/{{ goalList.length }}</span>
           </h4>
           <div v-if="goalList.length === 0" class="section-empty">Нет целей</div>
@@ -62,7 +62,7 @@
 
         <div class="detail-section">
           <h4>
-            📊 Еженедельные задачи
+            <AppIcon name="chart-column" :size="18" /> Еженедельные задачи
             <span class="section-count">{{ weeklyList.length }}</span>
           </h4>
           <div v-if="weeklyList.length === 0" class="section-empty">Нет привязанных еженедельных задач</div>
@@ -96,7 +96,7 @@
 
         <div class="detail-section">
           <h4>
-            📝 Задачи
+            <AppIcon name="list-checks" :size="18" /> Задачи
             <span class="section-count">{{ taskList.length }}</span>
           </h4>
           <div v-if="taskList.length === 0" class="section-empty">Нет привязанных задач</div>
@@ -141,7 +141,7 @@
                       :class="{ 'subtask-done-all': subtaskProgress(task).allDone }"
                       @click="toggleExpand(task.id)"
                     >
-                      ✓ {{ subtaskProgress(task).done }}/{{ subtaskProgress(task).total }}
+                      <AppIcon name="check" :size="14" /> {{ subtaskProgress(task).done }}/{{ subtaskProgress(task).total }}
                       <span class="subtask-arrow">{{ expandedTasks[task.id] ? '▲' : '▼' }}</span>
                     </button>
                     <div v-if="expandedTasks[task.id]" class="subtask-expanded">
@@ -398,12 +398,13 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1001;
-  animation: fadeIn 0.2s ease;
+  animation: screen-fade var(--transition-base);
 }
 
 @keyframes fadeIn {
@@ -413,14 +414,15 @@ export default {
 
 .modal-content {
   background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
   padding: 30px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 700px;
   width: 92%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px var(--shadow-color);
-  animation: slideUp 0.3s ease;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
 }
 
 @keyframes slideUp {
@@ -470,11 +472,15 @@ export default {
   margin-bottom: 10px;
 }
 
-.badge {
+.badge{
   font-size: 12px;
   padding: 3px 12px;
   border-radius: 12px;
   font-weight: 500;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
 }
 
 .priority-high {
@@ -493,10 +499,14 @@ export default {
   color: var(--accent-green);
 }
 
-.status-active,
-.status-in_progress {
+.status-active {
   background-color: var(--accent-blue-light);
   color: var(--accent-blue);
+}
+
+.status-in_progress {
+  background-color: var(--accent-purple-light);
+  color: var(--accent-purple);
 }
 
 .status-completed,
@@ -540,7 +550,7 @@ export default {
   font-weight: 500;
 }
 
-.overdue-badge {
+.overdue-badge{
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 12px;
@@ -548,6 +558,10 @@ export default {
   color: var(--accent-red);
   font-weight: 500;
   margin-left: 6px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
 }
 
 .detail-section {
@@ -563,7 +577,7 @@ export default {
   font-size: 15px;
 }
 
-.section-count {
+.section-count{
   min-width: 22px;
   height: 22px;
   padding: 0 6px;
@@ -575,6 +589,9 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .section-empty {
@@ -773,14 +790,14 @@ export default {
   margin-top: 15px;
   padding: 10px 20px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
 .retry-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .form-actions {

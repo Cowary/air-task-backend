@@ -1,8 +1,8 @@
 <template>
   <div class="container">
-    <router-link to="/" class="back-button">← На главную</router-link>
+    <router-link to="/" class="back-button"><AppIcon name="arrow-left" :size="15" /> На главную</router-link>
 
-    <h1>⏰ Управление напоминаниями</h1>
+    <h1><AppIcon name="alarm-clock" :size="28" /> Управление напоминаниями</h1>
     <p class="subtitle">Создание, редактирование и отслеживание напоминаний</p>
 
     <div class="tab-bar">
@@ -10,13 +10,13 @@
         :class="['tab-btn', { active: activeTab === 'countdown' }]"
         @click="activeTab = 'countdown'"
       >
-        📅 До события
+        <AppIcon name="calendar-days" :size="16" /> До события
       </button>
       <button
         :class="['tab-btn', { active: activeTab === 'manage' }]"
         @click="switchToManageTab"
       >
-        ⚙️ Управление
+        <AppIcon name="settings" :size="16" /> Управление
       </button>
     </div>
 
@@ -28,7 +28,7 @@
       </div>
 
       <div v-else-if="countdownError" class="error-message">
-        <p>❌ {{ countdownError }}</p>
+        <p><AppIcon name="triangle-alert" :size="16" /> {{ countdownError }}</p>
         <button @click="loadCountdown" class="retry-btn">Повторить</button>
       </div>
 
@@ -96,7 +96,7 @@
       </div>
 
       <div v-else-if="manageError" class="error-message">
-        <p>❌ {{ manageError }}</p>
+        <p><AppIcon name="triangle-alert" :size="16" /> {{ manageError }}</p>
         <button @click="loadReminders" class="retry-btn">Повторить</button>
       </div>
 
@@ -151,7 +151,7 @@
 
               <div class="reminder-meta">
                 <span class="reminder-date">
-                  📅 {{ formatDate(reminder.reminderDateTime) }}
+                  <AppIcon name="calendar-days" :size="16" /> {{ formatDate(reminder.reminderDateTime) }}
                 </span>
                 <span class="reminder-created">
                   Создано: {{ formatDate(reminder.createdTs) }}
@@ -160,8 +160,8 @@
             </div>
 
             <div class="reminder-actions">
-              <button @click="openEditModal(reminder)" class="action-btn edit-btn" title="Редактировать">✏️</button>
-              <button @click="confirmDelete(reminder)" class="action-btn delete-btn" title="Удалить">🗑️</button>
+              <button @click="openEditModal(reminder)" class="action-btn edit-btn" title="Редактировать" aria-label="Редактировать"><AppIcon name="pencil" :size="15" /></button>
+              <button @click="confirmDelete(reminder)" class="action-btn delete-btn" title="Удалить" aria-label="Удалить"><AppIcon name="trash-2" :size="15" /></button>
             </div>
           </div>
         </div>
@@ -603,7 +603,7 @@ export default {
   max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-body);
 }
 
 h1 {
@@ -660,9 +660,9 @@ h1 {
 }
 
 .tab-btn.active {
-  background-color: var(--accent-primary);
-  color: white;
-  border-color: var(--accent-primary);
+  background-color: var(--accent-purple);
+  color: var(--on-neon);
+  border-color: var(--accent-purple);
 }
 
 /* Loading / Error / Empty */
@@ -698,14 +698,14 @@ h1 {
   margin-top: 15px;
   padding: 10px 20px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
 .retry-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .empty-message {
@@ -723,19 +723,21 @@ h1 {
   gap: 12px;
 }
 
-.countdown-card {
+.countdown-card{
   padding: 20px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background-color: var(--bg-secondary);
   border: 2px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
   transition: all 0.2s ease;
+  border-left: 3px solid var(--accent-primary);
 }
 
-.countdown-card:hover {
-  box-shadow: 0 2px 8px var(--shadow-color);
+.countdown-card:hover{
+  box-shadow: var(--glow-cyan);
+  border-color: var(--accent-primary);
 }
 
 .countdown-card.card-overdue {
@@ -824,7 +826,7 @@ h1 {
 .create-btn {
   padding: 10px 20px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -834,7 +836,7 @@ h1 {
 }
 
 .create-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 /* Reminder cards */
@@ -844,19 +846,20 @@ h1 {
   gap: 12px;
 }
 
-.reminder-card {
+.reminder-card{
   padding: 18px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background-color: var(--bg-secondary);
   border: 2px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   transition: all 0.2s ease;
+  border-left: 3px solid var(--accent-primary);
 }
 
-.reminder-card:hover {
-  box-shadow: 0 2px 8px var(--shadow-color);
+.reminder-card:hover{
+  box-shadow: var(--glow-cyan);
   border-color: var(--accent-primary);
 }
 
@@ -893,11 +896,14 @@ h1 {
 
 .reminder-priority,
 .reminder-status,
-.reminder-type-badge {
+.reminder-type-badge{
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 12px;
   font-weight: 500;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .priority-high {
@@ -916,8 +922,8 @@ h1 {
 }
 
 .status-in_progress {
-  background-color: var(--accent-blue-light);
-  color: var(--accent-primary);
+  background-color: var(--accent-purple-light);
+  color: var(--accent-purple);
 }
 
 .status-done {
@@ -926,8 +932,8 @@ h1 {
 }
 
 .status-paused {
-  background-color: var(--border-color);
-  color: var(--text-muted);
+  background-color: var(--accent-gray-light);
+  color: var(--accent-gray);
 }
 
 .reminder-type-badge {
@@ -1065,12 +1071,13 @@ h1 {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  animation: screen-fade var(--transition-base);
 }
 
 @keyframes fadeIn {
@@ -1080,14 +1087,15 @@ h1 {
 
 .modal-content {
   background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
   padding: 30px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px var(--shadow-color);
-  animation: slideUp 0.3s ease;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
 }
 
 @keyframes slideUp {
@@ -1192,11 +1200,11 @@ h1 {
 
 .save-btn {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
 }
 
 .save-btn:hover:not(:disabled) {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .save-btn:disabled {
@@ -1206,11 +1214,11 @@ h1 {
 
 .delete-btn-confirm {
   background-color: var(--accent-red);
-  color: white;
+  color: var(--on-neon);
 }
 
 .delete-btn-confirm:hover:not(:disabled) {
-  background-color: #c0392b;
+  filter: brightness(1.12);
 }
 
 .delete-btn-confirm:disabled {

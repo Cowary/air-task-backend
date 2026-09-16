@@ -136,12 +136,13 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1001;
-  animation: fadeIn 0.2s ease;
+  animation: screen-fade var(--transition-base);
 }
 
 @keyframes fadeIn {
@@ -151,14 +152,15 @@ export default {
 
 .modal-content {
   background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
   padding: 30px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 450px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px var(--shadow-color);
-  animation: slideUp 0.3s ease;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
 }
 
 @keyframes slideUp {
@@ -242,11 +244,11 @@ export default {
 
 .save-btn {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
 }
 
 .save-btn:hover:not(:disabled) {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .save-btn:disabled {
