@@ -119,18 +119,20 @@
     />
 
     <!-- Модальное окно подтверждения удаления -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
-      <div class="modal-content modal-small" @click.stop>
-        <h3>Подтверждение удаления</h3>
-        <p>Вы уверены, что хотите удалить задачу "{{ taskToDelete?.name }}"?</p>
-        <div class="form-actions">
-          <button @click="closeDeleteModal" class="cancel-btn">Отмена</button>
-          <button @click="removeTask" class="delete-btn-confirm" :disabled="deleting">
-            {{ deleting ? 'Удаление...' : 'Удалить' }}
-          </button>
+    <Teleport to="body">
+      <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
+        <div class="modal-content modal-small" @click.stop>
+          <h3>Подтверждение удаления</h3>
+          <p>Вы уверены, что хотите удалить задачу "{{ taskToDelete?.name }}"?</p>
+          <div class="form-actions">
+            <button @click="closeDeleteModal" class="cancel-btn">Отмена</button>
+            <button @click="removeTask" class="delete-btn-confirm" :disabled="deleting">
+              {{ deleting ? 'Удаление...' : 'Удалить' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 

@@ -132,114 +132,118 @@
     </div>
 
     <!-- Модальное окно для создания/редактирования задачи -->
-    <div v-if="showTaskModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <h3>{{ editingTask ? 'Редактировать задачу' : 'Создать новую задачу' }}</h3>
+    <Teleport to="body">
+      <div v-if="showTaskModal" class="modal-overlay" @click="closeModal">
+        <div class="modal-content" @click.stop>
+          <h3>{{ editingTask ? 'Редактировать задачу' : 'Создать новую задачу' }}</h3>
 
-        <form @submit.prevent="saveTask" class="task-form">
-          <div class="form-group">
-            <label for="taskName">Название задачи *</label>
-            <input
-              id="taskName"
-              v-model.trim="taskForm.name"
-              type="text"
-              required
-              maxlength="200"
-              placeholder="Введите название задачи"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="taskProject">Проект *</label>
-            <div class="project-select-wrapper">
-              <select
-                id="taskProject"
-                v-model="taskForm.projectName"
+          <form @submit.prevent="saveTask" class="task-form">
+            <div class="form-group">
+              <label for="taskName">Название задачи *</label>
+              <input
+                id="taskName"
+                v-model.trim="taskForm.name"
+                type="text"
                 required
-                :disabled="loadingProjects || projects.length === 0"
-              >
-                <option value="" disabled v-if="!taskForm.projectName && loadingProjects">Загрузка проектов...</option>
-                <option
-                  v-for="project in projects"
-                  :key="project.id"
-                  :value="project.name"
+                maxlength="200"
+                placeholder="Введите название задачи"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="taskProject">Проект *</label>
+              <div class="project-select-wrapper">
+                <select
+                  id="taskProject"
+                  v-model="taskForm.projectName"
+                  required
+                  :disabled="loadingProjects || projects.length === 0"
                 >
-                  {{ project.name }}
-                </option>
-              </select>
-              <button
-                type="button"
-                @click="openProjectModal"
-                class="create-project-btn"
-                title="Создать новый проект"
+                  <option value="" disabled v-if="!taskForm.projectName && loadingProjects">Загрузка проектов...</option>
+                  <option
+                    v-for="project in projects"
+                    :key="project.id"
+                    :value="project.name"
+                  >
+                    {{ project.name }}
+                  </option>
+                </select>
+                <button
+                  type="button"
+                  @click="openProjectModal"
+                  class="create-project-btn"
+                  title="Создать новый проект"
+                >
+                  + Проект
+                </button>
+              </div>
+              <span v-if="loadingProjects" class="form-hint">Загрузка проектов...</span>
+              <span v-else-if="projects.length === 0" class="form-hint">Нет доступных проектов. Создайте первый проект!</span>
+            </div>
+
+            <div class="form-group">
+              <label for="taskPriority">Приоритет *</label>
+              <select
+                id="taskPriority"
+                v-model="taskForm.priority"
+                required
               >
-                + Проект
+                <option value="HIGH">Высокий</option>
+                <option value="MIDDLE">Средний</option>
+                <option value="LOW">Низкий</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="taskDueDate">Дата выполнения</label>
+              <input
+                id="taskDueDate"
+                v-model="taskForm.dueDate"
+                type="date"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="taskDescription">Описание</label>
+              <textarea
+                id="taskDescription"
+                v-model="taskForm.description"
+                placeholder="Введите описание задачи (опционально)"
+                maxlength="10000"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <SubTasksEditor v-model="taskForm.subTasks" />
+            </div>
+
+            <div class="form-actions">
+              <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
+              <button type="submit" class="save-btn" :disabled="saving">
+                {{ saving ? 'Сохранение...' : 'Сохранить' }}
               </button>
             </div>
-            <span v-if="loadingProjects" class="form-hint">Загрузка проектов...</span>
-            <span v-else-if="projects.length === 0" class="form-hint">Нет доступных проектов. Создайте первый проект!</span>
-          </div>
-
-          <div class="form-group">
-            <label for="taskPriority">Приоритет *</label>
-            <select
-              id="taskPriority"
-              v-model="taskForm.priority"
-              required
-            >
-              <option value="HIGH">Высокий</option>
-              <option value="MIDDLE">Средний</option>
-              <option value="LOW">Низкий</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="taskDueDate">Дата выполнения</label>
-            <input
-              id="taskDueDate"
-              v-model="taskForm.dueDate"
-              type="date"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="taskDescription">Описание</label>
-            <textarea
-              id="taskDescription"
-              v-model="taskForm.description"
-              placeholder="Введите описание задачи (опционально)"
-              maxlength="10000"
-              rows="4"
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <SubTasksEditor v-model="taskForm.subTasks" />
-          </div>
-
-          <div class="form-actions">
-            <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
-            <button type="submit" class="save-btn" :disabled="saving">
-              {{ saving ? 'Сохранение...' : 'Сохранить' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Модальное окно подтверждения удаления -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
-      <div class="modal-content modal-small" @click.stop>
-        <h3>Подтверждение удаления</h3>
-        <p>Вы уверены, что хотите удалить задачу "{{ taskToDelete?.name }}"?</p>
-        <div class="form-actions">
-          <button @click="closeDeleteModal" class="cancel-btn">Отмена</button>
-          <button @click="deleteTask" class="delete-btn-confirm" :disabled="deleting">
-            {{ deleting ? 'Удаление...' : 'Удалить' }}
-          </button>
+          </form>
         </div>
       </div>
-    </div>
+    </Teleport>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <Teleport to="body">
+      <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
+        <div class="modal-content modal-small" @click.stop>
+          <h3>Подтверждение удаления</h3>
+          <p>Вы уверены, что хотите удалить задачу "{{ taskToDelete?.name }}"?</p>
+          <div class="form-actions">
+            <button @click="closeDeleteModal" class="cancel-btn">Отмена</button>
+            <button @click="deleteTask" class="delete-btn-confirm" :disabled="deleting">
+              {{ deleting ? 'Удаление...' : 'Удалить' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Модальное окно создания проекта -->
     <ProjectModal

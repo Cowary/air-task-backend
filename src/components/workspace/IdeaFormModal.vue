@@ -2,57 +2,41 @@
   <Teleport to="body">
     <div v-if="visible" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
-        <h3>Создать новый проект</h3>
+        <h3>{{ isEdit ? 'Редактировать идею' : 'Создать новую идею' }}</h3>
 
-        <form @submit.prevent="handleCreateProject" class="project-form">
+        <form @submit.prevent="handleSave" class="idea-form">
           <div class="form-group">
-            <label for="projectName">Название проекта *</label>
+            <label for="ideaName">Название идеи *</label>
             <input
-              id="projectName"
-              v-model.trim="projectForm.name"
+              id="ideaName"
+              v-model.trim="form.name"
               type="text"
               required
-              maxlength="100"
-              placeholder="Введите название проекта"
+              maxlength="200"
+              placeholder="Введите название идеи"
             />
           </div>
 
-          <div class="form-group">
-            <label for="projectStatus">Статус</label>
-            <select
-              id="projectStatus"
-              v-model="projectForm.status"
-            >
-              <option value="ACTIVE">Активный</option>
-              <option value="ARCHIVED">Архивирован</option>
-            </select>
+          <div v-if="isEdit && idea.createdTs" class="idea-created">
+            <AppIcon name="clock" :size="14" />
+            <span>Создано: {{ formatDate(idea.createdTs) }}</span>
           </div>
 
           <div class="form-group">
-            <label for="projectPriority">Приоритет</label>
-            <select
-              id="projectPriority"
-              v-model="projectForm.priority"
-            >
-              <option value="HIGH">Высокий</option>
-              <option value="MIDDLE">Средний</option>
-              <option value="LOW">Низкий</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="projectDueDate">Дата выполнения</label>
-            <input
-              id="projectDueDate"
-              v-model="projectForm.dueDate"
-              type="date"
-            />
+            <label for="ideaDescription">Описание</label>
+            <textarea
+              id="ideaDescription"
+              v-model="form.description"
+              placeholder="Опишите идею (опционально)"
+              maxlength="10000"
+              rows="5"
+            ></textarea>
           </div>
 
           <div class="form-actions">
             <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
             <button type="submit" class="save-btn" :disabled="saving">
-              {{ saving ? 'Создание...' : 'Создать' }}
+              {{ saving ? 'Сохранение...' : 'Сохранить' }}
             </button>
           </div>
         </form>
@@ -62,67 +46,100 @@
 </template>
 
 <script>
+import { createIdea, updateIdea } from '../../api/ideas.js';
+
 export default {
-  name: 'ProjectModal',
+  name: 'IdeaFormModal',
 
   props: {
     visible: {
       type: Boolean,
       required: true
     },
-    createProject: {
-      type: Function,
-      required: true
-    },
-    onProjectCreated: {
-      type: Function,
-      required: true
+    idea: {
+      type: Object,
+      default: null
     }
   },
 
+  emits: ['close', 'saved'],
+
   data() {
     return {
-      projectForm: {
+      saving: false,
+      form: {
         name: '',
-        status: 'ACTIVE',
-        priority: 'MIDDLE',
-        dueDate: ''
-      },
-      saving: false
+        description: ''
+      }
     };
   },
 
+  computed: {
+    isEdit() {
+      return !!this.idea;
+    }
+  },
+
+  watch: {
+    visible(newVisible) {
+      if (newVisible) {
+        this.initForm();
+      }
+    }
+  },
+
   methods: {
-    closeModal() {
-      this.projectForm = {
-        name: '',
-        status: 'ACTIVE',
-        priority: 'MIDDLE',
-        dueDate: ''
+    initForm() {
+      this.form = {
+        name: this.idea?.name || '',
+        description: this.idea?.description || ''
       };
+    },
+
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+
+    closeModal() {
       this.$emit('close');
     },
 
-    async handleCreateProject() {
-      if (!this.projectForm.name) {
-        alert('Пожалуйста, введите название проекта');
+    async handleSave() {
+      if (!this.form.name) {
+        alert('Пожалуйста, заполните название идеи');
         return;
       }
 
       this.saving = true;
 
       try {
-        const response = await this.createProject(this.projectForm);
+        const payload = {
+          name: this.form.name,
+          description: this.form.description
+        };
+
+        const response = this.isEdit
+          ? await updateIdea(this.idea.id, payload)
+          : await createIdea(payload);
 
         if (response.isSuccess) {
-          this.onProjectCreated(response.data);
+          this.$emit('saved', response.data);
           this.closeModal();
         } else {
-          alert('Не удалось создать проект: ' + (response.errorMessage || 'Неизвестная ошибка'));
+          alert('Не удалось сохранить идею: ' + (response.errorMessage || 'Неизвестная ошибка'));
         }
       } catch (err) {
-        alert('Ошибка при создании проекта');
-        console.error('Ошибка создания проекта:', err);
+        alert('Ошибка при сохранении идеи');
+        console.error('Ошибка сохранения идеи:', err);
       } finally {
         this.saving = false;
       }
@@ -143,13 +160,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1001;
+  overflow-y: auto;
+  z-index: 1100;
   animation: screen-fade var(--transition-base);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 .modal-content {
@@ -157,23 +170,13 @@ export default {
   border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
   padding: 30px;
   border-radius: var(--radius-lg);
-  max-width: 450px;
-  width: 90%;
+  max-width: 520px;
+  width: 92%;
   max-height: 90vh;
   overflow-y: auto;
+  margin: auto;
   box-shadow: var(--shadow-elevated), var(--glow-violet);
   animation: screen-rise var(--transition-slow);
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
 }
 
 .modal-content h3 {
@@ -182,7 +185,7 @@ export default {
   text-align: center;
 }
 
-.project-form {
+.idea-form {
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -201,7 +204,7 @@ export default {
 }
 
 .form-group input,
-.form-group select {
+.form-group textarea {
   padding: 10px;
   border: 1px solid var(--border-color);
   border-radius: 5px;
@@ -212,9 +215,23 @@ export default {
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group textarea:focus {
   outline: none;
   border-color: var(--accent-primary);
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.idea-created {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
 }
 
 .form-actions {

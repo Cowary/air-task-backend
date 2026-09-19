@@ -67,6 +67,26 @@
         </button>
         <button
           class="tab-btn"
+          :class="{ active: activeTab === 'ideas' }"
+          role="tab"
+          :aria-selected="activeTab === 'ideas'"
+          @click="activeTab = 'ideas'"
+        >
+          <Lightbulb :size="16" aria-hidden="true" />
+          <span>Идеи</span>
+        </button>
+        <button
+          class="tab-btn"
+          :class="{ active: activeTab === 'reminders' }"
+          role="tab"
+          :aria-selected="activeTab === 'reminders'"
+          @click="activeTab = 'reminders'"
+        >
+          <Repeat :size="16" aria-hidden="true" />
+          <span>Напоминания</span>
+        </button>
+        <button
+          class="tab-btn"
           :class="{ active: activeTab === 'archive' }"
           role="tab"
           :aria-selected="activeTab === 'archive'"
@@ -136,6 +156,20 @@
         />
       </template>
 
+      <!-- Идеи -->
+      <IdeasPanel
+        v-else-if="activeTab === 'ideas'"
+        :ideas="ideas"
+        :projects="projects"
+        @changed="refresh"
+      />
+
+      <!-- Напоминания -->
+      <RemindersPanel
+        v-else-if="activeTab === 'reminders'"
+        @changed="refresh"
+      />
+
       <!-- Архив выполненных задач -->
       <TaskListSection
         v-else
@@ -157,13 +191,18 @@ import {
   CalendarDays,
   ListChecks,
   Archive,
+  Lightbulb,
+  Repeat,
   TriangleAlert
 } from 'lucide-vue-next';
 import { getAllProjects, ACTIVE_PROJECT_STATUSES } from '../api/projects.js';
 import { getTasks } from '../api/tasks.js';
 import { getWeeklyTaskStatistics } from '../api/weeklyTasks.js';
+import { getAllIdeas } from '../api/ideas.js';
 import ProjectsPanel from '../components/workspace/ProjectsPanel.vue';
 import WeekPanel from '../components/workspace/WeekPanel.vue';
+import IdeasPanel from '../components/workspace/IdeasPanel.vue';
+import RemindersPanel from '../components/workspace/RemindersPanel.vue';
 import TaskListSection, { NO_PROJECT_FILTER } from '../components/workspace/TaskListSection.vue';
 
 export default {
@@ -176,9 +215,13 @@ export default {
     CalendarDays,
     ListChecks,
     Archive,
+    Lightbulb,
+    Repeat,
     TriangleAlert,
     ProjectsPanel,
     WeekPanel,
+    IdeasPanel,
+    RemindersPanel,
     TaskListSection
   },
 
@@ -191,6 +234,7 @@ export default {
 
       projects: [],
       tasks: [],
+      ideas: [],
       statistics: null,
 
       // Статусы проектов для запроса к бэкенду (фильтр в сайдбаре «Проекты»)
@@ -245,10 +289,11 @@ export default {
       }
 
       try {
-        const [projectsRes, tasksRes, statsRes] = await Promise.all([
+        const [projectsRes, tasksRes, statsRes, ideasRes] = await Promise.all([
           getAllProjects({ statuses: this.projectStatuses, sortByPriority: true }),
           getTasks(),
-          getWeeklyTaskStatistics()
+          getWeeklyTaskStatistics(),
+          getAllIdeas()
         ]);
 
         let hasError = false;
@@ -274,12 +319,20 @@ export default {
           console.error('Ошибка загрузки статистики:', statsRes.errorMessage);
         }
 
+        if (ideasRes.isSuccess) {
+          this.ideas = ideasRes.data || [];
+        } else {
+          hasError = true;
+          console.error('Ошибка загрузки идей:', ideasRes.errorMessage);
+        }
+
         if (hasError) {
           if (this.initialLoading) {
             this.error = 'Не удалось загрузить часть данных. Проверьте, запущен ли сервер.';
           } else {
             alert('Не удалось обновить данные: ' + (
-              projectsRes.errorMessage || tasksRes.errorMessage || statsRes.errorMessage || 'Неизвестная ошибка'
+              projectsRes.errorMessage || tasksRes.errorMessage || statsRes.errorMessage
+              || ideasRes.errorMessage || 'Неизвестная ошибка'
             ));
           }
         }
@@ -459,7 +512,9 @@ h1 {
   border-radius: var(--radius-md);
   padding: 4px;
   border: 1px solid var(--border-color);
-  max-width: 660px;
+  width: 100%;
+  max-width: min(100%, 980px);
+  overflow-x: auto;
   margin-left: auto;
   margin-right: auto;
 }
@@ -563,9 +618,11 @@ h1 {
   .workspace-tabs {
     max-width: none;
     overflow-x: auto;
+    justify-content: flex-start;
   }
 
   .tab-btn {
+    flex: 0 0 auto;
     padding: 10px 10px;
     font-size: 12.5px;
     gap: 6px;

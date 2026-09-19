@@ -108,163 +108,167 @@
     </div>
 
     <!-- Модальное окно для создания/редактирования покупки -->
-    <div v-if="showPurchaseModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <h3>{{ editingPurchase ? 'Редактировать покупку' : 'Создать новую покупку' }}</h3>
+    <Teleport to="body">
+      <div v-if="showPurchaseModal" class="modal-overlay" @click="closeModal">
+        <div class="modal-content" @click.stop>
+          <h3>{{ editingPurchase ? 'Редактировать покупку' : 'Создать новую покупку' }}</h3>
 
-        <form @submit.prevent="savePurchase" class="purchase-form">
-          <div class="form-group">
-            <label for="purchaseName">Название покупки *</label>
-            <input
-              id="purchaseName"
-              v-model.trim="purchaseForm.name"
-              type="text"
-              required
-              maxlength="200"
-              placeholder="Введите название покупки"
-            />
-          </div>
+          <form @submit.prevent="savePurchase" class="purchase-form">
+            <div class="form-group">
+              <label for="purchaseName">Название покупки *</label>
+              <input
+                id="purchaseName"
+                v-model.trim="purchaseForm.name"
+                type="text"
+                required
+                maxlength="200"
+                placeholder="Введите название покупки"
+              />
+            </div>
 
-          <div class="form-group">
-            <label for="purchaseCategory">Категория *</label>
-            <div v-if="!isNewCategoryMode" class="category-select-wrapper">
+            <div class="form-group">
+              <label for="purchaseCategory">Категория *</label>
+              <div v-if="!isNewCategoryMode" class="category-select-wrapper">
+                <select
+                  id="purchaseCategory"
+                  v-model="purchaseForm.categoryName"
+                  required
+                >
+                  <option value="" disabled>Выберите категорию</option>
+                  <option v-for="category in categories" :key="category" :value="category">
+                    {{ category }}
+                  </option>
+                </select>
+                <button type="button" @click="enableNewCategoryMode" class="btn-new-category">
+                  + Новая
+                </button>
+              </div>
+              <div v-else class="category-input-wrapper">
+                <input
+                  id="purchaseNewCategory"
+                  v-model.trim="newCategoryName"
+                  type="text"
+                  placeholder="Введите название новой категории"
+                  @keyup.enter="confirmNewCategory"
+                  @blur="confirmNewCategory"
+                />
+                <button type="button" @click="cancelNewCategoryMode" class="btn-cancel-category" aria-label="Отменить">
+                  <AppIcon name="x" :size="15" />
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="purchasePriority">Приоритет *</label>
               <select
-                id="purchaseCategory"
-                v-model="purchaseForm.categoryName"
+                id="purchasePriority"
+                v-model="purchaseForm.priority"
                 required
               >
-                <option value="" disabled>Выберите категорию</option>
-                <option v-for="category in categories" :key="category" :value="category">
-                  {{ category }}
-                </option>
+                <option value="HIGH">Высокий</option>
+                <option value="MIDDLE">Средний</option>
+                <option value="LOW">Низкий</option>
               </select>
-              <button type="button" @click="enableNewCategoryMode" class="btn-new-category">
-                + Новая
+            </div>
+
+            <div class="form-group" v-if="editingPurchase">
+              <label for="purchaseStatus">Статус *</label>
+              <select
+                id="purchaseStatus"
+                v-model="purchaseForm.status"
+                required
+              >
+                <option value="IN_PROGRESS">В работе</option>
+                <option value="DONE">Выполнено</option>
+                <option value="PAUSED">На паузе</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  v-model="purchaseForm.isComplete"
+                />
+                <span>Завершено</span>
+              </label>
+            </div>
+
+            <!-- Управление ценами -->
+            <div class="form-section">
+              <label><AppIcon name="wallet" :size="16" /> Цены:</label>
+              <div class="list-manager">
+                <div v-for="(price, index) in purchaseForm.priceList" :key="index" class="list-item">
+                  <div class="list-item-content">
+                    <input
+                      v-model.number="price.amount"
+                      type="number"
+                      step="0.01"
+                      placeholder="Сумма"
+                      class="inline-input"
+                    />
+                    <input
+                      v-model.trim="price.currency"
+                      type="text"
+                      placeholder="Валюта (USD, RUB)"
+                      class="inline-input inline-input-short"
+                    />
+                    <label class="checkbox-label-inline">
+                      <input type="checkbox" v-model="price.isActual" />
+                      <span>Актуальная</span>
+                    </label>
+                  </div>
+                  <button @click="removePrice(index)" class="btn-remove" type="button" title="Удалить цену" aria-label="Удалить цену"><AppIcon name="x" :size="15" /></button>
+                </div>
+                <button @click="addPrice" class="btn-add" type="button">+ Добавить цену</button>
+              </div>
+            </div>
+
+            <!-- Управление ссылками -->
+            <div class="form-section">
+              <label><AppIcon name="link-2" :size="16" /> Ссылки:</label>
+              <div class="list-manager">
+                <div v-for="(link, index) in purchaseForm.linkList" :key="index" class="list-item">
+                  <div class="list-item-content">
+                    <input
+                      v-model.trim="link.link"
+                      type="url"
+                      placeholder="https://example.com"
+                      class="inline-input"
+                    />
+                  </div>
+                  <button @click="removeLink(index)" class="btn-remove" type="button" title="Удалить ссылку" aria-label="Удалить ссылку"><AppIcon name="x" :size="15" /></button>
+                </div>
+                <button @click="addLink" class="btn-add" type="button">+ Добавить ссылку</button>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
+              <button type="submit" class="save-btn" :disabled="saving">
+                {{ saving ? 'Сохранение...' : 'Сохранить' }}
               </button>
             </div>
-            <div v-else class="category-input-wrapper">
-              <input
-                id="purchaseNewCategory"
-                v-model.trim="newCategoryName"
-                type="text"
-                placeholder="Введите название новой категории"
-                @keyup.enter="confirmNewCategory"
-                @blur="confirmNewCategory"
-              />
-              <button type="button" @click="cancelNewCategoryMode" class="btn-cancel-category" aria-label="Отменить">
-                <AppIcon name="x" :size="15" />
-              </button>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="purchasePriority">Приоритет *</label>
-            <select
-              id="purchasePriority"
-              v-model="purchaseForm.priority"
-              required
-            >
-              <option value="HIGH">Высокий</option>
-              <option value="MIDDLE">Средний</option>
-              <option value="LOW">Низкий</option>
-            </select>
-          </div>
-
-          <div class="form-group" v-if="editingPurchase">
-            <label for="purchaseStatus">Статус *</label>
-            <select
-              id="purchaseStatus"
-              v-model="purchaseForm.status"
-              required
-            >
-              <option value="IN_PROGRESS">В работе</option>
-              <option value="DONE">Выполнено</option>
-              <option value="PAUSED">На паузе</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                v-model="purchaseForm.isComplete"
-              />
-              <span>Завершено</span>
-            </label>
-          </div>
-
-          <!-- Управление ценами -->
-          <div class="form-section">
-            <label><AppIcon name="wallet" :size="16" /> Цены:</label>
-            <div class="list-manager">
-              <div v-for="(price, index) in purchaseForm.priceList" :key="index" class="list-item">
-                <div class="list-item-content">
-                  <input
-                    v-model.number="price.amount"
-                    type="number"
-                    step="0.01"
-                    placeholder="Сумма"
-                    class="inline-input"
-                  />
-                  <input
-                    v-model.trim="price.currency"
-                    type="text"
-                    placeholder="Валюта (USD, RUB)"
-                    class="inline-input inline-input-short"
-                  />
-                  <label class="checkbox-label-inline">
-                    <input type="checkbox" v-model="price.isActual" />
-                    <span>Актуальная</span>
-                  </label>
-                </div>
-                <button @click="removePrice(index)" class="btn-remove" type="button" title="Удалить цену" aria-label="Удалить цену"><AppIcon name="x" :size="15" /></button>
-              </div>
-              <button @click="addPrice" class="btn-add" type="button">+ Добавить цену</button>
-            </div>
-          </div>
-
-          <!-- Управление ссылками -->
-          <div class="form-section">
-            <label><AppIcon name="link-2" :size="16" /> Ссылки:</label>
-            <div class="list-manager">
-              <div v-for="(link, index) in purchaseForm.linkList" :key="index" class="list-item">
-                <div class="list-item-content">
-                  <input
-                    v-model.trim="link.link"
-                    type="url"
-                    placeholder="https://example.com"
-                    class="inline-input"
-                  />
-                </div>
-                <button @click="removeLink(index)" class="btn-remove" type="button" title="Удалить ссылку" aria-label="Удалить ссылку"><AppIcon name="x" :size="15" /></button>
-              </div>
-              <button @click="addLink" class="btn-add" type="button">+ Добавить ссылку</button>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
-            <button type="submit" class="save-btn" :disabled="saving">
-              {{ saving ? 'Сохранение...' : 'Сохранить' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Модальное окно подтверждения удаления -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
-      <div class="modal-content modal-small" @click.stop>
-        <h3>Подтверждение удаления</h3>
-        <p>Вы уверены, что хотите удалить покупку "{{ purchaseToDelete?.name }}"?</p>
-        <div class="form-actions">
-          <button @click="closeDeleteModal" class="cancel-btn">Отмена</button>
-          <button @click="deletePurchase" class="delete-btn-confirm" :disabled="deleting">
-            {{ deleting ? 'Удаление...' : 'Удалить' }}
-          </button>
+          </form>
         </div>
       </div>
-    </div>
+    </Teleport>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <Teleport to="body">
+      <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
+        <div class="modal-content modal-small" @click.stop>
+          <h3>Подтверждение удаления</h3>
+          <p>Вы уверены, что хотите удалить покупку "{{ purchaseToDelete?.name }}"?</p>
+          <div class="form-actions">
+            <button @click="closeDeleteModal" class="cancel-btn">Отмена</button>
+            <button @click="deletePurchase" class="delete-btn-confirm" :disabled="deleting">
+              {{ deleting ? 'Удаление...' : 'Удалить' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 

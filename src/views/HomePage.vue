@@ -6,7 +6,6 @@ import {
   FolderKanban,
   ListChecks,
   ShoppingCart,
-  Bell,
   ShieldCheck,
   ArrowRight
 } from 'lucide-vue-next'
@@ -27,8 +26,7 @@ const modules = [
   { to: '/weekly-tasks', label: 'Еженедельные задачи', hint: 'Ритм недели', icon: ChartColumn, tone: 'cyan' },
   { to: '/projects', label: 'Проекты', hint: 'Цели и прогресс', icon: FolderKanban, tone: 'green' },
   { to: '/tasks', label: 'Задачи', hint: 'Список дел', icon: ListChecks, tone: 'violet' },
-  { to: '/purchases', label: 'Покупки', hint: 'Списки и цены', icon: ShoppingCart, tone: 'amber' },
-  { to: '/reminders', label: 'Напоминания', hint: 'Сроки и дедлайны', icon: Bell, tone: 'cyan' }
+  { to: '/purchases', label: 'Покупки', hint: 'Списки и цены', icon: ShoppingCart, tone: 'amber' }
 ]
 
 onMounted(async () => {

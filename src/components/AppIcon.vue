@@ -42,6 +42,13 @@ import {
   Target,
   ExternalLink,
   Info,
+  Lightbulb,
+  ListPlus,
+  FolderPlus,
+  Repeat,
+  History,
+  SkipForward,
+  CalendarClock,
 } from 'lucide-vue-next'
 
 /**
@@ -97,7 +104,14 @@ const ICONS = {
   clock: Clock,
   target: Target,
   'external-link': ExternalLink,
-  info: Info
+  info: Info,
+  lightbulb: Lightbulb,
+  'list-plus': ListPlus,
+  'folder-plus': FolderPlus,
+  repeat: Repeat,
+  history: History,
+  'skip-forward': SkipForward,
+  'calendar-clock': CalendarClock
 }
 
 const IconComponent = computed(() => ICONS[props.name] || CircleAlert)

@@ -1,92 +1,94 @@
 <template>
-  <div v-if="visible" class="modal-overlay" @click="closeModal">
-    <div class="modal-content" @click.stop>
-      <h3>{{ isEdit ? 'Редактировать еженедельную задачу' : 'Создать еженедельную задачу' }}</h3>
+  <Teleport to="body">
+    <div v-if="visible" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <h3>{{ isEdit ? 'Редактировать еженедельную задачу' : 'Создать еженедельную задачу' }}</h3>
 
-      <form @submit.prevent="handleSave" class="task-form">
-        <div class="form-group">
-          <label for="wsWeeklyName">Название задачи *</label>
-          <input
-            id="wsWeeklyName"
-            v-model.trim="form.name"
-            type="text"
-            required
-            maxlength="100"
-            placeholder="Введите название задачи"
-          />
-        </div>
-
-        <div class="form-row">
+        <form @submit.prevent="handleSave" class="task-form">
           <div class="form-group">
-            <label for="wsWeeklyCount">Раз в неделю *</label>
+            <label for="wsWeeklyName">Название задачи *</label>
             <input
-              id="wsWeeklyCount"
-              v-model.number="form.count"
-              type="number"
-              min="1"
-              max="7"
+              id="wsWeeklyName"
+              v-model.trim="form.name"
+              type="text"
               required
-              placeholder="1"
+              maxlength="100"
+              placeholder="Введите название задачи"
             />
           </div>
 
-          <div class="form-group">
-            <label for="wsWeeklyPriority">Приоритет</label>
-            <select id="wsWeeklyPriority" v-model="form.priority">
-              <option value="HIGH">Высокий</option>
-              <option value="MIDDLE">Средний</option>
-              <option value="LOW">Низкий</option>
-            </select>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="wsWeeklyCount">Раз в неделю *</label>
+              <input
+                id="wsWeeklyCount"
+                v-model.number="form.count"
+                type="number"
+                min="1"
+                max="7"
+                required
+                placeholder="1"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="wsWeeklyPriority">Приоритет</label>
+              <select id="wsWeeklyPriority" v-model="form.priority">
+                <option value="HIGH">Высокий</option>
+                <option value="MIDDLE">Средний</option>
+                <option value="LOW">Низкий</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="wsWeeklyStatus">Статус</label>
+              <select id="wsWeeklyStatus" v-model="form.status">
+                <option value="IN_PROGRESS">В работе</option>
+                <option value="DONE">Выполнено</option>
+                <option value="PAUSED">На паузе</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="wsWeeklyStatus">Статус</label>
-            <select id="wsWeeklyStatus" v-model="form.status">
-              <option value="IN_PROGRESS">В работе</option>
-              <option value="DONE">Выполнено</option>
-              <option value="PAUSED">На паузе</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="wsWeeklyProject">Проект *</label>
-          <select
-            id="wsWeeklyProject"
-            v-model="form.projectName"
-            required
-          >
-            <option value="" disabled>Выберите проект</option>
-            <option
-              v-for="project in projects"
-              :key="project.id"
-              :value="project.name"
+            <label for="wsWeeklyProject">Проект *</label>
+            <select
+              id="wsWeeklyProject"
+              v-model="form.projectName"
+              required
             >
-              {{ project.name }}
-            </option>
-            <option value="__custom__">Другой проект (ввести название)</option>
-          </select>
-          <input
-            v-if="isCustomProject"
-            v-model.trim="form.customProjectName"
-            type="text"
-            class="custom-project-input"
-            maxlength="100"
-            required
-            placeholder="Введите название проекта"
-          />
-          <span class="form-hint">Еженедельные задачи всегда относятся к проекту; по умолчанию — «Без проекта».</span>
-        </div>
+              <option value="" disabled>Выберите проект</option>
+              <option
+                v-for="project in projects"
+                :key="project.id"
+                :value="project.name"
+              >
+                {{ project.name }}
+              </option>
+              <option value="__custom__">Другой проект (ввести название)</option>
+            </select>
+            <input
+              v-if="isCustomProject"
+              v-model.trim="form.customProjectName"
+              type="text"
+              class="custom-project-input"
+              maxlength="100"
+              required
+              placeholder="Введите название проекта"
+            />
+            <span class="form-hint">Еженедельные задачи всегда относятся к проекту; по умолчанию — «Без проекта».</span>
+          </div>
 
-        <div class="form-actions">
-          <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
-          <button type="submit" class="save-btn" :disabled="saving">
-            {{ saving ? 'Сохранение...' : 'Сохранить' }}
-          </button>
-        </div>
-      </form>
+          <div class="form-actions">
+            <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
+            <button type="submit" class="save-btn" :disabled="saving">
+              {{ saving ? 'Сохранение...' : 'Сохранить' }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script>
@@ -259,6 +261,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow-y: auto;
   z-index: 1100;
   animation: screen-fade var(--transition-base);
 }
@@ -277,6 +280,7 @@ export default {
   width: 92%;
   max-height: 90vh;
   overflow-y: auto;
+  margin: auto;
   box-shadow: var(--shadow-elevated), var(--glow-violet);
   animation: screen-rise var(--transition-slow);
 }

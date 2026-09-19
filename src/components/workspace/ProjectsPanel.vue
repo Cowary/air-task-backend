@@ -353,35 +353,39 @@
     />
 
     <!-- Модальное окно подтверждения удаления проекта -->
-    <div v-if="showDeleteProjectModal" class="modal-overlay" @click="closeDeleteProjectModal">
-      <div class="modal-content modal-small" @click.stop>
-        <h3>Подтверждение удаления</h3>
-        <p>
-          Вы уверены, что хотите удалить проект "{{ projectToDelete?.name }}"?
-          Привязанные задачи останутся в системе.
-        </p>
-        <div class="form-actions">
-          <button @click="closeDeleteProjectModal" class="cancel-btn">Отмена</button>
-          <button @click="removeProject" class="delete-btn-confirm" :disabled="deleting">
-            {{ deleting ? 'Удаление...' : 'Удалить' }}
-          </button>
+    <Teleport to="body">
+      <div v-if="showDeleteProjectModal" class="modal-overlay" @click="closeDeleteProjectModal">
+        <div class="modal-content modal-small" @click.stop>
+          <h3>Подтверждение удаления</h3>
+          <p>
+            Вы уверены, что хотите удалить проект "{{ projectToDelete?.name }}"?
+            Привязанные задачи останутся в системе.
+          </p>
+          <div class="form-actions">
+            <button @click="closeDeleteProjectModal" class="cancel-btn">Отмена</button>
+            <button @click="removeProject" class="delete-btn-confirm" :disabled="deleting">
+              {{ deleting ? 'Удаление...' : 'Удалить' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- Модальное окно подтверждения удаления еженедельной задачи -->
-    <div v-if="showDeleteWeeklyModal" class="modal-overlay" @click="closeDeleteWeeklyModal">
-      <div class="modal-content modal-small" @click.stop>
-        <h3>Подтверждение удаления</h3>
-        <p>Вы уверены, что хотите удалить еженедельную задачу "{{ weeklyToDelete?.name }}"?</p>
-        <div class="form-actions">
-          <button @click="closeDeleteWeeklyModal" class="cancel-btn">Отмена</button>
-          <button @click="removeWeekly" class="delete-btn-confirm" :disabled="deleting">
-            {{ deleting ? 'Удаление...' : 'Удалить' }}
-          </button>
+    <Teleport to="body">
+      <div v-if="showDeleteWeeklyModal" class="modal-overlay" @click="closeDeleteWeeklyModal">
+        <div class="modal-content modal-small" @click.stop>
+          <h3>Подтверждение удаления</h3>
+          <p>Вы уверены, что хотите удалить еженедельную задачу "{{ weeklyToDelete?.name }}"?</p>
+          <div class="form-actions">
+            <button @click="closeDeleteWeeklyModal" class="cancel-btn">Отмена</button>
+            <button @click="removeWeekly" class="delete-btn-confirm" :disabled="deleting">
+              {{ deleting ? 'Удаление...' : 'Удалить' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 

@@ -42,7 +42,7 @@ async function mountModal() {
   const wrapper = mount(ProjectDetailModal, {
     props: { visible: false, projectId: 1 },
     global: {
-      stubs: { SubTasksChecklist: true }
+      stubs: { SubTasksChecklist: true, teleport: true }
     }
   });
 
