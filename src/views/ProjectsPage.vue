@@ -574,7 +574,7 @@ h1 {
   gap: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-left: 3px solid var(--accent-primary);
+  border-left: 3px solid var(--entity-project);
 }
 
 .project-card:hover{

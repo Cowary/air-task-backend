@@ -983,12 +983,12 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border-left: 3px solid var(--accent-primary);
+  border-left: 3px solid var(--entity-project);
 }
 
 .project-card:hover{
-  border-color: var(--accent-primary);
-  box-shadow: var(--glow-cyan);
+  border-color: var(--entity-project);
+  box-shadow: var(--glow-green);
 }
 
 .project-card.selected {
@@ -1000,7 +1000,7 @@ export default {
 .orphan-card{
   border-style: dashed;
   opacity: 0.9;
-  border-left: 3px solid var(--accent-primary);
+  border-left: 3px solid var(--entity-project);
 }
 
 .card-title-row {

@@ -558,7 +558,7 @@ export default {
   align-items: flex-start;
   gap: 12px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  border-left: 3px solid var(--accent-primary);
+  border-left: 3px solid var(--entity-task);
 }
 
 .task-card:hover{

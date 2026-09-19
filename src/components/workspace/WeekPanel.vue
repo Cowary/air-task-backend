@@ -256,7 +256,7 @@ export default {
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
-  border-left: 3px solid var(--accent-primary);
+  border-left: 3px solid var(--entity-weekly);
 }
 
 .summary-progress {
@@ -396,7 +396,7 @@ export default {
   border: 2px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
-  border-left: 3px solid var(--accent-primary);
+  border-left: 3px solid var(--entity-weekly);
 }
 
 .task-card.incomplete:hover {

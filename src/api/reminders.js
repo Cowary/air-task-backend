@@ -167,3 +167,24 @@ export const getReminderHistory = async (id) => {
     throw error;
   }
 };
+
+/**
+ * Получает вхождения повторяющихся напоминаний за диапазон дат (для календаря)
+ *
+ * API endpoint: GET /api/reminder/v1/occurrences?from&to
+ *
+ * @param {string} from - Начало диапазона ('ГГГГ-ММ-ДД')
+ * @param {string} to - Конец диапазона ('ГГГГ-ММ-ДД')
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const getReminderOccurrences = async (from, to) => {
+  try {
+    const response = await apiClient.get('/reminder/v1/occurrences', {
+      params: { from, to }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при получении вхождений напоминаний:', error);
+    throw error;
+  }
+};

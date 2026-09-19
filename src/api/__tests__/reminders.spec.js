@@ -18,7 +18,8 @@ import {
   deleteReminder,
   completeReminder,
   skipReminder,
-  getReminderHistory
+  getReminderHistory,
+  getReminderOccurrences
 } from '../reminders.js';
 
 describe('api/reminders.js', () => {
@@ -107,6 +108,14 @@ describe('api/reminders.js', () => {
     await getReminderHistory(3);
 
     expect(apiClient.get).toHaveBeenCalledWith('/reminder/v1/3/history');
+  });
+
+  it('getReminderOccurrences передаёт диапазон дат', async () => {
+    await getReminderOccurrences('2026-09-01', '2026-09-30');
+
+    expect(apiClient.get).toHaveBeenCalledWith('/reminder/v1/occurrences', {
+      params: { from: '2026-09-01', to: '2026-09-30' }
+    });
   });
 
   it('пробрасывает ошибку сети', async () => {
