@@ -1,10 +1,10 @@
 <template>
   <div class="container">
     <!-- Кнопка возврата на главную -->
-    <router-link to="/" class="back-button">← На главную</router-link>
+    <router-link to="/" class="back-button"><AppIcon name="arrow-left" :size="15" /> На главную</router-link>
 
     <!-- Заголовок приложения -->
-    <h1>📋 Еженедельные задачи</h1>
+    <h1><AppIcon name="list-todo" :size="28" /> Еженедельные задачи</h1>
     <p class="subtitle">Отслеживание выполнения задач на текущей неделе</p>
 
     <!-- Переключатель режима просмотра -->
@@ -14,14 +14,14 @@
         class="toggle-btn"
         :class="{ active: viewMode === 'statistics' }"
       >
-        📊 Статистика
+        <AppIcon name="chart-column" :size="16" /> Статистика
       </button>
       <button 
         @click="viewMode = 'manage'" 
         class="toggle-btn"
         :class="{ active: viewMode === 'manage' }"
       >
-        ⚙️ Управление задачами
+        <AppIcon name="settings" :size="16" /> Управление задачами
       </button>
     </div>
 
@@ -35,7 +35,7 @@
 
       <!-- Состояние ошибки: показываем, если произошла ошибка при загрузке -->
       <div v-else-if="error" class="error-message">
-        <p>❌ {{ error }}</p>
+        <p><AppIcon name="triangle-alert" :size="16" /> {{ error }}</p>
         <!-- Кнопка для повторной попытки загрузки -->
         <button @click="loadStatistics" class="retry-btn">Повторить</button>
       </div>
@@ -45,11 +45,11 @@
         
         <!-- Секция невыполненных задач -->
         <div class="section incomplete-section">
-          <h2>⏳ Невыполненные задачи</h2>
+          <h2><AppIcon name="hourglass" :size="22" /> Невыполненные задачи</h2>
           
           <!-- Проверяем, есть ли невыполненные задачи -->
           <div v-if="incompleteTasks.length === 0" class="empty-message">
-            <p>Все задачи выполнены! 🎉</p>
+            <p>Все задачи выполнены! <AppIcon name="party-popper" :size="16" /></p>
           </div>
           
           <!-- Список невыполненных задач -->
@@ -63,7 +63,7 @@
             >
               <!-- Название проекта (если есть) -->
               <div class="task-project" v-if="task.projectName">
-                📁 {{ task.projectName}}
+                <AppIcon name="folder" :size="16" /> {{ task.projectName}}
               </div>
               
               <!-- Название задачи -->
@@ -85,7 +85,7 @@
               
               <!-- Индикатор выбора задачи -->
               <div v-if="selectedTaskId === task.weeklyTaskId" class="selected-indicator">
-                ✓ Выбрано
+                <AppIcon name="check" :size="14" /> Выбрано
               </div>
             </div>
           </div>
@@ -103,7 +103,7 @@
 
         <!-- Секция выполненных задач -->
         <div class="section completed-section">
-          <h2>✅ Выполненные задачи</h2>
+          <h2><AppIcon name="circle-check-big" :size="22" /> Выполненные задачи</h2>
           
           <!-- Проверяем, есть ли выполненные задачи -->
           <div v-if="completedTasks.length === 0" class="empty-message">
@@ -119,7 +119,7 @@
             >
               <!-- Название проекта (если есть) -->
               <div class="task-project" v-if="task.projectName">
-                📁 {{ task.projectName }}
+                <AppIcon name="folder" :size="16" /> {{ task.projectName }}
               </div>
               
               <!-- Название задачи -->
@@ -137,7 +137,7 @@
               
               <!-- Статус "Выполнено сегодня" -->
               <div v-if="task.completedToday" class="completed-today">
-                ✓ Выполнено сегодня
+                <AppIcon name="check" :size="14" /> Выполнено сегодня
               </div>
             </div>
           </div>
@@ -158,7 +158,7 @@
       </div>
 
       <div v-else-if="errorTasks" class="error-message">
-        <p>❌ {{ errorTasks }}</p>
+        <p><AppIcon name="triangle-alert" :size="16" /> {{ errorTasks }}</p>
         <button @click="loadAllTasks" class="retry-btn">Повторить</button>
       </div>
 
@@ -171,7 +171,7 @@
           <div v-for="task in allTasks" :key="task.id" class="task-card manage-card">
             <div class="task-info">
               <div class="task-project" v-if="task.project?.name">
-                📁 {{ task.project.name }}
+                <AppIcon name="folder" :size="16" /> {{ task.project.name }}
               </div>
               <div class="task-name">{{ task.name }}</div>
               <div class="task-meta">
@@ -185,8 +185,8 @@
               </div>
             </div>
             <div class="task-actions">
-              <button @click="openEditModal(task)" class="action-btn edit-btn">✏️</button>
-              <button @click="confirmDelete(task)" class="action-btn delete-btn">🗑️</button>
+              <button @click="openEditModal(task)" class="action-btn edit-btn" title="Редактировать" aria-label="Редактировать"><AppIcon name="pencil" :size="15" /></button>
+              <button @click="confirmDelete(task)" class="action-btn delete-btn" title="Удалить" aria-label="Удалить"><AppIcon name="trash-2" :size="15" /></button>
             </div>
           </div>
         </div>
@@ -194,109 +194,113 @@
     </div>
 
     <!-- Модальное окно для создания/редактирования задачи -->
-    <div v-if="showTaskModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <h3>{{ editingTask ? 'Редактировать задачу' : 'Создать новую задачу' }}</h3>
+    <Teleport to="body">
+      <div v-if="showTaskModal" class="modal-overlay" @click="closeModal">
+        <div class="modal-content" @click.stop>
+          <h3>{{ editingTask ? 'Редактировать задачу' : 'Создать новую задачу' }}</h3>
         
-        <form @submit.prevent="saveTask" class="task-form">
-          <div class="form-group">
-            <label for="taskName">Название задачи *</label>
-            <input 
-              id="taskName" 
-              v-model="taskForm.name" 
-              type="text" 
-              required 
-              placeholder="Введите название задачи"
-            />
-          </div>
+          <form @submit.prevent="saveTask" class="task-form">
+            <div class="form-group">
+              <label for="taskName">Название задачи *</label>
+              <input 
+                id="taskName" 
+                v-model="taskForm.name" 
+                type="text" 
+                required 
+                placeholder="Введите название задачи"
+              />
+            </div>
 
-          <div class="form-group">
-            <label for="taskCount">Требуемое количество *</label>
-            <input 
-              id="taskCount" 
-              v-model.number="taskForm.count" 
-              type="number" 
-              min="1" 
-              required 
-              placeholder="1"
-            />
-          </div>
+            <div class="form-group">
+              <label for="taskCount">Требуемое количество *</label>
+              <input 
+                id="taskCount" 
+                v-model.number="taskForm.count" 
+                type="number" 
+                min="1" 
+                required 
+                placeholder="1"
+              />
+            </div>
 
-          <div class="form-group">
-            <label for="taskProject">Проект *</label>
-            <div class="project-select-wrapper">
-              <select
-                id="taskProject"
-                v-model="taskForm.projectName"
-                required
-              >
-                <option value="" disabled>Выберите проект</option>
-                <option
-                  v-for="project in projects"
-                  :key="project.id"
-                  :value="project.name"
+            <div class="form-group">
+              <label for="taskProject">Проект *</label>
+              <div class="project-select-wrapper">
+                <select
+                  id="taskProject"
+                  v-model="taskForm.projectName"
+                  required
                 >
-                  {{ project.name }}
-                </option>
-              </select>
-              <button
-                type="button"
-                @click="openProjectModal"
-                class="create-project-btn"
-                title="Создать новый проект"
+                  <option value="" disabled>Выберите проект</option>
+                  <option
+                    v-for="project in projects"
+                    :key="project.id"
+                    :value="project.name"
+                  >
+                    {{ project.name }}
+                  </option>
+                </select>
+                <button
+                  type="button"
+                  @click="openProjectModal"
+                  class="create-project-btn"
+                  title="Создать новый проект"
+                >
+                  + Проект
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="taskPriority">Приоритет</label>
+              <select 
+                id="taskPriority" 
+                v-model="taskForm.priority"
               >
-                + Проект
+                <option value="HIGH">Высокий</option>
+                <option value="MIDDLE">Средний</option>
+                <option value="LOW">Низкий</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="taskStatus">Статус</label>
+              <select 
+                id="taskStatus" 
+                v-model="taskForm.status"
+              >
+                <option value="IN_PROGRESS">В работе</option>
+                <option value="DONE">Выполнено</option>
+                <option value="PAUSED">На паузе</option>
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
+              <button type="submit" class="save-btn" :disabled="saving">
+                {{ saving ? 'Сохранение...' : 'Сохранить' }}
               </button>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label for="taskPriority">Приоритет</label>
-            <select 
-              id="taskPriority" 
-              v-model="taskForm.priority"
-            >
-              <option value="HIGH">Высокий</option>
-              <option value="MIDDLE">Средний</option>
-              <option value="LOW">Низкий</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="taskStatus">Статус</label>
-            <select 
-              id="taskStatus" 
-              v-model="taskForm.status"
-            >
-              <option value="IN_PROGRESS">В работе</option>
-              <option value="DONE">Выполнено</option>
-              <option value="PAUSED">На паузе</option>
-            </select>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
-            <button type="submit" class="save-btn" :disabled="saving">
-              {{ saving ? 'Сохранение...' : 'Сохранить' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Модальное окно подтверждения удаления -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
-      <div class="modal-content modal-small" @click.stop>
-        <h3>Подтверждение удаления</h3>
-        <p>Вы уверены, что хотите удалить задачу "{{ taskToDelete?.name }}"?</p>
-        <div class="form-actions">
-          <button @click="closeDeleteModal" class="cancel-btn">Отмена</button>
-          <button @click="deleteTask" class="delete-btn" :disabled="deleting">
-            {{ deleting ? 'Удаление...' : 'Удалить' }}
-          </button>
+          </form>
         </div>
       </div>
-    </div>
+    </Teleport>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <Teleport to="body">
+      <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
+        <div class="modal-content modal-small" @click.stop>
+          <h3>Подтверждение удаления</h3>
+          <p>Вы уверены, что хотите удалить задачу "{{ taskToDelete?.name }}"?</p>
+          <div class="form-actions">
+            <button @click="closeDeleteModal" class="cancel-btn">Отмена</button>
+            <button @click="deleteTask" class="delete-btn" :disabled="deleting">
+              {{ deleting ? 'Удаление...' : 'Удалить' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Модальное окно создания проекта -->
     <ProjectModal
@@ -632,7 +636,7 @@ export default {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-body);
 }
 
 /* Заголовок */
@@ -682,14 +686,14 @@ h1 {
   margin-top: 15px;
   padding: 10px 20px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
 .retry-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 /* Секции */
@@ -729,18 +733,20 @@ h1 {
 }
 
 /* Карточка задачи */
-.task-card {
+.task-card{
   padding: 15px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background-color: var(--bg-secondary);
   border: 2px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+  border-left: 3px solid var(--accent-primary);
 }
 
-.task-card:hover {
-  box-shadow: 0 2px 8px var(--shadow-color);
+.task-card:hover{
+  box-shadow: var(--glow-cyan);
+  border-color: var(--accent-primary);
 }
 
 /* Стили для невыполненных задач */
@@ -817,7 +823,7 @@ h1 {
   top: 10px;
   right: 10px;
   background-color: var(--accent-orange);
-  color: white;
+  color: var(--on-neon);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -829,7 +835,7 @@ h1 {
   top: 10px;
   right: 10px;
   background-color: var(--accent-green);
-  color: white;
+  color: var(--on-neon);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -842,7 +848,7 @@ h1 {
   padding: 15px;
   margin-top: 15px;
   background-color: var(--accent-orange);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 8px;
   font-size: 16px;
@@ -852,7 +858,7 @@ h1 {
 }
 
 .complete-btn:hover:not(:disabled) {
-  background-color: #f57c00;
+  filter: brightness(1.1);
 }
 
 .complete-btn:disabled {
@@ -901,9 +907,9 @@ h1 {
 }
 
 .toggle-btn.active {
-  background-color: var(--accent-primary);
-  color: white;
-  border-color: var(--accent-primary);
+  background-color: var(--accent-purple);
+  color: var(--on-neon);
+  border-color: var(--accent-purple);
 }
 
 /* Режим управления задачами */
@@ -933,7 +939,7 @@ h1 {
 .create-btn {
   padding: 10px 20px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -943,19 +949,21 @@ h1 {
 }
 
 .create-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 /* Карточка задачи в режиме управления */
-.manage-card {
+.manage-card{
   cursor: default;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-left: 3px solid var(--accent-primary);
 }
 
-.manage-card:hover {
-  box-shadow: 0 2px 8px var(--shadow-color);
+.manage-card:hover{
+  box-shadow: var(--glow-cyan);
+  border-color: var(--accent-primary);
 }
 
 .task-info {
@@ -969,9 +977,12 @@ h1 {
   flex-wrap: wrap;
 }
 
-.task-count {
+.task-count{
   font-size: 12px;
   color: var(--text-secondary);
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .task-priority,
@@ -1000,8 +1011,8 @@ h1 {
 
 /* Статусы */
 .status-in_progress {
-  background-color: var(--accent-blue-light);
-  color: var(--accent-blue);
+  background-color: var(--accent-purple-light);
+  color: var(--accent-purple);
 }
 
 .status-done {
@@ -1058,19 +1069,21 @@ h1 {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  animation: screen-fade var(--transition-base);
 }
 
 .modal-content {
-  background-color: var(--bg-primary);
+  background-color: var(--bg-secondary);
   padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
@@ -1145,7 +1158,7 @@ h1 {
 .create-project-btn {
   padding: 10px 15px;
   background-color: var(--accent-green);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 6px;
   font-size: 13px;
@@ -1156,7 +1169,7 @@ h1 {
 }
 
 .create-project-btn:hover {
-  background-color: #27ae60;
+  filter: brightness(1.08);
 }
 
 .form-actions {
@@ -1189,11 +1202,11 @@ h1 {
 
 .save-btn {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
 }
 
 .save-btn:hover:not(:disabled) {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .save-btn:disabled {
@@ -1203,11 +1216,11 @@ h1 {
 
 .delete-btn {
   background-color: var(--accent-red);
-  color: white;
+  color: var(--on-neon);
 }
 
 .delete-btn:hover:not(:disabled) {
-  background-color: #d32f2f;
+  filter: brightness(1.12);
 }
 
 .delete-btn:disabled {

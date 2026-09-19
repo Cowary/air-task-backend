@@ -16,17 +16,26 @@ vi.mock('../../api/weeklyTasks.js', async (importOriginal) => {
   return { ...actual, getWeeklyTaskStatistics: vi.fn() };
 });
 
+vi.mock('../../api/ideas.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return { ...actual, getAllIdeas: vi.fn() };
+});
+
 import { getAllProjects } from '../../api/projects.js';
 import { getTasks } from '../../api/tasks.js';
 import { getWeeklyTaskStatistics } from '../../api/weeklyTasks.js';
+import { getAllIdeas } from '../../api/ideas.js';
 import WorkspacePage from '../WorkspacePage.vue';
 import ProjectsPanel from '../../components/workspace/ProjectsPanel.vue';
+import IdeasPanel from '../../components/workspace/IdeasPanel.vue';
+import RemindersPanel from '../../components/workspace/RemindersPanel.vue';
 import TaskListSection, { NO_PROJECT_FILTER } from '../../components/workspace/TaskListSection.vue';
 
 function mockResponses() {
   getAllProjects.mockResolvedValue({ isSuccess: true, data: { projects: [{ id: 1, name: 'A', status: 'ACTIVE' }] } });
   getTasks.mockResolvedValue({ isSuccess: true, data: [] });
   getWeeklyTaskStatistics.mockResolvedValue({ isSuccess: true, data: { completedTasks: [], incompleteTasks: [] } });
+  getAllIdeas.mockResolvedValue({ isSuccess: true, data: [] });
 }
 
 async function mountPage() {
@@ -36,6 +45,8 @@ async function mountPage() {
         RouterLink: { template: '<a><slot /></a>' },
         ProjectsPanel: true,
         WeekPanel: true,
+        IdeasPanel: true,
+        RemindersPanel: true,
         TaskListSection: true
       }
     }
@@ -89,6 +100,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
       data: [task(1, false), task(2, true), task(3, false)]
     });
     getWeeklyTaskStatistics.mockResolvedValue({ isSuccess: true, data: { completedTasks: [], incompleteTasks: [] } });
+    getAllIdeas.mockResolvedValue({ isSuccess: true, data: [] });
   });
 
   it('на вкладке «Все задачи» по умолчанию показаны только невыполненные', async () => {
@@ -128,7 +140,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('вкладка «Архив» содержит только выполненные задачи', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[3].trigger('click');
+    wrapper.findAll('.tab-btn')[5].trigger('click');
     await wrapper.vm.$nextTick();
 
     const section = wrapper.findComponent(TaskListSection);
@@ -138,7 +150,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('переключение вкладок не перезапрашивает задачи', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[3].trigger('click');
+    wrapper.findAll('.tab-btn')[5].trigger('click');
     wrapper.findAll('.tab-btn')[2].trigger('click');
     await wrapper.vm.$nextTick();
 
@@ -159,11 +171,36 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('вкладка «Архив» без дефолта фильтра и без сортировки', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[3].trigger('click');
+    wrapper.findAll('.tab-btn')[5].trigger('click');
     await wrapper.vm.$nextTick();
 
     const section = wrapper.findComponent(TaskListSection);
     expect(section.props('defaultFilterProject')).toBe('');
     expect(section.props('showSort')).toBe(false);
+  });
+
+  it('загружает идеи и отдаёт их на вкладку «Идеи»', async () => {
+    getAllIdeas.mockResolvedValue({
+      isSuccess: true,
+      data: [{ id: 1, name: 'Идея А', description: 'Текст' }]
+    });
+    const wrapper = await mountPage();
+
+    expect(getAllIdeas).toHaveBeenCalledTimes(1);
+
+    wrapper.findAll('.tab-btn')[3].trigger('click');
+    await wrapper.vm.$nextTick();
+
+    const panel = wrapper.findComponent(IdeasPanel);
+    expect(panel.props('ideas').map(i => i.id)).toEqual([1]);
+  });
+
+  it('вкладка «Напоминания» рендерит панель напоминаний', async () => {
+    const wrapper = await mountPage();
+
+    wrapper.findAll('.tab-btn')[4].trigger('click');
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findComponent(RemindersPanel).exists()).toBe(true);
   });
 });

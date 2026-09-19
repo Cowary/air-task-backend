@@ -7,7 +7,7 @@
 - `npm run preview` — Preview production build
 - `npm test` — Run Vitest unit tests once (`vitest run`); `npm run test:watch` for watch mode
 
-Tests use **Vitest + @vue/test-utils + jsdom** (config in `vitest.config.js`, specs at `src/**/*.spec.js`, mostly co-located under `__tests__/`). CI (`Jenkinsfile`) runs them in a `node:20-alpine` container before the Docker build. No lint or typecheck scripts are configured; use `npm run build` as the basic syntax/compile check.
+Tests use **Vitest + @vue/test-utils + jsdom** (config in `vitest.config.js`, specs at `src/**/*.spec.js`, mostly co-located under `__tests__/`). CI no longer has its own `Jenkinsfile`: the unified `air-task-backend/Jenkinsfile` checks this repo out and runs `docker build` (whose builder stage runs `npm test` then `npm run build`) before pushing the image. No lint or typecheck scripts are configured; use `npm run build` as the basic syntax/compile check.
 
 ## Environment
 

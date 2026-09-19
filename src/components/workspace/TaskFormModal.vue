@@ -1,94 +1,96 @@
 <template>
-  <div v-if="visible" class="modal-overlay" @click="closeModal">
-    <div class="modal-content" @click.stop>
-      <h3>{{ isEdit ? 'Редактировать задачу' : 'Создать новую задачу' }}</h3>
+  <Teleport to="body">
+    <div v-if="visible" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <h3>{{ isEdit ? 'Редактировать задачу' : 'Создать новую задачу' }}</h3>
 
-      <form @submit.prevent="handleSave" class="task-form">
-        <div class="form-group">
-          <label for="wsTaskName">Название задачи *</label>
-          <input
-            id="wsTaskName"
-            v-model.trim="form.name"
-            type="text"
-            required
-            maxlength="200"
-            placeholder="Введите название задачи"
-          />
-        </div>
+        <form @submit.prevent="handleSave" class="task-form">
+          <div class="form-group">
+            <label for="wsTaskName">Название задачи *</label>
+            <input
+              id="wsTaskName"
+              v-model.trim="form.name"
+              type="text"
+              required
+              maxlength="200"
+              placeholder="Введите название задачи"
+            />
+          </div>
 
-        <div class="form-group">
-          <label for="wsTaskProject">Проект *</label>
-          <select
-            id="wsTaskProject"
-            v-model="form.projectName"
-            required
-          >
-            <option value="" disabled>Выберите проект</option>
-            <option
-              v-for="project in projects"
-              :key="project.id"
-              :value="project.name"
+          <div class="form-group">
+            <label for="wsTaskProject">Проект *</label>
+            <select
+              id="wsTaskProject"
+              v-model="form.projectName"
+              required
             >
-              {{ project.name }}
-            </option>
-            <option value="__custom__">Другой проект (ввести название)</option>
-          </select>
-          <input
-            v-if="isCustomProject"
-            v-model.trim="form.customProjectName"
-            type="text"
-            class="custom-project-input"
-            maxlength="100"
-            required
-            placeholder="Введите название проекта"
-          />
-          <span class="form-hint">
-            Для задач вне конкретных проектов используйте проект «Без проекта».
-          </span>
-        </div>
+              <option value="" disabled>Выберите проект</option>
+              <option
+                v-for="project in projects"
+                :key="project.id"
+                :value="project.name"
+              >
+                {{ project.name }}
+              </option>
+              <option value="__custom__">Другой проект (ввести название)</option>
+            </select>
+            <input
+              v-if="isCustomProject"
+              v-model.trim="form.customProjectName"
+              type="text"
+              class="custom-project-input"
+              maxlength="100"
+              required
+              placeholder="Введите название проекта"
+            />
+            <span class="form-hint">
+              Для задач вне конкретных проектов используйте проект «Без проекта».
+            </span>
+          </div>
 
-        <div class="form-group">
-          <label for="wsTaskPriority">Приоритет *</label>
-          <select id="wsTaskPriority" v-model="form.priority" required>
-            <option value="HIGH">Высокий</option>
-            <option value="MIDDLE">Средний</option>
-            <option value="LOW">Низкий</option>
-          </select>
-        </div>
+          <div class="form-group">
+            <label for="wsTaskPriority">Приоритет *</label>
+            <select id="wsTaskPriority" v-model="form.priority" required>
+              <option value="HIGH">Высокий</option>
+              <option value="MIDDLE">Средний</option>
+              <option value="LOW">Низкий</option>
+            </select>
+          </div>
 
-        <div class="form-group">
-          <label for="wsTaskDueDate">Дата выполнения</label>
-          <input
-            id="wsTaskDueDate"
-            v-model="form.dueDate"
-            type="date"
-          />
-        </div>
+          <div class="form-group">
+            <label for="wsTaskDueDate">Дата выполнения</label>
+            <input
+              id="wsTaskDueDate"
+              v-model="form.dueDate"
+              type="date"
+            />
+          </div>
 
-        <div class="form-group">
-          <label for="wsTaskDescription">Описание</label>
-          <textarea
-            id="wsTaskDescription"
-            v-model="form.description"
-            placeholder="Введите описание задачи (опционально)"
-            maxlength="10000"
-            rows="4"
-          ></textarea>
-        </div>
+          <div class="form-group">
+            <label for="wsTaskDescription">Описание</label>
+            <textarea
+              id="wsTaskDescription"
+              v-model="form.description"
+              placeholder="Введите описание задачи (опционально)"
+              maxlength="10000"
+              rows="4"
+            ></textarea>
+          </div>
 
-        <div class="form-group">
-          <SubTasksEditor v-model="form.subTasks" />
-        </div>
+          <div class="form-group">
+            <SubTasksEditor v-model="form.subTasks" />
+          </div>
 
-        <div class="form-actions">
-          <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
-          <button type="submit" class="save-btn" :disabled="saving">
-            {{ saving ? 'Сохранение...' : 'Сохранить' }}
-          </button>
-        </div>
-      </form>
+          <div class="form-actions">
+            <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
+            <button type="submit" class="save-btn" :disabled="saving">
+              {{ saving ? 'Сохранение...' : 'Сохранить' }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script>
@@ -117,6 +119,14 @@ export default {
       default: () => []
     },
     defaultProjectName: {
+      type: String,
+      default: ''
+    },
+    prefillName: {
+      type: String,
+      default: ''
+    },
+    prefillDescription: {
       type: String,
       default: ''
     }
@@ -210,11 +220,11 @@ this.form = {
         const known = this.projectNames().includes(explicitDefault);
 
         this.form = {
-          name: '',
+          name: this.prefillName || '',
           projectName: known ? explicitDefault : '__custom__',
           customProjectName: known ? '' : explicitDefault,
           priority: 'MIDDLE',
-          description: '',
+          description: this.prefillDescription || '',
           dueDate: '',
           subTasks: []
         };
@@ -224,11 +234,11 @@ this.form = {
       const fallbackDefault = this.noProjectName();
 
       this.form = {
-        name: '',
+        name: this.prefillName || '',
         projectName: fallbackDefault || '__custom__',
         customProjectName: '',
         priority: 'MIDDLE',
-        description: '',
+        description: this.prefillDescription || '',
         dueDate: '',
         subTasks: []
       };
@@ -298,12 +308,14 @@ this.form = {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow-y: auto;
   z-index: 1100;
-  animation: fadeIn 0.2s ease;
+  animation: screen-fade var(--transition-base);
 }
 
 @keyframes fadeIn {
@@ -313,14 +325,16 @@ this.form = {
 
 .modal-content {
   background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
   padding: 30px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 520px;
   width: 92%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px var(--shadow-color);
-  animation: slideUp 0.3s ease;
+  margin: auto;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
 }
 
 @keyframes slideUp {
@@ -390,8 +404,9 @@ this.form = {
   resize: vertical;
 }
 
-.custom-project-input {
+.custom-project-input{
   margin-top: 2px;
+  font-family: var(--font-mono);
 }
 
 .form-hint {
@@ -429,11 +444,11 @@ this.form = {
 
 .save-btn {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
 }
 
 .save-btn:hover:not(:disabled) {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .save-btn:disabled {

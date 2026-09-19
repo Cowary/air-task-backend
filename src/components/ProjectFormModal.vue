@@ -1,217 +1,222 @@
 <template>
-  <div v-if="visible" class="modal-overlay" @click="closeModal">
-    <div class="modal-content" @click.stop>
-      <h3>{{ isEdit ? 'Редактировать проект' : 'Создать новый проект' }}</h3>
+  <Teleport to="body">
+    <div v-if="visible" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <h3>{{ isEdit ? 'Редактировать проект' : 'Создать новый проект' }}</h3>
 
-      <form @submit.prevent="handleSave" class="project-form">
-        <div class="form-group">
-          <label for="projectName">Название проекта *</label>
-          <input
-            id="projectName"
-            v-model.trim="form.name"
-            type="text"
-            required
-            maxlength="100"
-            placeholder="Введите название проекта"
-          />
-        </div>
-
-        <div class="form-row">
+        <form @submit.prevent="handleSave" class="project-form">
           <div class="form-group">
-            <label for="projectStatus">Статус</label>
-            <select id="projectStatus" v-model="form.status">
-              <option value="ACTIVE">Активный</option>
-              <option value="ARCHIVED">Архивирован</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="projectPriority">Приоритет</label>
-            <select id="projectPriority" v-model="form.priority">
-              <option value="HIGH">Высокий</option>
-              <option value="MIDDLE">Средний</option>
-              <option value="LOW">Низкий</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="projectDueDate">Дата выполнения</label>
+            <label for="projectName">Название проекта *</label>
             <input
-              id="projectDueDate"
-              v-model="form.dueDate"
-              type="date"
+              id="projectName"
+              v-model.trim="form.name"
+              type="text"
+              required
+              maxlength="100"
+              placeholder="Введите название проекта"
             />
           </div>
-        </div>
 
-        <!-- Цели проекта -->
-        <div class="link-section">
-          <div class="link-section-header">
-            <span class="link-section-title">🎯 Цели</span>
-            <span class="link-count">{{ goals.length }}</span>
-            <button type="button" @click="addGoal" class="add-goal-btn">+ Добавить цель</button>
-          </div>
-          <div v-if="goals.length === 0" class="link-empty">Нет целей. Добавьте первую цель проекта.</div>
-          <div v-else class="goal-list">
-            <div v-for="(goal, index) in goals" :key="goal.key" class="goal-item">
-              <input type="checkbox" v-model="goal.isCompleted" class="goal-checkbox" title="Цель достигнута" />
-              <input
-                v-model.trim="goal.name"
-                type="text"
-                class="goal-name-input"
-                maxlength="100"
-                placeholder="Название цели"
-              />
-              <button
-                type="button"
-                @click="removeGoal(index)"
-                class="goal-remove-btn"
-                title="Удалить цель"
-              >
-                🗑️
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Привязка еженедельных задач -->
-        <div class="link-section">
-          <div class="link-section-header">
-            <span class="link-section-title">📊 Еженедельные задачи</span>
-            <span class="link-count">{{ selectedWeeklyIds.length + newWeeklies.length }}</span>
-            <button type="button" @click="addWeeklyDraft" class="add-goal-btn">+ Добавить задачу</button>
-          </div>
-          <div v-if="newWeeklies.length > 0" class="draft-list">
-            <div v-for="(draft, index) in newWeeklies" :key="draft.key" class="draft-item">
-              <span class="draft-badge">новая</span>
-              <input
-                v-model.trim="draft.name"
-                type="text"
-                class="goal-name-input"
-                maxlength="100"
-                placeholder="Название задачи"
-              />
-              <input
-                v-model.number="draft.count"
-                type="number"
-                min="1"
-                class="draft-count"
-                title="Раз в неделю"
-              />
-              <select v-model="draft.priority" class="draft-select" title="Приоритет">
-                <option value="LOW">Низкий</option>
-                <option value="MIDDLE">Средний</option>
-                <option value="HIGH">Высокий</option>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="projectStatus">Статус</label>
+              <select id="projectStatus" v-model="form.status">
+                <option value="ACTIVE">Активный</option>
+                <option value="ARCHIVED">Архивирован</option>
               </select>
-              <select v-model="draft.status" class="draft-select" title="Статус">
-                <option value="IN_PROGRESS">В работе</option>
-                <option value="DONE">Выполнено</option>
-                <option value="PAUSED">На паузе</option>
-              </select>
-              <button
-                type="button"
-                @click="removeWeeklyDraft(index)"
-                class="goal-remove-btn"
-                title="Убрать"
-              >
-                🗑️
-              </button>
             </div>
-          </div>
-          <input
-            v-model.trim="weeklySearch"
-            type="text"
-            class="link-search"
-            placeholder="Поиск по названию..."
-          />
-          <div v-if="loadingWeekly" class="link-loading">Загрузка...</div>
-          <div v-else-if="filteredWeekly.length === 0" class="link-empty">Нет доступных задач</div>
-          <div v-else class="link-list">
-            <label
-              v-for="weekly in filteredWeekly"
-              :key="weekly.id"
-              class="link-item"
-            >
-              <input type="checkbox" :value="weekly.id" v-model="selectedWeeklyIds" />
-              <span class="link-item-name">{{ weekly.name }}</span>
-              <span class="link-item-meta">{{ weekly.count }} р/нед</span>
-              <span
-                v-if="weekly.project?.name && weekly.project.name !== form.name"
-                class="link-item-project"
-              >
-                {{ weekly.project.name }}
-              </span>
-            </label>
-          </div>
-        </div>
 
-        <!-- Привязка задач -->
-        <div class="link-section">
-          <div class="link-section-header">
-            <span class="link-section-title">📝 Задачи</span>
-            <span class="link-count">{{ selectedTaskIds.length + newTasks.length }}</span>
-            <button type="button" @click="addTaskDraft" class="add-goal-btn">+ Добавить задачу</button>
-          </div>
-          <div v-if="newTasks.length > 0" class="draft-list">
-            <div v-for="(draft, index) in newTasks" :key="draft.key" class="draft-item">
-              <span class="draft-badge">новая</span>
-              <input
-                v-model.trim="draft.name"
-                type="text"
-                class="goal-name-input"
-                maxlength="200"
-                placeholder="Название задачи"
-              />
-              <select v-model="draft.priority" class="draft-select" title="Приоритет">
+            <div class="form-group">
+              <label for="projectPriority">Приоритет</label>
+              <select id="projectPriority" v-model="form.priority">
                 <option value="HIGH">Высокий</option>
                 <option value="MIDDLE">Средний</option>
                 <option value="LOW">Низкий</option>
               </select>
-              <button
-                type="button"
-                @click="removeTaskDraft(index)"
-                class="goal-remove-btn"
-                title="Убрать"
-              >
-                🗑️
-              </button>
+            </div>
+
+            <div class="form-group">
+              <label for="projectDueDate">Дата выполнения</label>
+              <input
+                id="projectDueDate"
+                v-model="form.dueDate"
+                type="date"
+              />
             </div>
           </div>
-          <input
-            v-model.trim="taskSearch"
-            type="text"
-            class="link-search"
-            placeholder="Поиск по названию..."
-          />
-          <div v-if="loadingTasks" class="link-loading">Загрузка...</div>
-          <div v-else-if="filteredTasks.length === 0" class="link-empty">Нет доступных задач</div>
-          <div v-else class="link-list">
-            <label
-              v-for="task in filteredTasks"
-              :key="task.id"
-              class="link-item"
-            >
-              <input type="checkbox" :value="task.id" v-model="selectedTaskIds" />
-              <span class="link-item-name">{{ task.name }}</span>
-              <span
-                v-if="task.project?.name && task.project.name !== form.name"
-                class="link-item-project"
-              >
-                {{ task.project.name }}
-              </span>
-            </label>
-          </div>
-        </div>
 
-        <div class="form-actions">
-          <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
-          <button type="submit" class="save-btn" :disabled="saving">
-            {{ saving ? 'Сохранение...' : 'Сохранить' }}
-          </button>
-        </div>
-      </form>
+          <!-- Цели проекта -->
+          <div class="link-section">
+            <div class="link-section-header">
+              <span class="link-section-title"><AppIcon name="target" :size="16" /> Цели</span>
+              <span class="link-count">{{ goals.length }}</span>
+              <button type="button" @click="addGoal" class="add-goal-btn">+ Добавить цель</button>
+            </div>
+            <div v-if="goals.length === 0" class="link-empty">Нет целей. Добавьте первую цель проекта.</div>
+            <div v-else class="goal-list">
+              <div v-for="(goal, index) in goals" :key="goal.key" class="goal-item">
+                <input type="checkbox" v-model="goal.isCompleted" class="goal-checkbox" title="Цель достигнута" />
+                <input
+                  v-model.trim="goal.name"
+                  type="text"
+                  class="goal-name-input"
+                  maxlength="100"
+                  placeholder="Название цели"
+                />
+                <button
+                  type="button"
+                  @click="removeGoal(index)"
+                  class="goal-remove-btn"
+                  title="Удалить цель"
+                  aria-label="Удалить цель"
+                >
+                  <AppIcon name="trash-2" :size="15" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Привязка еженедельных задач -->
+          <div class="link-section">
+            <div class="link-section-header">
+              <span class="link-section-title"><AppIcon name="chart-column" :size="16" /> Еженедельные задачи</span>
+              <span class="link-count">{{ selectedWeeklyIds.length + newWeeklies.length }}</span>
+              <button type="button" @click="addWeeklyDraft" class="add-goal-btn">+ Добавить задачу</button>
+            </div>
+            <div v-if="newWeeklies.length > 0" class="draft-list">
+              <div v-for="(draft, index) in newWeeklies" :key="draft.key" class="draft-item">
+                <span class="draft-badge">новая</span>
+                <input
+                  v-model.trim="draft.name"
+                  type="text"
+                  class="goal-name-input"
+                  maxlength="100"
+                  placeholder="Название задачи"
+                />
+                <input
+                  v-model.number="draft.count"
+                  type="number"
+                  min="1"
+                  class="draft-count"
+                  title="Раз в неделю"
+                />
+                <select v-model="draft.priority" class="draft-select" title="Приоритет">
+                  <option value="LOW">Низкий</option>
+                  <option value="MIDDLE">Средний</option>
+                  <option value="HIGH">Высокий</option>
+                </select>
+                <select v-model="draft.status" class="draft-select" title="Статус">
+                  <option value="IN_PROGRESS">В работе</option>
+                  <option value="DONE">Выполнено</option>
+                  <option value="PAUSED">На паузе</option>
+                </select>
+                <button
+                  type="button"
+                  @click="removeWeeklyDraft(index)"
+                  class="goal-remove-btn"
+                  title="Убрать"
+                  aria-label="Убрать"
+                >
+                  <AppIcon name="trash-2" :size="15" />
+                </button>
+              </div>
+            </div>
+            <input
+              v-model.trim="weeklySearch"
+              type="text"
+              class="link-search"
+              placeholder="Поиск по названию..."
+            />
+            <div v-if="loadingWeekly" class="link-loading">Загрузка...</div>
+            <div v-else-if="filteredWeekly.length === 0" class="link-empty">Нет доступных задач</div>
+            <div v-else class="link-list">
+              <label
+                v-for="weekly in filteredWeekly"
+                :key="weekly.id"
+                class="link-item"
+              >
+                <input type="checkbox" :value="weekly.id" v-model="selectedWeeklyIds" />
+                <span class="link-item-name">{{ weekly.name }}</span>
+                <span class="link-item-meta">{{ weekly.count }} р/нед</span>
+                <span
+                  v-if="weekly.project?.name && weekly.project.name !== form.name"
+                  class="link-item-project"
+                >
+                  {{ weekly.project.name }}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Привязка задач -->
+          <div class="link-section">
+            <div class="link-section-header">
+              <span class="link-section-title"><AppIcon name="list-checks" :size="16" /> Задачи</span>
+              <span class="link-count">{{ selectedTaskIds.length + newTasks.length }}</span>
+              <button type="button" @click="addTaskDraft" class="add-goal-btn">+ Добавить задачу</button>
+            </div>
+            <div v-if="newTasks.length > 0" class="draft-list">
+              <div v-for="(draft, index) in newTasks" :key="draft.key" class="draft-item">
+                <span class="draft-badge">новая</span>
+                <input
+                  v-model.trim="draft.name"
+                  type="text"
+                  class="goal-name-input"
+                  maxlength="200"
+                  placeholder="Название задачи"
+                />
+                <select v-model="draft.priority" class="draft-select" title="Приоритет">
+                  <option value="HIGH">Высокий</option>
+                  <option value="MIDDLE">Средний</option>
+                  <option value="LOW">Низкий</option>
+                </select>
+                <button
+                  type="button"
+                  @click="removeTaskDraft(index)"
+                  class="goal-remove-btn"
+                  title="Убрать"
+                  aria-label="Убрать"
+                >
+                  <AppIcon name="trash-2" :size="15" />
+                </button>
+              </div>
+            </div>
+            <input
+              v-model.trim="taskSearch"
+              type="text"
+              class="link-search"
+              placeholder="Поиск по названию..."
+            />
+            <div v-if="loadingTasks" class="link-loading">Загрузка...</div>
+            <div v-else-if="filteredTasks.length === 0" class="link-empty">Нет доступных задач</div>
+            <div v-else class="link-list">
+              <label
+                v-for="task in filteredTasks"
+                :key="task.id"
+                class="link-item"
+              >
+                <input type="checkbox" :value="task.id" v-model="selectedTaskIds" />
+                <span class="link-item-name">{{ task.name }}</span>
+                <span
+                  v-if="task.project?.name && task.project.name !== form.name"
+                  class="link-item-project"
+                >
+                  {{ task.project.name }}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
+            <button type="submit" class="save-btn" :disabled="saving">
+              {{ saving ? 'Сохранение...' : 'Сохранить' }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script>
@@ -233,6 +238,10 @@ export default {
     project: {
       type: Object,
       default: null
+    },
+    prefillName: {
+      type: String,
+      default: ''
     }
   },
 
@@ -310,7 +319,7 @@ export default {
         }));
       } else {
         this.form = {
-          name: '',
+          name: this.prefillName || '',
           status: 'ACTIVE',
           priority: 'MIDDLE',
           dueDate: ''
@@ -606,12 +615,14 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow-y: auto;
   z-index: 1001;
-  animation: fadeIn 0.2s ease;
+  animation: screen-fade var(--transition-base);
 }
 
 @keyframes fadeIn {
@@ -621,14 +632,16 @@ export default {
 
 .modal-content {
   background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
   padding: 30px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 640px;
   width: 92%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px var(--shadow-color);
-  animation: slideUp 0.3s ease;
+  margin: auto;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
 }
 
 @keyframes slideUp {
@@ -714,18 +727,21 @@ export default {
   color: var(--text-primary);
 }
 
-.link-count {
+.link-count{
   min-width: 22px;
   height: 22px;
   padding: 0 6px;
   border-radius: 11px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   font-size: 12px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .link-search {
@@ -847,7 +863,7 @@ export default {
   height: 16px;
 }
 
-.goal-name-input {
+.goal-name-input{
   flex: 1;
   padding: 7px 10px;
   border: 1px solid var(--border-color);
@@ -858,9 +874,10 @@ export default {
   font-family: inherit;
 }
 
-.goal-name-input:focus {
+.goal-name-input:focus{
   outline: none;
   border-color: var(--accent-primary);
+  box-shadow: var(--glow-cyan);
 }
 
 .goal-remove-btn {
@@ -898,7 +915,7 @@ export default {
   background-color: var(--bg-tertiary);
 }
 
-.draft-badge {
+.draft-badge{
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -907,6 +924,8 @@ export default {
   padding: 2px 6px;
   border-radius: 8px;
   flex-shrink: 0;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
 }
 
 .draft-item .goal-name-input {
@@ -914,7 +933,7 @@ export default {
   background-color: var(--bg-secondary);
 }
 
-.draft-count {
+.draft-count{
   width: 52px;
   padding: 7px 6px;
   border: 1px solid var(--border-color);
@@ -924,6 +943,8 @@ export default {
   font-size: 13px;
   font-family: inherit;
   flex-shrink: 0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .draft-select {
@@ -972,11 +993,11 @@ export default {
 
 .save-btn {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
 }
 
 .save-btn:hover:not(:disabled) {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .save-btn:disabled {

@@ -7,7 +7,7 @@
           v-model.trim="searchQuery"
           type="text"
           class="search-input"
-          placeholder="🔍 Поиск..."
+          placeholder="Поиск..."
         />
         <button @click="openCreateProject" class="create-project-btn">+ Проект</button>
       </div>
@@ -68,15 +68,15 @@
             <div class="card-goals-bar">
               <div class="card-goals-fill" :style="{ width: goalsPercentage(project) }"></div>
             </div>
-            <span class="card-goals-text">🎯 {{ completedGoalsCount(project) }}/{{ project.goalList.length }}</span>
+            <span class="card-goals-text"><AppIcon name="target" :size="16" /> {{ completedGoalsCount(project) }}/{{ project.goalList.length }}</span>
           </div>
 
           <div class="card-counters">
             <span class="counter counter-weekly" title="Еженедельные задачи">
-              📊 {{ project.weeklyList?.length || 0 }}
+              <AppIcon name="chart-column" :size="16" /> {{ project.weeklyList?.length || 0 }}
             </span>
             <span class="counter counter-tasks" title="Невыполненные задачи">
-              📝 {{ activeTasksCount(project) }}
+              <AppIcon name="list-checks" :size="16" /> {{ activeTasksCount(project) }}
             </span>
           </div>
         </div>
@@ -93,7 +93,7 @@
           </div>
           <div class="card-counters">
             <span class="counter counter-tasks" title="Задачи вне проектов">
-              📝 {{ orphanTasks.length }}
+              <AppIcon name="list-checks" :size="16" /> {{ orphanTasks.length }}
             </span>
           </div>
         </div>
@@ -127,16 +127,16 @@
               :title="projectCompletable
                 ? 'Завершить проект'
                 : 'Станет доступно, когда выполнены все задачи, цели и еженедельные задачи'"
-            >✅ Завершить проект</button>
+            ><AppIcon name="circle-check-big" :size="16" /> Завершить проект</button>
             <button
               v-if="selectedProject.status === 'DONE'"
               @click="changeProjectStatus(selectedProject, 'ACTIVE')"
               class="status-toggle-btn"
               :disabled="changingProjectStatus"
               title="Вернуть проект в активный статус"
-            >↩️ Вернуть в работу</button>
-            <button @click="openEditProject(selectedProject)" class="action-btn edit-btn" title="Редактировать проект">✏️</button>
-            <button @click="confirmDeleteProject(selectedProject)" class="action-btn delete-btn" title="Удалить проект">🗑️</button>
+            ><AppIcon name="undo-2" :size="16" /> Вернуть в работу</button>
+            <button @click="openEditProject(selectedProject)" class="action-btn edit-btn" title="Редактировать проект" aria-label="Редактировать проект"><AppIcon name="pencil" :size="15" /></button>
+            <button @click="confirmDeleteProject(selectedProject)" class="action-btn delete-btn" title="Удалить проект" aria-label="Удалить проект"><AppIcon name="trash-2" :size="15" /></button>
           </div>
         </div>
 
@@ -156,7 +156,7 @@
         <!-- Цели -->
         <div class="detail-section">
           <div class="section-head">
-            <h3>🎯 Цели проекта</h3>
+            <h3><AppIcon name="target" :size="18" /> Цели проекта</h3>
             <span class="section-count" :class="{ 'count-done': allGoalsDone }">
               {{ completedGoalsCount(selectedProject) }}/{{ goalList.length }}
             </span>
@@ -169,7 +169,7 @@
           </div>
 
           <div v-if="goalList.length === 0" class="section-empty">
-            Цели не заданы — добавьте их через редактирование проекта (✏️).
+            Цели не заданы — добавьте их через редактирование проекта.
           </div>
           <div v-else class="goal-checklist">
             <label v-for="goal in goalList" :key="goal.id" class="goal-check-item">
@@ -189,7 +189,7 @@
         <!-- Еженедельные задачи -->
         <div class="detail-section">
           <div class="section-head">
-            <h3>📊 Еженедельные задачи</h3>
+            <h3><AppIcon name="chart-column" :size="18" /> Еженедельные задачи</h3>
             <span class="section-count">{{ weeklyList.length }}</span>
             <button @click="openCreateWeekly" class="section-add-btn">+ Еженедельная</button>
           </div>
@@ -234,11 +234,11 @@
                   :disabled="completingWeeklyId === weekly.id"
                   title="Отметить один подход выполненным"
                 >
-                  ✓ Выполнить
+                  <AppIcon name="check" :size="14" /> Выполнить
                 </button>
-                <span v-else-if="isWeekDone(weekly)" class="week-done-badge">✓ неделя выполнена</span>
-                <button @click="openEditWeekly(weekly)" class="action-btn edit-btn" title="Редактировать">✏️</button>
-                <button @click="confirmDeleteWeekly(weekly)" class="action-btn delete-btn" title="Удалить">🗑️</button>
+                <span v-else-if="isWeekDone(weekly)" class="week-done-badge"><AppIcon name="check" :size="14" /> неделя выполнена</span>
+                <button @click="openEditWeekly(weekly)" class="action-btn edit-btn" title="Редактировать" aria-label="Редактировать"><AppIcon name="pencil" :size="15" /></button>
+                <button @click="confirmDeleteWeekly(weekly)" class="action-btn delete-btn" title="Удалить" aria-label="Удалить"><AppIcon name="trash-2" :size="15" /></button>
               </div>
             </div>
           </div>
@@ -247,7 +247,7 @@
         <!-- Задачи проекта -->
         <div class="detail-section">
           <div class="section-head">
-            <h3>📝 Задачи</h3>
+            <h3><AppIcon name="list-checks" :size="18" /> Задачи</h3>
             <div class="tasks-subtabs">
               <button
                 type="button"
@@ -263,7 +263,7 @@
                 :class="{ active: projectTasksTab === 'archive' }"
                 @click="projectTasksTab = 'archive'"
               >
-                🗄 Архив <span class="subtab-count">{{ archivedSelectedProjectTasks.length }}</span>
+                <AppIcon name="archive" :size="16" /> Архив <span class="subtab-count">{{ archivedSelectedProjectTasks.length }}</span>
               </button>
             </div>
             <span class="section-count">{{ visibleProjectTasks.length }}</span>
@@ -295,7 +295,7 @@
 
         <div class="detail-section">
           <div class="section-head">
-            <h3>📝 Задачи</h3>
+            <h3><AppIcon name="list-checks" :size="18" /> Задачи</h3>
             <div class="tasks-subtabs">
               <button
                 type="button"
@@ -311,7 +311,7 @@
                 :class="{ active: projectTasksTab === 'archive' }"
                 @click="projectTasksTab = 'archive'"
               >
-                🗄 Архив <span class="subtab-count">{{ archivedOrphanTasks.length }}</span>
+                <AppIcon name="archive" :size="16" /> Архив <span class="subtab-count">{{ archivedOrphanTasks.length }}</span>
               </button>
             </div>
             <span class="section-count">{{ visibleProjectTasks.length }}</span>
@@ -330,7 +330,7 @@
 
       <!-- Ничего не выбрано -->
       <div v-else class="no-selection">
-        <p>👈 Выберите проект слева, чтобы увидеть его цели, еженедельные задачи и задачи</p>
+        <p><AppIcon name="arrow-left" :size="16" /> Выберите проект слева, чтобы увидеть его цели, еженедельные задачи и задачи</p>
       </div>
     </section>
 
@@ -353,35 +353,39 @@
     />
 
     <!-- Модальное окно подтверждения удаления проекта -->
-    <div v-if="showDeleteProjectModal" class="modal-overlay" @click="closeDeleteProjectModal">
-      <div class="modal-content modal-small" @click.stop>
-        <h3>Подтверждение удаления</h3>
-        <p>
-          Вы уверены, что хотите удалить проект "{{ projectToDelete?.name }}"?
-          Привязанные задачи останутся в системе.
-        </p>
-        <div class="form-actions">
-          <button @click="closeDeleteProjectModal" class="cancel-btn">Отмена</button>
-          <button @click="removeProject" class="delete-btn-confirm" :disabled="deleting">
-            {{ deleting ? 'Удаление...' : 'Удалить' }}
-          </button>
+    <Teleport to="body">
+      <div v-if="showDeleteProjectModal" class="modal-overlay" @click="closeDeleteProjectModal">
+        <div class="modal-content modal-small" @click.stop>
+          <h3>Подтверждение удаления</h3>
+          <p>
+            Вы уверены, что хотите удалить проект "{{ projectToDelete?.name }}"?
+            Привязанные задачи останутся в системе.
+          </p>
+          <div class="form-actions">
+            <button @click="closeDeleteProjectModal" class="cancel-btn">Отмена</button>
+            <button @click="removeProject" class="delete-btn-confirm" :disabled="deleting">
+              {{ deleting ? 'Удаление...' : 'Удалить' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- Модальное окно подтверждения удаления еженедельной задачи -->
-    <div v-if="showDeleteWeeklyModal" class="modal-overlay" @click="closeDeleteWeeklyModal">
-      <div class="modal-content modal-small" @click.stop>
-        <h3>Подтверждение удаления</h3>
-        <p>Вы уверены, что хотите удалить еженедельную задачу "{{ weeklyToDelete?.name }}"?</p>
-        <div class="form-actions">
-          <button @click="closeDeleteWeeklyModal" class="cancel-btn">Отмена</button>
-          <button @click="removeWeekly" class="delete-btn-confirm" :disabled="deleting">
-            {{ deleting ? 'Удаление...' : 'Удалить' }}
-          </button>
+    <Teleport to="body">
+      <div v-if="showDeleteWeeklyModal" class="modal-overlay" @click="closeDeleteWeeklyModal">
+        <div class="modal-content modal-small" @click.stop>
+          <h3>Подтверждение удаления</h3>
+          <p>Вы уверены, что хотите удалить еженедельную задачу "{{ weeklyToDelete?.name }}"?</p>
+          <div class="form-actions">
+            <button @click="closeDeleteWeeklyModal" class="cancel-btn">Отмена</button>
+            <button @click="removeWeekly" class="delete-btn-confirm" :disabled="deleting">
+              {{ deleting ? 'Удаление...' : 'Удалить' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 
@@ -899,7 +903,7 @@ export default {
   gap: 8px;
 }
 
-.search-input {
+.search-input{
   flex: 1;
   min-width: 0;
   padding: 9px 12px;
@@ -908,17 +912,19 @@ export default {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   font-size: 13px;
+  font-family: var(--font-mono);
 }
 
-.search-input:focus {
+.search-input:focus{
   outline: none;
   border-color: var(--accent-primary);
+  box-shadow: var(--glow-cyan);
 }
 
 .create-project-btn {
   padding: 9px 14px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 8px;
   font-size: 13px;
@@ -929,7 +935,7 @@ export default {
 }
 
 .create-project-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .sidebar-filters {
@@ -937,7 +943,7 @@ export default {
   gap: 8px;
 }
 
-.filter-select {
+.filter-select{
   flex: 1;
   min-width: 0;
   padding: 7px 8px;
@@ -946,6 +952,7 @@ export default {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   font-size: 12px;
+  font-family: var(--font-mono);
 }
 
 .project-cards {
@@ -966,9 +973,9 @@ export default {
   font-size: 13px;
 }
 
-.project-card {
+.project-card{
   padding: 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background-color: var(--bg-secondary);
   border: 2px solid var(--border-color);
   cursor: pointer;
@@ -976,22 +983,24 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  border-left: 3px solid var(--accent-primary);
 }
 
-.project-card:hover {
+.project-card:hover{
   border-color: var(--accent-primary);
-  box-shadow: 0 3px 10px var(--shadow-color);
+  box-shadow: var(--glow-cyan);
 }
 
 .project-card.selected {
-  border-color: var(--accent-primary);
+  border-color: var(--accent-purple);
   background-color: var(--bg-tertiary);
-  box-shadow: 0 3px 10px var(--shadow-color);
+  box-shadow: 0 3px 10px var(--shadow-color), var(--glow-violet);
 }
 
-.orphan-card {
+.orphan-card{
   border-style: dashed;
   opacity: 0.9;
+  border-left: 3px solid var(--accent-primary);
 }
 
 .card-title-row {
@@ -1040,7 +1049,7 @@ export default {
 
 .card-goals-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-green), #7ed957);
+  background: linear-gradient(90deg, var(--accent-green), var(--neon-cyan));
   border-radius: 3px;
   transition: width 0.3s ease;
 }
@@ -1056,12 +1065,15 @@ export default {
   gap: 8px;
 }
 
-.counter {
+.counter{
   font-size: 12px;
   padding: 3px 10px;
   border-radius: 10px;
   background-color: var(--bg-tertiary);
   color: var(--text-secondary);
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .counter-weekly {
@@ -1147,7 +1159,7 @@ export default {
   font-weight: 500;
 }
 
-.overdue-badge {
+.overdue-badge{
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 12px;
@@ -1155,6 +1167,10 @@ export default {
   color: var(--accent-red);
   font-weight: 500;
   margin-left: 6px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
 }
 
 .detail-section {
@@ -1179,7 +1195,7 @@ export default {
   font-size: 16px;
 }
 
-.section-count {
+.section-count{
   min-width: 24px;
   height: 24px;
   padding: 0 8px;
@@ -1191,6 +1207,9 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .tasks-subtabs {
@@ -1223,17 +1242,20 @@ export default {
 }
 
 .tasks-subtab.active {
-  background-color: var(--accent-primary);
-  color: white;
+  background-color: var(--accent-purple);
+  color: var(--on-neon);
 }
 
-.subtab-count {
+.subtab-count{
   font-size: 11px;
   font-weight: 600;
   padding: 1px 7px;
   border-radius: 10px;
   background-color: var(--bg-secondary);
   color: inherit;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .section-count.count-done {
@@ -1278,7 +1300,7 @@ export default {
 
 .goals-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-green), #7ed957);
+  background: linear-gradient(90deg, var(--accent-green), var(--neon-cyan));
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -1367,13 +1389,16 @@ export default {
   word-break: break-word;
 }
 
-.weekly-count {
+.weekly-count{
   font-size: 11px;
   color: var(--text-secondary);
   background-color: var(--bg-secondary);
   padding: 2px 8px;
   border-radius: 10px;
   white-space: nowrap;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .weekly-meta {
@@ -1400,13 +1425,13 @@ export default {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-blue), var(--accent-primary));
+  background: linear-gradient(90deg, var(--neon-violet), var(--neon-cyan));
   border-radius: 4px;
   transition: width 0.3s ease;
 }
 
 .progress-fill.week-done {
-  background: linear-gradient(90deg, var(--accent-green), #7ed957);
+  background: linear-gradient(90deg, var(--accent-green), var(--neon-cyan));
 }
 
 .progress-text {
@@ -1425,7 +1450,7 @@ export default {
 .complete-btn {
   padding: 7px 14px;
   background-color: var(--accent-green);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 6px;
   font-size: 12px;
@@ -1436,7 +1461,7 @@ export default {
 }
 
 .complete-btn:hover:not(:disabled) {
-  background-color: #3d8b40;
+  filter: brightness(1.08);
 }
 
 .complete-btn:disabled {
@@ -1444,7 +1469,7 @@ export default {
   cursor: wait;
 }
 
-.week-done-badge {
+.week-done-badge{
   font-size: 11px;
   font-weight: 600;
   color: var(--accent-green);
@@ -1452,6 +1477,10 @@ export default {
   padding: 4px 10px;
   border-radius: 10px;
   white-space: nowrap;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
 }
 
 .action-btn {
@@ -1498,12 +1527,16 @@ export default {
 }
 
 /* Бейджи */
-.badge {
+.badge{
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 12px;
   font-weight: 500;
   white-space: nowrap;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
 }
 
 .priority-high {
@@ -1522,10 +1555,14 @@ export default {
   color: var(--accent-green);
 }
 
-.status-active,
-.status-in_progress {
+.status-active {
   background-color: var(--accent-blue-light);
   color: var(--accent-blue);
+}
+
+.status-in_progress {
+  background-color: var(--accent-purple-light);
+  color: var(--accent-purple);
 }
 
 .status-completed,
@@ -1562,12 +1599,13 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  animation: screen-fade var(--transition-base);
 }
 
 @keyframes fadeIn {
@@ -1577,12 +1615,13 @@ export default {
 
 .modal-content {
   background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
   padding: 30px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 400px;
   width: 90%;
-  box-shadow: 0 4px 20px var(--shadow-color);
-  animation: slideUp 0.3s ease;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
 }
 
 @keyframes slideUp {
@@ -1636,11 +1675,11 @@ export default {
 
 .delete-btn-confirm {
   background-color: var(--accent-red);
-  color: white;
+  color: var(--on-neon);
 }
 
 .delete-btn-confirm:hover:not(:disabled) {
-  background-color: #c0392b;
+  filter: brightness(1.12);
 }
 
 .delete-btn-confirm:disabled {

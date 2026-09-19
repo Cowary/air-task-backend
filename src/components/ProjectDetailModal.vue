@@ -1,166 +1,168 @@
 <template>
-  <div v-if="visible" class="modal-overlay" @click="closeModal">
-    <div class="modal-content" @click.stop>
-      <div v-if="loading" class="detail-loading">
-        <div class="spinner"></div>
-        <p>Загрузка проекта...</p>
-      </div>
-
-      <div v-else-if="error" class="detail-error">
-        <p>❌ {{ error }}</p>
-        <button @click="loadProject" class="retry-btn">Повторить</button>
-      </div>
-
-      <template v-else-if="project">
-        <div class="detail-header">
-          <h3>{{ project.name }}</h3>
-          <button class="close-x" @click="closeModal" title="Закрыть">✕</button>
+  <Teleport to="body">
+    <div v-if="visible" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <div v-if="loading" class="detail-loading">
+          <div class="spinner"></div>
+          <p>Загрузка проекта...</p>
         </div>
 
-        <div class="detail-badges">
-          <span class="badge status-badge" :class="`status-${(project.status || '').toLowerCase()}`">
-            {{ getStatusLabel(project.status) }}
-          </span>
-          <span class="badge priority-badge" :class="`priority-${(project.priority || '').toLowerCase()}`">
-            {{ getPriorityLabel(project.priority) }}
-          </span>
+        <div v-else-if="error" class="detail-error">
+          <p><AppIcon name="triangle-alert" :size="16" /> {{ error }}</p>
+          <button @click="loadProject" class="retry-btn">Повторить</button>
         </div>
 
-        <div class="detail-dates">
-          <span
-            v-if="project.dueDate"
-            class="detail-due"
-            :class="{ 'detail-due-overdue': isOverdue(project) }"
-          >
-            Срок: {{ formatDateOnly(project.dueDate) }}<template v-if="isProjectOpen(project)"> ({{ daysUntil(project.dueDate) }} дн.)</template>
-            <span v-if="isOverdue(project)" class="overdue-badge">Просрочено</span>
-          </span>
-          <span>Создан: {{ formatDate(project.createdTs) }}</span>
-          <span>Обновлён: {{ formatDate(project.updatedTs) }}</span>
-        </div>
-
-        <div class="detail-section">
-          <h4>
-            🎯 Цели
-            <span class="section-count">{{ completedGoalsCount }}/{{ goalList.length }}</span>
-          </h4>
-          <div v-if="goalList.length === 0" class="section-empty">Нет целей</div>
-          <div v-else class="goal-checklist">
-            <label v-for="goal in goalList" :key="goal.id" class="goal-check-item">
-              <input
-                type="checkbox"
-                :checked="goal.isCompleted"
-                :disabled="togglingGoals.includes(goal.id)"
-                @change="toggleGoal(goal, $event)"
-              />
-              <span class="goal-check-name" :class="{ 'goal-done': goal.isCompleted }">
-                {{ goal.name }}
-              </span>
-            </label>
+        <template v-else-if="project">
+          <div class="detail-header">
+            <h3>{{ project.name }}</h3>
+            <button class="close-x" @click="closeModal" title="Закрыть" aria-label="Закрыть"><AppIcon name="x" :size="15" /></button>
           </div>
-        </div>
 
-        <div class="detail-section">
-          <h4>
-            📊 Еженедельные задачи
-            <span class="section-count">{{ weeklyList.length }}</span>
-          </h4>
-          <div v-if="weeklyList.length === 0" class="section-empty">Нет привязанных еженедельных задач</div>
-          <table v-else class="detail-table">
-            <thead>
-              <tr>
-                <th>Название</th>
-                <th>Кол-во</th>
-                <th>Приоритет</th>
-                <th>Статус</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="weekly in weeklyList" :key="weekly.id">
-                <td class="cell-name">{{ weekly.name }}</td>
-                <td>{{ weekly.count }}</td>
-                <td>
-                  <span class="badge priority-badge" :class="`priority-${(weekly.priority || '').toLowerCase()}`">
-                    {{ getPriorityLabel(weekly.priority) }}
-                  </span>
-                </td>
-                <td>
-                  <span class="badge status-badge" :class="`status-${(weekly.status || '').toLowerCase()}`">
-                    {{ getStatusLabel(weekly.status) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          <div class="detail-badges">
+            <span class="badge status-badge" :class="`status-${(project.status || '').toLowerCase()}`">
+              {{ getStatusLabel(project.status) }}
+            </span>
+            <span class="badge priority-badge" :class="`priority-${(project.priority || '').toLowerCase()}`">
+              {{ getPriorityLabel(project.priority) }}
+            </span>
+          </div>
 
-        <div class="detail-section">
-          <h4>
-            📝 Задачи
-            <span class="section-count">{{ taskList.length }}</span>
-          </h4>
-          <div v-if="taskList.length === 0" class="section-empty">Нет привязанных задач</div>
-          <table v-else class="detail-table">
-            <thead>
-              <tr>
-                <th>Название</th>
-                <th>Описание</th>
-                <th>Приоритет</th>
-                <th>Выполнение</th>
-                <th>Шаги</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="task in taskList" :key="task.id">
-                <td class="cell-name">{{ task.name }}</td>
-                <td class="cell-description">{{ task.description || '—' }}</td>
-                <td>
-                  <span class="badge priority-badge" :class="`priority-${(task.priority || '').toLowerCase()}`">
-                    {{ getPriorityLabel(task.priority) }}
-                  </span>
-                </td>
-                <td>
-                  <label class="task-check-cell" title="Отметить выполнение">
-                    <input
-                      type="checkbox"
-                      class="task-complete-checkbox"
-                      :checked="!!task.isComplete"
-                      :disabled="togglingTasks.includes(task.id)"
-                      @change="toggleTaskComplete(task, $event)"
-                    />
-                    <span class="task-check-name" :class="{ 'task-done': task.isComplete }">
-                      {{ task.isComplete ? 'Выполнено' : 'Не выполнено' }}
+          <div class="detail-dates">
+            <span
+              v-if="project.dueDate"
+              class="detail-due"
+              :class="{ 'detail-due-overdue': isOverdue(project) }"
+            >
+              Срок: {{ formatDateOnly(project.dueDate) }}<template v-if="isProjectOpen(project)"> ({{ daysUntil(project.dueDate) }} дн.)</template>
+              <span v-if="isOverdue(project)" class="overdue-badge">Просрочено</span>
+            </span>
+            <span>Создан: {{ formatDate(project.createdTs) }}</span>
+            <span>Обновлён: {{ formatDate(project.updatedTs) }}</span>
+          </div>
+
+          <div class="detail-section">
+            <h4>
+              <AppIcon name="target" :size="18" /> Цели
+              <span class="section-count">{{ completedGoalsCount }}/{{ goalList.length }}</span>
+            </h4>
+            <div v-if="goalList.length === 0" class="section-empty">Нет целей</div>
+            <div v-else class="goal-checklist">
+              <label v-for="goal in goalList" :key="goal.id" class="goal-check-item">
+                <input
+                  type="checkbox"
+                  :checked="goal.isCompleted"
+                  :disabled="togglingGoals.includes(goal.id)"
+                  @change="toggleGoal(goal, $event)"
+                />
+                <span class="goal-check-name" :class="{ 'goal-done': goal.isCompleted }">
+                  {{ goal.name }}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h4>
+              <AppIcon name="chart-column" :size="18" /> Еженедельные задачи
+              <span class="section-count">{{ weeklyList.length }}</span>
+            </h4>
+            <div v-if="weeklyList.length === 0" class="section-empty">Нет привязанных еженедельных задач</div>
+            <table v-else class="detail-table">
+              <thead>
+                <tr>
+                  <th>Название</th>
+                  <th>Кол-во</th>
+                  <th>Приоритет</th>
+                  <th>Статус</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="weekly in weeklyList" :key="weekly.id">
+                  <td class="cell-name">{{ weekly.name }}</td>
+                  <td>{{ weekly.count }}</td>
+                  <td>
+                    <span class="badge priority-badge" :class="`priority-${(weekly.priority || '').toLowerCase()}`">
+                      {{ getPriorityLabel(weekly.priority) }}
                     </span>
-                  </label>
-                </td>
-                <td class="cell-subtasks">
-                  <template v-if="task.subTasks?.length">
-                    <button
-                      type="button"
-                      class="subtask-summary"
-                      :class="{ 'subtask-done-all': subtaskProgress(task).allDone }"
-                      @click="toggleExpand(task.id)"
-                    >
-                      ✓ {{ subtaskProgress(task).done }}/{{ subtaskProgress(task).total }}
-                      <span class="subtask-arrow">{{ expandedTasks[task.id] ? '▲' : '▼' }}</span>
-                    </button>
-                    <div v-if="expandedTasks[task.id]" class="subtask-expanded">
-                      <SubTasksChecklist :task="task" @updated="handleSubTaskUpdated" />
-                    </div>
-                  </template>
-                  <span v-else class="cell-muted">—</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  </td>
+                  <td>
+                    <span class="badge status-badge" :class="`status-${(weekly.status || '').toLowerCase()}`">
+                      {{ getStatusLabel(weekly.status) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-        <div class="form-actions">
-          <button @click="closeModal" class="cancel-btn">Закрыть</button>
-        </div>
-      </template>
+          <div class="detail-section">
+            <h4>
+              <AppIcon name="list-checks" :size="18" /> Задачи
+              <span class="section-count">{{ taskList.length }}</span>
+            </h4>
+            <div v-if="taskList.length === 0" class="section-empty">Нет привязанных задач</div>
+            <table v-else class="detail-table">
+              <thead>
+                <tr>
+                  <th>Название</th>
+                  <th>Описание</th>
+                  <th>Приоритет</th>
+                  <th>Выполнение</th>
+                  <th>Шаги</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="task in taskList" :key="task.id">
+                  <td class="cell-name">{{ task.name }}</td>
+                  <td class="cell-description">{{ task.description || '—' }}</td>
+                  <td>
+                    <span class="badge priority-badge" :class="`priority-${(task.priority || '').toLowerCase()}`">
+                      {{ getPriorityLabel(task.priority) }}
+                    </span>
+                  </td>
+                  <td>
+                    <label class="task-check-cell" title="Отметить выполнение">
+                      <input
+                        type="checkbox"
+                        class="task-complete-checkbox"
+                        :checked="!!task.isComplete"
+                        :disabled="togglingTasks.includes(task.id)"
+                        @change="toggleTaskComplete(task, $event)"
+                      />
+                      <span class="task-check-name" :class="{ 'task-done': task.isComplete }">
+                        {{ task.isComplete ? 'Выполнено' : 'Не выполнено' }}
+                      </span>
+                    </label>
+                  </td>
+                  <td class="cell-subtasks">
+                    <template v-if="task.subTasks?.length">
+                      <button
+                        type="button"
+                        class="subtask-summary"
+                        :class="{ 'subtask-done-all': subtaskProgress(task).allDone }"
+                        @click="toggleExpand(task.id)"
+                      >
+                        <AppIcon name="check" :size="14" /> {{ subtaskProgress(task).done }}/{{ subtaskProgress(task).total }}
+                        <span class="subtask-arrow">{{ expandedTasks[task.id] ? '▲' : '▼' }}</span>
+                      </button>
+                      <div v-if="expandedTasks[task.id]" class="subtask-expanded">
+                        <SubTasksChecklist :task="task" @updated="handleSubTaskUpdated" />
+                      </div>
+                    </template>
+                    <span v-else class="cell-muted">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="form-actions">
+            <button @click="closeModal" class="cancel-btn">Закрыть</button>
+          </div>
+        </template>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script>
@@ -398,12 +400,13 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1001;
-  animation: fadeIn 0.2s ease;
+  animation: screen-fade var(--transition-base);
 }
 
 @keyframes fadeIn {
@@ -413,14 +416,15 @@ export default {
 
 .modal-content {
   background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
   padding: 30px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 700px;
   width: 92%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px var(--shadow-color);
-  animation: slideUp 0.3s ease;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
 }
 
 @keyframes slideUp {
@@ -470,11 +474,15 @@ export default {
   margin-bottom: 10px;
 }
 
-.badge {
+.badge{
   font-size: 12px;
   padding: 3px 12px;
   border-radius: 12px;
   font-weight: 500;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
 }
 
 .priority-high {
@@ -493,10 +501,14 @@ export default {
   color: var(--accent-green);
 }
 
-.status-active,
-.status-in_progress {
+.status-active {
   background-color: var(--accent-blue-light);
   color: var(--accent-blue);
+}
+
+.status-in_progress {
+  background-color: var(--accent-purple-light);
+  color: var(--accent-purple);
 }
 
 .status-completed,
@@ -540,7 +552,7 @@ export default {
   font-weight: 500;
 }
 
-.overdue-badge {
+.overdue-badge{
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 12px;
@@ -548,6 +560,10 @@ export default {
   color: var(--accent-red);
   font-weight: 500;
   margin-left: 6px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
 }
 
 .detail-section {
@@ -563,7 +579,7 @@ export default {
   font-size: 15px;
 }
 
-.section-count {
+.section-count{
   min-width: 22px;
   height: 22px;
   padding: 0 6px;
@@ -575,6 +591,9 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .section-empty {
@@ -773,14 +792,14 @@ export default {
   margin-top: 15px;
   padding: 10px 20px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
 .retry-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .form-actions {

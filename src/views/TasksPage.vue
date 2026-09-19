@@ -1,10 +1,10 @@
 <template>
   <div class="container">
     <!-- Кнопка возврата на главную -->
-    <router-link to="/" class="back-button">← На главную</router-link>
+    <router-link to="/" class="back-button"><AppIcon name="arrow-left" :size="15" /> На главную</router-link>
 
     <!-- Заголовок страницы -->
-    <h1>📝 Управление задачами</h1>
+    <h1><AppIcon name="list-checks" :size="28" /> Управление задачами</h1>
     <p class="subtitle">Создание, редактирование и удаление задач</p>
 
     <!-- Состояние загрузки -->
@@ -15,7 +15,7 @@
 
     <!-- Состояние ошибки -->
     <div v-else-if="error" class="error-message">
-      <p>❌ {{ error }}</p>
+      <p><AppIcon name="triangle-alert" :size="16" /> {{ error }}</p>
       <button @click="loadTasks" class="retry-btn">Повторить</button>
     </div>
 
@@ -77,7 +77,7 @@
           <div class="task-info">
             <div class="task-header">
               <div class="task-project" v-if="task.project?.name">
-                📁 {{ task.project.name }}
+                <AppIcon name="folder" :size="16" /> {{ task.project.name }}
               </div>
               <span class="task-priority" :class="`priority-${task.priority.toLowerCase()}`">
                 {{ getPriorityLabel(task.priority) }}
@@ -93,7 +93,7 @@
                 @click="toggleExpand(task.id)"
               >
                 <span class="subtask-count" :class="{ 'subtask-done-all': subtaskProgress(task).allDone }">
-                  ✓ {{ subtaskProgress(task).done }}/{{ subtaskProgress(task).total }}
+                  <AppIcon name="check" :size="14" /> {{ subtaskProgress(task).done }}/{{ subtaskProgress(task).total }}
                 </span>
                 <span class="subtask-bar">
                   <span
@@ -124,122 +124,126 @@
           </div>
 
           <div class="task-actions">
-            <button @click="openEditModal(task)" class="action-btn edit-btn" title="Редактировать">✏️</button>
-            <button @click="confirmDelete(task)" class="action-btn delete-btn" title="Удалить">🗑️</button>
+            <button @click="openEditModal(task)" class="action-btn edit-btn" title="Редактировать" aria-label="Редактировать"><AppIcon name="pencil" :size="15" /></button>
+            <button @click="confirmDelete(task)" class="action-btn delete-btn" title="Удалить" aria-label="Удалить"><AppIcon name="trash-2" :size="15" /></button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Модальное окно для создания/редактирования задачи -->
-    <div v-if="showTaskModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <h3>{{ editingTask ? 'Редактировать задачу' : 'Создать новую задачу' }}</h3>
+    <Teleport to="body">
+      <div v-if="showTaskModal" class="modal-overlay" @click="closeModal">
+        <div class="modal-content" @click.stop>
+          <h3>{{ editingTask ? 'Редактировать задачу' : 'Создать новую задачу' }}</h3>
 
-        <form @submit.prevent="saveTask" class="task-form">
-          <div class="form-group">
-            <label for="taskName">Название задачи *</label>
-            <input
-              id="taskName"
-              v-model.trim="taskForm.name"
-              type="text"
-              required
-              maxlength="200"
-              placeholder="Введите название задачи"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="taskProject">Проект *</label>
-            <div class="project-select-wrapper">
-              <select
-                id="taskProject"
-                v-model="taskForm.projectName"
+          <form @submit.prevent="saveTask" class="task-form">
+            <div class="form-group">
+              <label for="taskName">Название задачи *</label>
+              <input
+                id="taskName"
+                v-model.trim="taskForm.name"
+                type="text"
                 required
-                :disabled="loadingProjects || projects.length === 0"
-              >
-                <option value="" disabled v-if="!taskForm.projectName && loadingProjects">Загрузка проектов...</option>
-                <option
-                  v-for="project in projects"
-                  :key="project.id"
-                  :value="project.name"
+                maxlength="200"
+                placeholder="Введите название задачи"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="taskProject">Проект *</label>
+              <div class="project-select-wrapper">
+                <select
+                  id="taskProject"
+                  v-model="taskForm.projectName"
+                  required
+                  :disabled="loadingProjects || projects.length === 0"
                 >
-                  {{ project.name }}
-                </option>
-              </select>
-              <button
-                type="button"
-                @click="openProjectModal"
-                class="create-project-btn"
-                title="Создать новый проект"
+                  <option value="" disabled v-if="!taskForm.projectName && loadingProjects">Загрузка проектов...</option>
+                  <option
+                    v-for="project in projects"
+                    :key="project.id"
+                    :value="project.name"
+                  >
+                    {{ project.name }}
+                  </option>
+                </select>
+                <button
+                  type="button"
+                  @click="openProjectModal"
+                  class="create-project-btn"
+                  title="Создать новый проект"
+                >
+                  + Проект
+                </button>
+              </div>
+              <span v-if="loadingProjects" class="form-hint">Загрузка проектов...</span>
+              <span v-else-if="projects.length === 0" class="form-hint">Нет доступных проектов. Создайте первый проект!</span>
+            </div>
+
+            <div class="form-group">
+              <label for="taskPriority">Приоритет *</label>
+              <select
+                id="taskPriority"
+                v-model="taskForm.priority"
+                required
               >
-                + Проект
+                <option value="HIGH">Высокий</option>
+                <option value="MIDDLE">Средний</option>
+                <option value="LOW">Низкий</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="taskDueDate">Дата выполнения</label>
+              <input
+                id="taskDueDate"
+                v-model="taskForm.dueDate"
+                type="date"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="taskDescription">Описание</label>
+              <textarea
+                id="taskDescription"
+                v-model="taskForm.description"
+                placeholder="Введите описание задачи (опционально)"
+                maxlength="10000"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <SubTasksEditor v-model="taskForm.subTasks" />
+            </div>
+
+            <div class="form-actions">
+              <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
+              <button type="submit" class="save-btn" :disabled="saving">
+                {{ saving ? 'Сохранение...' : 'Сохранить' }}
               </button>
             </div>
-            <span v-if="loadingProjects" class="form-hint">Загрузка проектов...</span>
-            <span v-else-if="projects.length === 0" class="form-hint">Нет доступных проектов. Создайте первый проект!</span>
-          </div>
-
-          <div class="form-group">
-            <label for="taskPriority">Приоритет *</label>
-            <select
-              id="taskPriority"
-              v-model="taskForm.priority"
-              required
-            >
-              <option value="HIGH">Высокий</option>
-              <option value="MIDDLE">Средний</option>
-              <option value="LOW">Низкий</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="taskDueDate">Дата выполнения</label>
-            <input
-              id="taskDueDate"
-              v-model="taskForm.dueDate"
-              type="date"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="taskDescription">Описание</label>
-            <textarea
-              id="taskDescription"
-              v-model="taskForm.description"
-              placeholder="Введите описание задачи (опционально)"
-              maxlength="10000"
-              rows="4"
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <SubTasksEditor v-model="taskForm.subTasks" />
-          </div>
-
-          <div class="form-actions">
-            <button type="button" @click="closeModal" class="cancel-btn">Отмена</button>
-            <button type="submit" class="save-btn" :disabled="saving">
-              {{ saving ? 'Сохранение...' : 'Сохранить' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Модальное окно подтверждения удаления -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
-      <div class="modal-content modal-small" @click.stop>
-        <h3>Подтверждение удаления</h3>
-        <p>Вы уверены, что хотите удалить задачу "{{ taskToDelete?.name }}"?</p>
-        <div class="form-actions">
-          <button @click="closeDeleteModal" class="cancel-btn">Отмена</button>
-          <button @click="deleteTask" class="delete-btn-confirm" :disabled="deleting">
-            {{ deleting ? 'Удаление...' : 'Удалить' }}
-          </button>
+          </form>
         </div>
       </div>
-    </div>
+    </Teleport>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <Teleport to="body">
+      <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
+        <div class="modal-content modal-small" @click.stop>
+          <h3>Подтверждение удаления</h3>
+          <p>Вы уверены, что хотите удалить задачу "{{ taskToDelete?.name }}"?</p>
+          <div class="form-actions">
+            <button @click="closeDeleteModal" class="cancel-btn">Отмена</button>
+            <button @click="deleteTask" class="delete-btn-confirm" :disabled="deleting">
+              {{ deleting ? 'Удаление...' : 'Удалить' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Модальное окно создания проекта -->
     <ProjectModal
@@ -631,7 +635,7 @@ export default {
   max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-body);
 }
 
 h1 {
@@ -678,14 +682,14 @@ h1 {
   margin-top: 15px;
   padding: 10px 20px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
 .retry-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .back-button {
@@ -741,7 +745,7 @@ h1 {
 .create-btn {
   padding: 10px 20px;
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -751,7 +755,7 @@ h1 {
 }
 
 .create-btn:hover {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 /* Пустое состояние */
@@ -771,19 +775,20 @@ h1 {
 }
 
 /* Карточка задачи */
-.task-card {
+.task-card{
   padding: 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background-color: var(--bg-secondary);
   border: 2px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   transition: all 0.2s ease;
+  border-left: 3px solid var(--accent-primary);
 }
 
-.task-card:hover {
-  box-shadow: 0 2px 8px var(--shadow-color);
+.task-card:hover{
+  box-shadow: var(--glow-cyan);
   border-color: var(--accent-primary);
 }
 
@@ -865,12 +870,15 @@ h1 {
   border-color: var(--accent-primary);
 }
 
-.subtask-count {
+.subtask-count{
   font-size: 12px;
   font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .subtask-count.subtask-done-all {
@@ -953,13 +961,17 @@ h1 {
   font-weight: 500;
 }
 
-.overdue-badge {
+.overdue-badge{
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 12px;
   background-color: var(--accent-red-light);
   color: var(--accent-red);
   font-weight: 500;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
 }
 
 /* Кнопки действий */
@@ -1003,12 +1015,13 @@ h1 {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  animation: screen-fade var(--transition-base);
 }
 
 @keyframes fadeIn {
@@ -1018,14 +1031,15 @@ h1 {
 
 .modal-content {
   background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
   padding: 30px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 20px var(--shadow-color);
-  animation: slideUp 0.3s ease;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
 }
 
 @keyframes slideUp {
@@ -1106,7 +1120,7 @@ h1 {
 .create-project-btn {
   padding: 10px 15px;
   background-color: var(--accent-green);
-  color: white;
+  color: var(--on-neon);
   border: none;
   border-radius: 5px;
   font-size: 13px;
@@ -1117,7 +1131,7 @@ h1 {
 }
 
 .create-project-btn:hover {
-  background-color: #27ae60;
+  filter: brightness(1.08);
 }
 
 .form-hint {
@@ -1156,11 +1170,11 @@ h1 {
 
 .save-btn {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--on-neon);
 }
 
 .save-btn:hover:not(:disabled) {
-  background-color: #5a6fd6;
+  filter: brightness(1.12);
 }
 
 .save-btn:disabled {
@@ -1170,11 +1184,11 @@ h1 {
 
 .delete-btn-confirm {
   background-color: var(--accent-red);
-  color: white;
+  color: var(--on-neon);
 }
 
 .delete-btn-confirm:hover:not(:disabled) {
-  background-color: #c0392b;
+  filter: brightness(1.12);
 }
 
 .delete-btn-confirm:disabled {

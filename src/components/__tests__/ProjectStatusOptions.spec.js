@@ -14,7 +14,8 @@ import { getAllProjects } from '../../api/projects.js';
 describe('Статус проекта «Завершён» (COMPLETED) убран из форм и фильтров', () => {
   it('в ProjectFormModal нет опции COMPLETED, дефолт — ACTIVE', () => {
     const wrapper = mount(ProjectFormModal, {
-      props: { visible: true, project: null }
+      props: { visible: true, project: null },
+      global: { stubs: { teleport: true } }
     });
 
     const values = wrapper.findAll('#projectStatus option').map(o => o.element.value);
@@ -25,7 +26,8 @@ describe('Статус проекта «Завершён» (COMPLETED) убра�
 
   it('в ProjectModal нет опции COMPLETED', () => {
     const wrapper = mount(ProjectModal, {
-      props: { visible: true, createProject: vi.fn(), onProjectCreated: vi.fn() }
+      props: { visible: true, createProject: vi.fn(), onProjectCreated: vi.fn() },
+      global: { stubs: { teleport: true } }
     });
 
     const values = wrapper.findAll('#projectStatus option').map(o => o.element.value);

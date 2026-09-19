@@ -1,18 +1,19 @@
 import apiClient from './client';
 
-export const getRemindersCountdown = async () => {
+/**
+ * Получает список повторяющихся напоминаний
+ *
+ * API endpoint: GET /api/reminder/v1/list
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.includeDeleted] - Включить мягко удалённые напоминания
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const getAllReminders = async ({ includeDeleted = false } = {}) => {
   try {
-    const response = await apiClient.get('/v1/reminder/list-count');
-    return response.data;
-  } catch (error) {
-    console.error('Ошибка при получении списка напоминаний (countdown):', error);
-    throw error;
-  }
-};
-
-export const getReminders = async () => {
-  try {
-    const response = await apiClient.get('/v1/reminder/list');
+    const response = await apiClient.get('/reminder/v1/list', {
+      params: includeDeleted ? { includeDeleted: true } : {}
+    });
     return response.data;
   } catch (error) {
     console.error('Ошибка при получении списка напоминаний:', error);
@@ -20,17 +21,42 @@ export const getReminders = async () => {
   }
 };
 
-export const createReminder = async (reminderData) => {
+/**
+ * Получает напоминание по ID
+ *
+ * API endpoint: GET /api/reminder/v1/{id}
+ *
+ * @param {number} id - ID напоминания
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const getReminder = async (id) => {
   try {
-    const requestBody = {
-      name: reminderData.name,
-      status: reminderData.status,
-      priority: reminderData.priority,
-      reminderDateTime: reminderData.reminderDateTime,
-      type: reminderData.type
-    };
+    const response = await apiClient.get(`/reminder/v1/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при получении напоминания:', error);
+    throw error;
+  }
+};
 
-    const response = await apiClient.post('/v1/reminder/save', requestBody);
+/**
+ * Создаёт напоминание
+ *
+ * API endpoint: POST /api/reminder/v1
+ *
+ * @param {Object} data - Данные напоминания
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const createReminder = async (data) => {
+  try {
+    const response = await apiClient.post('/reminder/v1', {
+      name: data.name,
+      description: data.description || null,
+      recurrenceType: data.recurrenceType,
+      intervalValue: data.intervalValue ?? null,
+      intervalUnit: data.intervalUnit ?? null,
+      startDate: data.startDate
+    });
     return response.data;
   } catch (error) {
     console.error('Ошибка при создании напоминания:', error);
@@ -38,18 +64,25 @@ export const createReminder = async (reminderData) => {
   }
 };
 
-export const updateReminder = async (reminderData) => {
+/**
+ * Обновляет напоминание
+ *
+ * API endpoint: PUT /api/reminder/v1/{id}
+ *
+ * @param {number} id - ID напоминания
+ * @param {Object} data - Данные напоминания
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const updateReminder = async (id, data) => {
   try {
-    const requestBody = {
-      id: reminderData.id,
-      name: reminderData.name,
-      status: reminderData.status,
-      priority: reminderData.priority,
-      reminderDateTime: reminderData.reminderDateTime,
-      type: reminderData.type
-    };
-
-    const response = await apiClient.post('/v1/reminder/update', requestBody);
+    const response = await apiClient.put(`/reminder/v1/${id}`, {
+      name: data.name,
+      description: data.description || null,
+      recurrenceType: data.recurrenceType,
+      intervalValue: data.intervalValue ?? null,
+      intervalUnit: data.intervalUnit ?? null,
+      startDate: data.startDate
+    });
     return response.data;
   } catch (error) {
     console.error('Ошибка при обновлении напоминания:', error);
@@ -57,9 +90,17 @@ export const updateReminder = async (reminderData) => {
   }
 };
 
+/**
+ * Мягко удаляет напоминание (история сохраняется)
+ *
+ * API endpoint: DELETE /api/reminder/v1/{id}
+ *
+ * @param {number} id - ID напоминания
+ * @returns {Promise} Промис с данными от сервера
+ */
 export const deleteReminder = async (id) => {
   try {
-    const response = await apiClient.delete(`/v1/reminder/${id}`);
+    const response = await apiClient.delete(`/reminder/v1/${id}`);
     return response.data;
   } catch (error) {
     console.error('Ошибка при удалении напоминания:', error);
@@ -67,12 +108,62 @@ export const deleteReminder = async (id) => {
   }
 };
 
-export const refreshReminder = async (id) => {
+/**
+ * Отмечает текущее наступление выполненным
+ *
+ * API endpoint: POST /api/reminder/v1/{id}/complete
+ *
+ * @param {number} id - ID напоминания
+ * @param {string} [actionDate] - Дата действия ('ГГГГ-ММ-ДД'); по умолчанию — сегодня
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const completeReminder = async (id, actionDate = null) => {
   try {
-    const response = await apiClient.post('/v1/reminder/refresh', { id });
+    const response = await apiClient.post(`/reminder/v1/${id}/complete`, {
+      actionDate: actionDate || null
+    });
     return response.data;
   } catch (error) {
-    console.error('Ошибка при обновлении напоминания:', error);
+    console.error('Ошибка при выполнении напоминания:', error);
+    throw error;
+  }
+};
+
+/**
+ * Пропускает текущее наступление
+ *
+ * API endpoint: POST /api/reminder/v1/{id}/skip
+ *
+ * @param {number} id - ID напоминания
+ * @param {string} [actionDate] - Дата действия ('ГГГГ-ММ-ДД'); по умолчанию — сегодня
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const skipReminder = async (id, actionDate = null) => {
+  try {
+    const response = await apiClient.post(`/reminder/v1/${id}/skip`, {
+      actionDate: actionDate || null
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при пропуске напоминания:', error);
+    throw error;
+  }
+};
+
+/**
+ * Получает историю напоминания
+ *
+ * API endpoint: GET /api/reminder/v1/{id}/history
+ *
+ * @param {number} id - ID напоминания
+ * @returns {Promise} Промис с данными от сервера
+ */
+export const getReminderHistory = async (id) => {
+  try {
+    const response = await apiClient.get(`/reminder/v1/${id}/history`);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при получении истории напоминания:', error);
     throw error;
   }
 };
