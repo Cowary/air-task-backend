@@ -784,7 +784,7 @@ h1 {
   justify-content: space-between;
   align-items: flex-start;
   transition: all 0.2s ease;
-  border-left: 3px solid var(--accent-primary);
+  border-left: 3px solid var(--entity-task);
 }
 
 .task-card:hover{

@@ -36,7 +36,7 @@
       <!-- Вкладки -->
       <div class="workspace-tabs" role="tablist">
         <button
-          class="tab-btn"
+          class="tab-btn tab-project"
           :class="{ active: activeTab === 'projects' }"
           role="tab"
           :aria-selected="activeTab === 'projects'"
@@ -46,7 +46,7 @@
           <span>Проекты</span>
         </button>
         <button
-          class="tab-btn"
+          class="tab-btn tab-week"
           :class="{ active: activeTab === 'week' }"
           role="tab"
           :aria-selected="activeTab === 'week'"
@@ -56,7 +56,7 @@
           <span>Неделя</span>
         </button>
         <button
-          class="tab-btn"
+          class="tab-btn tab-task"
           :class="{ active: activeTab === 'tasks' }"
           role="tab"
           :aria-selected="activeTab === 'tasks'"
@@ -66,7 +66,7 @@
           <span>Все задачи</span>
         </button>
         <button
-          class="tab-btn"
+          class="tab-btn tab-idea"
           :class="{ active: activeTab === 'ideas' }"
           role="tab"
           :aria-selected="activeTab === 'ideas'"
@@ -76,7 +76,7 @@
           <span>Идеи</span>
         </button>
         <button
-          class="tab-btn"
+          class="tab-btn tab-reminder"
           :class="{ active: activeTab === 'reminders' }"
           role="tab"
           :aria-selected="activeTab === 'reminders'"
@@ -86,7 +86,17 @@
           <span>Напоминания</span>
         </button>
         <button
-          class="tab-btn"
+          class="tab-btn tab-calendar"
+          :class="{ active: activeTab === 'calendar' }"
+          role="tab"
+          :aria-selected="activeTab === 'calendar'"
+          @click="activeTab = 'calendar'"
+        >
+          <CalendarRange :size="16" aria-hidden="true" />
+          <span>Календарь</span>
+        </button>
+        <button
+          class="tab-btn tab-archive"
           :class="{ active: activeTab === 'archive' }"
           role="tab"
           :aria-selected="activeTab === 'archive'"
@@ -170,6 +180,14 @@
         @changed="refresh"
       />
 
+      <!-- Календарь -->
+      <CalendarPanel
+        v-else-if="activeTab === 'calendar'"
+        :projects="projects"
+        :tasks="tasks"
+        @changed="refresh"
+      />
+
       <!-- Архив выполненных задач -->
       <TaskListSection
         v-else
@@ -193,6 +211,7 @@ import {
   Archive,
   Lightbulb,
   Repeat,
+  CalendarRange,
   TriangleAlert
 } from 'lucide-vue-next';
 import { getAllProjects, ACTIVE_PROJECT_STATUSES } from '../api/projects.js';
@@ -203,6 +222,7 @@ import ProjectsPanel from '../components/workspace/ProjectsPanel.vue';
 import WeekPanel from '../components/workspace/WeekPanel.vue';
 import IdeasPanel from '../components/workspace/IdeasPanel.vue';
 import RemindersPanel from '../components/workspace/RemindersPanel.vue';
+import CalendarPanel from '../components/workspace/CalendarPanel.vue';
 import TaskListSection, { NO_PROJECT_FILTER } from '../components/workspace/TaskListSection.vue';
 
 export default {
@@ -217,11 +237,13 @@ export default {
     Archive,
     Lightbulb,
     Repeat,
+    CalendarRange,
     TriangleAlert,
     ProjectsPanel,
     WeekPanel,
     IdeasPanel,
     RemindersPanel,
+    CalendarPanel,
     TaskListSection
   },
 
@@ -513,7 +535,7 @@ h1 {
   padding: 4px;
   border: 1px solid var(--border-color);
   width: 100%;
-  max-width: min(100%, 980px);
+  max-width: min(100%, 1120px);
   overflow-x: auto;
   margin-left: auto;
   margin-right: auto;
@@ -548,6 +570,19 @@ h1 {
   border-color: var(--accent-purple);
   color: var(--neon-violet);
   box-shadow: var(--glow-violet);
+}
+
+/* Иконка вкладки = цвет сущности (DESIGN.md §7) */
+.tab-project :deep(svg) { color: var(--entity-project); }
+.tab-week :deep(svg) { color: var(--entity-weekly); }
+.tab-task :deep(svg) { color: var(--entity-task); }
+.tab-idea :deep(svg) { color: var(--entity-idea); }
+.tab-reminder :deep(svg) { color: var(--entity-reminder); }
+.tab-calendar :deep(svg) { color: var(--neon-cyan); }
+.tab-archive :deep(svg) { color: var(--accent-gray); }
+
+.tab-btn.active :deep(svg) {
+  filter: drop-shadow(0 0 6px currentColor);
 }
 
 .completion-toggle {

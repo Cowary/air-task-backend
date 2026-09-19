@@ -339,7 +339,7 @@ export default {
   padding: 18px;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-left: 3px solid var(--neon-violet);
+  border-left: 3px solid var(--entity-idea);
   border-radius: var(--radius-md);
   transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }

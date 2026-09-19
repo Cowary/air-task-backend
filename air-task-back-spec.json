@@ -2036,6 +2036,51 @@
           }
         }
       }
+    },
+    "/api/reminder/v1/occurrences": {
+      "get": {
+        "tags": [
+          "Reminder Management"
+        ],
+        "summary": "Get reminder occurrences",
+        "description": "Returns reminder occurrences inside the inclusive date range for the calendar.",
+        "operationId": "getOccurrences",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Occurrences successfully retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReminderOccurrenceResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3642,6 +3687,36 @@
             "format": "date",
             "description": "Date the action was performed; defaults to today",
             "example": "2026-09-19"
+          }
+        }
+      },
+      "ReminderOccurrenceResponse": {
+        "type": "object",
+        "description": "Response body containing a recurring reminder occurrence",
+        "properties": {
+          "reminderId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Заменить масло в машине"
+          },
+          "recurrenceType": {
+            "type": "string",
+            "enum": [
+              "INTERVAL",
+              "MONTHLY",
+              "ANNUAL",
+              "ONCE"
+            ],
+            "example": "MONTHLY"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-15"
           }
         }
       }

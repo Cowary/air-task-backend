@@ -479,19 +479,19 @@ export default {
   padding: 18px;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-left: 3px solid var(--neon-cyan);
+  border-left: 3px solid var(--entity-reminder);
   border-radius: var(--radius-md);
   transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .reminder-card.is-overdue {
-  border-left-color: var(--neon-red);
   border-color: color-mix(in srgb, var(--neon-red) 40%, var(--border-light));
+  border-left-color: var(--entity-reminder);
+  box-shadow: var(--glow-red);
 }
 
 .reminder-card.is-deleted {
   opacity: 0.55;
-  border-left-color: var(--accent-gray);
 }
 
 .reminder-name {

@@ -79,6 +79,14 @@
   --accent-purple-light: rgba(192, 132, 252, 0.18);
   --accent-gray: #94a3b8;
   --accent-gray-light: rgba(148, 163, 184, 0.20);
+
+  /* Цвета сущностей: рамка карточки и иконка вкладки = тип сущности (DESIGN.md §7) */
+  --entity-project: var(--neon-green);
+  --entity-task: var(--neon-cyan);
+  --entity-idea: var(--neon-violet);
+  --entity-reminder: var(--neon-amber);
+  --entity-weekly: var(--neon-magenta);
+
   --shadow-color: rgba(0, 0, 0, 0.55);
   --shadow-elevated: 0 18px 48px rgba(0, 0, 0, 0.65);
   --overlay-scrim: rgba(12, 17, 25, 0.78);
