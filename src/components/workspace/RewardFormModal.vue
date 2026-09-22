@@ -164,6 +164,42 @@ export default {
 </script>
 
 <style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+  z-index: 1100;
+  animation: screen-fade var(--transition-base);
+}
+
+.modal-content {
+  background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
+  padding: 30px;
+  border-radius: var(--radius-lg);
+  max-width: 520px;
+  width: 92%;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: auto;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
+}
+
+.modal-content h3 {
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
 .reward-form {
   display: flex;
   flex-direction: column;
