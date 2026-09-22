@@ -21,6 +21,11 @@ vi.mock('../../api/ideas.js', async (importOriginal) => {
   return { ...actual, getAllIdeas: vi.fn() };
 });
 
+vi.mock('../../store/wallet.js', () => ({
+  refreshWallet: vi.fn().mockResolvedValue(undefined),
+  useWallet: () => ({ balance: 0, totalEarned: 0, totalSpent: 0, isLoading: false })
+}));
+
 import { getAllProjects } from '../../api/projects.js';
 import { getTasks } from '../../api/tasks.js';
 import { getWeeklyTaskStatistics } from '../../api/weeklyTasks.js';
@@ -29,6 +34,7 @@ import WorkspacePage from '../WorkspacePage.vue';
 import ProjectsPanel from '../../components/workspace/ProjectsPanel.vue';
 import IdeasPanel from '../../components/workspace/IdeasPanel.vue';
 import RemindersPanel from '../../components/workspace/RemindersPanel.vue';
+import RewardsPanel from '../../components/workspace/RewardsPanel.vue';
 import CalendarPanel from '../../components/workspace/CalendarPanel.vue';
 import TaskListSection, { NO_PROJECT_FILTER } from '../../components/workspace/TaskListSection.vue';
 
@@ -142,7 +148,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('вкладка «Архив» содержит только выполненные задачи', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[6].trigger('click');
+    wrapper.findAll('.tab-btn')[7].trigger('click');
     await wrapper.vm.$nextTick();
 
     const section = wrapper.findComponent(TaskListSection);
@@ -152,7 +158,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('переключение вкладок не перезапрашивает задачи', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[6].trigger('click');
+    wrapper.findAll('.tab-btn')[7].trigger('click');
     wrapper.findAll('.tab-btn')[2].trigger('click');
     await wrapper.vm.$nextTick();
 
@@ -173,7 +179,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('вкладка «Архив» без дефолта фильтра и без сортировки', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[6].trigger('click');
+    wrapper.findAll('.tab-btn')[7].trigger('click');
     await wrapper.vm.$nextTick();
 
     const section = wrapper.findComponent(TaskListSection);
@@ -206,10 +212,19 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
     expect(wrapper.findComponent(RemindersPanel).exists()).toBe(true);
   });
 
-  it('вкладка «Календарь» рендерит панель календаря', async () => {
+  it('вкладка «Награды» рендерит панель наград', async () => {
     const wrapper = await mountPage();
 
     wrapper.findAll('.tab-btn')[5].trigger('click');
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findComponent(RewardsPanel).exists()).toBe(true);
+  });
+
+  it('вкладка «Календарь» рендерит панель календаря', async () => {
+    const wrapper = await mountPage();
+
+    wrapper.findAll('.tab-btn')[6].trigger('click');
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findComponent(CalendarPanel).exists()).toBe(true);

@@ -51,6 +51,8 @@ import {
   History,
   SkipForward,
   CalendarClock,
+  Coins,
+  Gift,
 } from 'lucide-vue-next'
 
 /**
@@ -115,7 +117,9 @@ const ICONS = {
   repeat: Repeat,
   history: History,
   'skip-forward': SkipForward,
-  'calendar-clock': CalendarClock
+  'calendar-clock': CalendarClock,
+  coins: Coins,
+  gift: Gift,
 }
 
 const IconComponent = computed(() => ICONS[props.name] || CircleAlert)
