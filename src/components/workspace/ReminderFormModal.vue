@@ -58,7 +58,7 @@
 
           <div class="form-group">
             <label for="reminderStartDate">{{ startDateLabel }}</label>
-            <input id="reminderStartDate" v-model="form.startDate" type="date" required />
+            <DateField id="reminderStartDate" v-model="form.startDate" required />
             <span class="form-hint">{{ startDateHint }}</span>
           </div>
 

@@ -16,10 +16,12 @@ import '@fontsource/jetbrains-mono/latin-700.css'
 import './style.css'
 import App from './App.vue'
 import AppIcon from './components/AppIcon.vue'
+import DateField from './components/DateField.vue'
 import router from './router'
 
 const app = createApp(App)
 
 app.component('AppIcon', AppIcon)
+app.component('DateField', DateField)
 app.use(router)
 app.mount('#app')
