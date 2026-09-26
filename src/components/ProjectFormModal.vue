@@ -80,7 +80,7 @@
           <div class="link-section">
             <div class="link-section-header">
               <span class="link-section-title"><AppIcon name="chart-column" :size="16" /> Еженедельные задачи</span>
-              <span class="link-count">{{ selectedWeeklyIds.length + newWeeklies.length }}</span>
+              <span class="link-count">{{ newWeeklies.length }}</span>
               <button type="button" @click="addWeeklyDraft" class="add-goal-btn">+ Добавить задачу</button>
             </div>
             <div v-if="newWeeklies.length > 0" class="draft-list">
@@ -121,38 +121,14 @@
                 </button>
               </div>
             </div>
-            <input
-              v-model.trim="weeklySearch"
-              type="text"
-              class="link-search"
-              placeholder="Поиск по названию..."
-            />
-            <div v-if="loadingWeekly" class="link-loading">Загрузка...</div>
-            <div v-else-if="filteredWeekly.length === 0" class="link-empty">Нет доступных задач</div>
-            <div v-else class="link-list">
-              <label
-                v-for="weekly in filteredWeekly"
-                :key="weekly.id"
-                class="link-item"
-              >
-                <input type="checkbox" :value="weekly.id" v-model="selectedWeeklyIds" />
-                <span class="link-item-name">{{ weekly.name }}</span>
-                <span class="link-item-meta">{{ weekly.count }} р/нед</span>
-                <span
-                  v-if="weekly.project?.name && weekly.project.name !== form.name"
-                  class="link-item-project"
-                >
-                  {{ weekly.project.name }}
-                </span>
-              </label>
-            </div>
+            <div v-else class="link-empty">Добавьте новые еженедельные задачи.</div>
           </div>
 
           <!-- Привязка задач -->
           <div class="link-section">
             <div class="link-section-header">
               <span class="link-section-title"><AppIcon name="list-checks" :size="16" /> Задачи</span>
-              <span class="link-count">{{ selectedTaskIds.length + newTasks.length }}</span>
+              <span class="link-count">{{ newTasks.length }}</span>
               <button type="button" @click="addTaskDraft" class="add-goal-btn">+ Добавить задачу</button>
             </div>
             <div v-if="newTasks.length > 0" class="draft-list">
@@ -181,30 +157,7 @@
                 </button>
               </div>
             </div>
-            <input
-              v-model.trim="taskSearch"
-              type="text"
-              class="link-search"
-              placeholder="Поиск по названию..."
-            />
-            <div v-if="loadingTasks" class="link-loading">Загрузка...</div>
-            <div v-else-if="filteredTasks.length === 0" class="link-empty">Нет доступных задач</div>
-            <div v-else class="link-list">
-              <label
-                v-for="task in filteredTasks"
-                :key="task.id"
-                class="link-item"
-              >
-                <input type="checkbox" :value="task.id" v-model="selectedTaskIds" />
-                <span class="link-item-name">{{ task.name }}</span>
-                <span
-                  v-if="task.project?.name && task.project.name !== form.name"
-                  class="link-item-project"
-                >
-                  {{ task.project.name }}
-                </span>
-              </label>
-            </div>
+            <div v-else class="link-empty">Добавьте новые задачи проекта.</div>
           </div>
 
           <div class="form-actions">
@@ -221,11 +174,9 @@
 
 <script>
 import { createProject, updateProject } from '../api/projects.js';
-import { getAllWeeklyTasks, createWeeklyTask } from '../api/weeklyTasks.js';
-import { getTasks, createTask } from '../api/tasks.js';
+import { createWeeklyTask } from '../api/weeklyTasks.js';
+import { createTask } from '../api/tasks.js';
 import { createGoal, updateGoal, deleteGoal } from '../api/goals.js';
-
-const WEEKLY_FILTER_STATUSES = ['IDEA', 'BACKLOG', 'IN_PROGRESS', 'PAUSED'];
 
 export default {
   name: 'ProjectFormModal',
@@ -255,14 +206,6 @@ export default {
         priority: 'MIDDLE',
         dueDate: ''
       },
-      weeklyOptions: [],
-      taskOptions: [],
-      selectedWeeklyIds: [],
-      selectedTaskIds: [],
-      weeklySearch: '',
-      taskSearch: '',
-      loadingWeekly: false,
-      loadingTasks: false,
       goals: [],
       initialGoals: [],
       goalKeyCounter: 0,
@@ -276,18 +219,6 @@ export default {
   computed: {
     isEdit() {
       return !!this.project;
-    },
-
-    filteredWeekly() {
-      if (!this.weeklySearch) return this.weeklyOptions;
-      const query = this.weeklySearch.toLowerCase();
-      return this.weeklyOptions.filter(w => w.name?.toLowerCase().includes(query));
-    },
-
-    filteredTasks() {
-      if (!this.taskSearch) return this.taskOptions;
-      const query = this.taskSearch.toLowerCase();
-      return this.taskOptions.filter(t => t.name?.toLowerCase().includes(query));
     }
   },
 
@@ -295,7 +226,6 @@ export default {
     visible(newVisible) {
       if (newVisible) {
         this.initForm();
-        this.loadOptions();
       }
     }
   },
@@ -309,8 +239,6 @@ export default {
           priority: this.project.priority || 'MIDDLE',
           dueDate: this.project.dueDate || ''
         };
-        this.selectedWeeklyIds = (this.project.weeklyList || []).map(w => w.id);
-        this.selectedTaskIds = (this.project.taskList || []).map(t => t.id);
         this.goals = (this.project.goalList || []).map(g => ({
           key: ++this.goalKeyCounter,
           id: g.id,
@@ -324,8 +252,6 @@ export default {
           priority: 'MIDDLE',
           dueDate: ''
         };
-        this.selectedWeeklyIds = [];
-        this.selectedTaskIds = [];
         this.goals = [];
       }
       this.initialGoals = this.goals.map(g => ({
@@ -335,8 +261,6 @@ export default {
       }));
       this.newWeeklies = [];
       this.newTasks = [];
-      this.weeklySearch = '';
-      this.taskSearch = '';
     },
 
     addWeeklyDraft() {
@@ -378,33 +302,6 @@ export default {
       this.goals.splice(index, 1);
     },
 
-    async loadOptions() {
-      this.loadingWeekly = true;
-      this.loadingTasks = true;
-
-      try {
-        const weeklyResponse = await getAllWeeklyTasks(WEEKLY_FILTER_STATUSES);
-        if (weeklyResponse.isSuccess) {
-          this.weeklyOptions = weeklyResponse.data || [];
-        }
-      } catch (err) {
-        console.error('Ошибка загрузки еженедельных задач:', err);
-      } finally {
-        this.loadingWeekly = false;
-      }
-
-      try {
-        const taskResponse = await getTasks(false);
-        if (taskResponse.isSuccess) {
-          this.taskOptions = taskResponse.data || [];
-        }
-      } catch (err) {
-        console.error('Ошибка загрузки задач:', err);
-      } finally {
-        this.loadingTasks = false;
-      }
-    },
-
     closeModal() {
       this.$emit('close');
     },
@@ -427,9 +324,7 @@ export default {
             name: this.form.name,
             status: this.form.status,
             priority: this.form.priority,
-            dueDate: this.form.dueDate || null,
-            weeklyIds: this.selectedWeeklyIds,
-            taskIds: this.selectedTaskIds
+            dueDate: this.form.dueDate || null
           });
         } else {
           response = await createProject(this.form);
@@ -454,10 +349,9 @@ export default {
           newTaskIds.push(...draftResult.taskIds);
           errors.push(...draftResult.errors);
 
-          const weeklyIds = [...this.selectedWeeklyIds, ...newWeeklyIds];
-          const taskIds = [...this.selectedTaskIds, ...newTaskIds];
-          const needLink = newWeeklyIds.length > 0 || newTaskIds.length > 0
-            || (!this.isEdit && (weeklyIds.length > 0 || taskIds.length > 0));
+          const weeklyIds = newWeeklyIds;
+          const taskIds = newTaskIds;
+          const needLink = newWeeklyIds.length > 0 || newTaskIds.length > 0;
 
           if (needLink) {
             response = await updateProject(projectId, {
@@ -744,78 +638,6 @@ export default {
   text-transform: uppercase;
 }
 
-.link-search {
-  padding: 8px 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-  font-size: 13px;
-  font-family: inherit;
-}
-
-.link-search:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-}
-
-.link-list {
-  max-height: 160px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.link-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text-primary);
-  transition: background-color 0.15s ease;
-}
-
-.link-item:hover {
-  background-color: var(--bg-tertiary);
-}
-
-.link-item input[type="checkbox"] {
-  accent-color: var(--accent-primary);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.link-item-name {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.link-item-meta {
-  font-size: 11px;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.link-item-project {
-  font-size: 11px;
-  color: var(--accent-primary);
-  background-color: var(--accent-gray-light);
-  padding: 2px 8px;
-  border-radius: 10px;
-  flex-shrink: 0;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.link-loading,
 .link-empty {
   font-size: 13px;
   color: var(--text-muted);
