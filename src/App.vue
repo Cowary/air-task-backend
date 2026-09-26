@@ -1,22 +1,29 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { Sun, Moon, LogOut } from 'lucide-vue-next'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { Sun, Moon, LogOut, Wallet } from 'lucide-vue-next'
 import { useAuth, logout } from './store/auth'
+import { useWallet, refreshWallet } from './store/wallet'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuth()
+const wallet = useWallet()
 
 function handleLogout() {
   logout()
   router.push('/login')
 }
 
+function openRewards() {
+  router.push({ path: '/workspace', query: { tab: 'rewards' } })
+}
+
 /**
  * Главный компонент приложения.
  *
  * Использует vue-router для навигации между страницами.
- * Здесь живёт только фиксированный HUD-хром: переключатель темы и выход.
+ * Здесь живёт только фиксированный HUD-хром: баланс монет, переключатель темы и выход.
  */
 
 // Тёмная киберпанк-тема — основная
@@ -41,12 +48,36 @@ onMounted(() => {
   const savedTheme = localStorage.getItem('theme')
   isDark.value = savedTheme !== 'light'
   applyTheme()
+  if (auth.isAuthenticated) {
+    refreshWallet()
+  }
 })
+
+watch(
+  () => route.fullPath,
+  () => {
+    if (auth.isAuthenticated) {
+      refreshWallet()
+    }
+  }
+)
 </script>
 
 <template>
   <div class="app-wrapper">
     <div class="hud-chrome">
+      <button
+        v-if="auth.isAuthenticated"
+        class="hud-btn hud-btn-balance"
+        type="button"
+        :title="`Монеты: ${wallet.balance ?? '—'} — открыть награды`"
+        :aria-label="`Монеты: ${wallet.balance ?? '—'} — открыть награды`"
+        @click="openRewards"
+      >
+        <Wallet :size="16" aria-hidden="true" />
+        <span class="hud-balance-value">{{ wallet.balance ?? '—' }}</span>
+      </button>
+
       <button
         v-if="auth.isAuthenticated"
         class="hud-btn hud-btn-logout"
@@ -145,6 +176,25 @@ body {
   color: var(--neon-red);
   border-color: var(--accent-red);
   box-shadow: var(--glow-red);
+}
+
+.hud-btn-balance {
+  color: var(--entity-rewards);
+  border-color: color-mix(in srgb, var(--entity-rewards) 45%, transparent);
+}
+
+.hud-btn-balance:hover {
+  color: var(--entity-rewards);
+  border-color: var(--entity-rewards);
+  box-shadow: var(--glow-rewards);
+}
+
+.hud-balance-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  min-width: 2ch;
+  text-align: right;
 }
 
 @media (max-width: 600px) {

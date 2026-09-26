@@ -5,6 +5,7 @@ import TasksPage from '../views/TasksPage.vue'
 import ProjectsPage from '../views/ProjectsPage.vue'
 import WorkspacePage from '../views/WorkspacePage.vue'
 import PurchasesPage from '../views/PurchasesPage.vue'
+import SettingsPage from '../views/SettingsPage.vue'
 import LoginPage from '../views/LoginPage.vue'
 import { initAuth, useAuth } from '../store/auth'
 
@@ -45,6 +46,11 @@ const routes = [
     path: '/purchases',
     name: 'purchases',
     component: PurchasesPage
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: SettingsPage
   }
 ]
 

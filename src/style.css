@@ -86,6 +86,9 @@
   --entity-idea: var(--neon-violet);
   --entity-reminder: var(--neon-amber);
   --entity-weekly: var(--neon-magenta);
+  --entity-rewards: #ffcc33;
+  --glow-rewards: 0 0 12px rgba(255, 204, 51, 0.35);
+  --accent-rewards-light: rgba(255, 204, 51, 0.16);
 
   --shadow-color: rgba(0, 0, 0, 0.55);
   --shadow-elevated: 0 18px 48px rgba(0, 0, 0, 0.65);
@@ -159,6 +162,10 @@
   --shadow-elevated: 0 18px 44px rgba(15, 23, 42, 0.16);
   --overlay-scrim: rgba(11, 18, 32, 0.5);
   --spinner-bg: rgba(11, 99, 118, 0.12);
+
+  --entity-rewards: #8a6a00;
+  --glow-rewards: 0 0 0 1px rgba(138, 106, 0, 0.3), 0 6px 18px rgba(138, 106, 0, 0.14);
+  --accent-rewards-light: rgba(138, 106, 0, 0.14);
 }
 
 /* ============================================================
