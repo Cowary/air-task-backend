@@ -196,11 +196,7 @@
 
             <div class="form-group">
               <label for="taskDueDate">Дата выполнения</label>
-              <input
-                id="taskDueDate"
-                v-model="taskForm.dueDate"
-                type="date"
-              />
+              <DateField id="taskDueDate" v-model="taskForm.dueDate" />
             </div>
 
             <div class="form-group">

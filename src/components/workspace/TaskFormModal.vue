@@ -59,11 +59,7 @@
 
           <div class="form-group">
             <label for="wsTaskDueDate">Дата выполнения</label>
-            <input
-              id="wsTaskDueDate"
-              v-model="form.dueDate"
-              type="date"
-            />
+            <DateField id="wsTaskDueDate" v-model="form.dueDate" />
           </div>
 
           <div class="form-group">
@@ -96,13 +92,15 @@
 <script>
 import { createTask, updateTask } from '../../api/tasks.js';
 import SubTasksEditor from '../SubTasksEditor.vue';
+import DateField from '../DateField.vue';
 import { normalize, toPayload, validate } from '../../utils/subtasks.js';
 
 export default {
   name: 'TaskFormModal',
 
   components: {
-    SubTasksEditor
+    SubTasksEditor,
+    DateField
   },
 
   props: {

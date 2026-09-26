@@ -37,11 +37,7 @@
 
             <div class="form-group">
               <label for="projectDueDate">Дата выполнения</label>
-              <input
-                id="projectDueDate"
-                v-model="form.dueDate"
-                type="date"
-              />
+              <DateField id="projectDueDate" v-model="form.dueDate" />
             </div>
           </div>
 
