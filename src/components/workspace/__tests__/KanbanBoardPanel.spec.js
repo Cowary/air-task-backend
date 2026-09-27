@@ -11,13 +11,20 @@ vi.mock('../../../api/reminders.js', async (importOriginal) => {
   return { ...actual, getAllReminders: vi.fn() };
 });
 
+vi.mock('../../../api/settings.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return { ...actual, getAppSettings: vi.fn(), updateAppSettings: vi.fn() };
+});
+
 import { getAllWeeklyTasks } from '../../../api/weeklyTasks.js';
 import { getAllReminders } from '../../../api/reminders.js';
+import { getAppSettings } from '../../../api/settings.js';
+import { resetSettings } from '../../../store/settings.js';
 import KanbanBoardPanel from '../KanbanBoardPanel.vue';
 
 const TODAY = '2026-09-23'; // среда
-const WEEK_START = '2026-09-21'; // понедельник
-const WEEK_END = '2026-09-27'; // воскресенье
+const WEEK_START = '2026-09-20'; // воскресенье
+const WEEK_END = '2026-09-26'; // суббота
 const MONTH_END = '2026-09-30';
 
 function task(id, dueDate, extra = {}) {
@@ -62,6 +69,8 @@ describe('KanbanBoardPanel — распределение по колонкам'
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date(`${TODAY}T12:00:00`));
+    resetSettings();
+    getAppSettings.mockResolvedValue({ isSuccess: true, data: { firstDayOfWeek: 'SUNDAY' } });
     getAllWeeklyTasks.mockResolvedValue({ isSuccess: true, data: [] });
     getAllReminders.mockResolvedValue({ isSuccess: true, data: [] });
   });
@@ -74,7 +83,7 @@ describe('KanbanBoardPanel — распределение по колонкам'
   it('показывает диапазон текущей недели «с … по …»', async () => {
     const wrapper = await mountPanel();
 
-    expect(wrapper.find('.week-range-dates').text()).toBe('с 21.09.2026 по 27.09.2026');
+    expect(wrapper.find('.week-range-dates').text()).toBe('с 20.09.2026 по 26.09.2026');
   });
 
   it('отображает колонки в заданном порядке', async () => {
@@ -119,6 +128,8 @@ describe('KanbanBoardPanel — типы карточек и цвета', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date(`${TODAY}T12:00:00`));
+    resetSettings();
+    getAppSettings.mockResolvedValue({ isSuccess: true, data: { firstDayOfWeek: 'SUNDAY' } });
     getAllWeeklyTasks.mockResolvedValue({ isSuccess: true, data: [] });
     getAllReminders.mockResolvedValue({ isSuccess: true, data: [] });
   });
@@ -188,6 +199,8 @@ describe('KanbanBoardPanel — взаимодействие', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date(`${TODAY}T12:00:00`));
+    resetSettings();
+    getAppSettings.mockResolvedValue({ isSuccess: true, data: { firstDayOfWeek: 'SUNDAY' } });
     getAllWeeklyTasks.mockResolvedValue({ isSuccess: true, data: [] });
     getAllReminders.mockResolvedValue({ isSuccess: true, data: [] });
   });

@@ -76,6 +76,29 @@
           </div>
         </form>
       </section>
+
+      <section class="settings-section settings-section--display">
+        <h2 class="section-title">
+          <AppIcon name="calendar-days" :size="16" aria-hidden="true" />
+          Отображение
+        </h2>
+        <p class="section-hint">
+          С какого дня начинается неделя в weekly-статистике, на канбан-доске и в календаре.
+        </p>
+        <div class="display-row">
+          <label for="firstDayOfWeek">Первый день недели</label>
+          <select id="firstDayOfWeek" v-model="form.firstDayOfWeek" class="filter-select">
+            <option value="SUNDAY">Воскресенье</option>
+            <option value="MONDAY">Понедельник</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <span v-if="savedDisplayMessage" class="saved-message">{{ savedDisplayMessage }}</span>
+          <button type="button" class="save-btn" :disabled="savingDisplay" @click="saveDisplay">
+            {{ savingDisplay ? 'Сохранение...' : 'Сохранить' }}
+          </button>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -83,6 +106,7 @@
 <script>
 import AppIcon from '../components/AppIcon.vue';
 import { getGamificationSettings, updateGamificationSettings } from '../api/gamification.js';
+import { useSettings, loadSettings, saveFirstDayOfWeek } from '../store/settings.js';
 
 export default {
   name: 'SettingsPage',
@@ -96,7 +120,10 @@ export default {
       loading: true,
       saving: false,
       savedMessage: null,
+      savingDisplay: false,
+      savedDisplayMessage: null,
       form: {
+        firstDayOfWeek: 'SUNDAY',
         taskRewardHigh: 10,
         taskRewardMiddle: 5,
         taskRewardLow: 2,
@@ -113,9 +140,12 @@ export default {
     async load() {
       this.loading = true;
       try {
+        await loadSettings();
+        const settings = useSettings();
         const response = await getGamificationSettings();
         if (response.isSuccess && response.data) {
           this.form = {
+            firstDayOfWeek: settings.firstDayOfWeek,
             taskRewardHigh: response.data.taskRewardHigh ?? 10,
             taskRewardMiddle: response.data.taskRewardMiddle ?? 5,
             taskRewardLow: response.data.taskRewardLow ?? 2,
@@ -154,6 +184,27 @@ export default {
         console.error('Ошибка сохранения настроек:', error);
       } finally {
         this.saving = false;
+      }
+    },
+
+    async saveDisplay() {
+      this.savingDisplay = true;
+      this.savedDisplayMessage = null;
+      try {
+        const response = await saveFirstDayOfWeek(this.form.firstDayOfWeek);
+        if (response.isSuccess) {
+          this.savedDisplayMessage = 'Сохранено';
+          setTimeout(() => {
+            this.savedDisplayMessage = null;
+          }, 2500);
+        } else {
+          alert(response.errorMessage || 'Не удалось сохранить настройки');
+        }
+      } catch (error) {
+        alert('Ошибка при сохранении настроек');
+        console.error('Ошибка сохранения настроек отображения:', error);
+      } finally {
+        this.savingDisplay = false;
       }
     }
   },
@@ -346,5 +397,44 @@ export default {
   font-size: 13px;
   color: var(--text-muted);
   text-align: center;
+}
+
+.settings-section--display {
+  margin-top: 18px;
+  border-left-color: var(--neon-cyan);
+}
+
+.settings-section--display .section-title :deep(svg) {
+  color: var(--neon-cyan);
+}
+
+.display-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.display-row label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.filter-select {
+  width: 100%;
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.filter-select:focus {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 1px;
 }
 </style>

@@ -68,6 +68,13 @@ Timezone helpers live in `src/utils/timezone.js`.
 - Frontend versions are independent of the backend's (frontend is 1.x, backend is 2.x) — track only this repo's branch.
 - Version-bump commits are standalone with message `ver X.Y.Z` (see `git log`).
 
+## Application Settings
+
+- `src/store/settings.js` keeps reactive `firstDayOfWeek` (default `SUNDAY`), loaded via `loadSettings()` from `GET /api/settings/v1`; `saveFirstDayOfWeek()` persists it via `PUT`.
+- `src/utils/week.js` derives week start/end and weekday labels from it (`startOfWeek`, `weekRange`, `weekdayLabels`, `firstDayIndex`).
+- Consumers: the `/workspace` Kanban board and calendar, plus the settings screen (`SettingsPage.vue`, section «Отображение»). Weekly statistics are bounded server-side by the same persisted setting.
+- Accepted values: `SUNDAY` and `MONDAY` only.
+
 ## Conventions
 
 - CSS custom properties are defined in `src/style.css`; dark mode is activated by `data-theme="dark"` on `<html>`.

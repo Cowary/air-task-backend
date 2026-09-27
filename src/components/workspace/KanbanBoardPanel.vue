@@ -106,6 +106,8 @@
 <script>
 import { getAllWeeklyTasks } from '../../api/weeklyTasks.js';
 import { getAllReminders } from '../../api/reminders.js';
+import { useSettings, loadSettings } from '../../store/settings.js';
+import { isoOf, weekRange } from '../../utils/week.js';
 import TaskFormModal from './TaskFormModal.vue';
 import WeeklyTaskFormModal from './WeeklyTaskFormModal.vue';
 import ReminderFormModal from './ReminderFormModal.vue';
@@ -157,23 +159,25 @@ export default {
   },
 
   computed: {
+    firstDayOfWeek() {
+      return useSettings().firstDayOfWeek;
+    },
+
     today() {
-      return this.isoOf(new Date());
+      return isoOf(new Date());
     },
 
     weekStart() {
-      return this.isoOf(this.mondayOf(new Date()));
+      return weekRange(new Date(), this.firstDayOfWeek).start;
     },
 
     weekEnd() {
-      const monday = this.mondayOf(new Date());
-      monday.setDate(monday.getDate() + 6);
-      return this.isoOf(monday);
+      return weekRange(new Date(), this.firstDayOfWeek).end;
     },
 
     monthEnd() {
       const now = new Date();
-      return this.isoOf(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+      return isoOf(new Date(now.getFullYear(), now.getMonth() + 1, 0));
     },
 
     allCards() {
@@ -242,19 +246,6 @@ export default {
   },
 
   methods: {
-    isoOf(date) {
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${date.getFullYear()}-${month}-${day}`;
-    },
-
-    mondayOf(date) {
-      const copy = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      const shift = (copy.getDay() + 6) % 7;
-      copy.setDate(copy.getDate() - shift);
-      return copy;
-    },
-
     columnFor(dateStr) {
       if (!dateStr) return null;
       const key = String(dateStr).split('T')[0];
@@ -364,6 +355,7 @@ export default {
   },
 
   mounted() {
+    loadSettings();
     this.loadOwn();
   }
 };

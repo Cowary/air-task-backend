@@ -98,8 +98,9 @@
 import { getAllProjects, ACTIVE_PROJECT_STATUSES } from '../../api/projects.js';
 import { getTasks } from '../../api/tasks.js';
 import { getReminderOccurrences } from '../../api/reminders.js';
+import { useSettings, loadSettings } from '../../store/settings.js';
+import { weekdayLabels, firstDayIndex } from '../../utils/week.js';
 
-const WEEK_DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const MONTH_NAMES = [
   'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
   'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
@@ -125,7 +126,6 @@ export default {
   data() {
     const today = new Date();
     return {
-      weekDays: WEEK_DAYS,
       filterOptions: [
         { type: 'project', label: 'Проекты' },
         { type: 'task', label: 'Задачи' },
@@ -143,6 +143,14 @@ export default {
   },
 
   computed: {
+    firstDayOfWeek() {
+      return useSettings().firstDayOfWeek;
+    },
+
+    weekDays() {
+      return weekdayLabels(this.firstDayOfWeek);
+    },
+
     monthLabel() {
       return `${MONTH_NAMES[this.cursor.getMonth()]} ${this.cursor.getFullYear()}`;
     },
@@ -151,7 +159,7 @@ export default {
       const year = this.cursor.getFullYear();
       const month = this.cursor.getMonth();
       const first = new Date(year, month, 1);
-      const offset = (first.getDay() + 6) % 7;
+      const offset = (first.getDay() - firstDayIndex(this.firstDayOfWeek) + 7) % 7;
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       const cells = [];
       for (let i = 0; i < offset; i++) cells.push(null);
@@ -305,6 +313,7 @@ export default {
   },
 
   mounted() {
+    loadSettings();
     this.loadMonth();
   }
 };
