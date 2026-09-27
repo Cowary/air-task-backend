@@ -32,6 +32,7 @@ import { getWeeklyTaskStatistics } from '../../api/weeklyTasks.js';
 import { getAllIdeas } from '../../api/ideas.js';
 import WorkspacePage from '../WorkspacePage.vue';
 import ProjectsPanel from '../../components/workspace/ProjectsPanel.vue';
+import KanbanBoardPanel from '../../components/workspace/KanbanBoardPanel.vue';
 import IdeasPanel from '../../components/workspace/IdeasPanel.vue';
 import RemindersPanel from '../../components/workspace/RemindersPanel.vue';
 import RewardsPanel from '../../components/workspace/RewardsPanel.vue';
@@ -52,6 +53,7 @@ async function mountPage() {
         RouterLink: { template: '<a><slot /></a>' },
         ProjectsPanel: true,
         WeekPanel: true,
+        KanbanBoardPanel: true,
         IdeasPanel: true,
         RemindersPanel: true,
         CalendarPanel: true,
@@ -114,7 +116,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('на вкладке «Все задачи» по умолчанию показаны только невыполненные', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[2].trigger('click');
+    wrapper.findAll('.tab-btn')[3].trigger('click');
     await wrapper.vm.$nextTick();
 
     const section = wrapper.findComponent(TaskListSection);
@@ -124,7 +126,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('переключатель «Выполненные» оставляет только isComplete: true', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[2].trigger('click');
+    wrapper.findAll('.tab-btn')[3].trigger('click');
     await wrapper.vm.$nextTick();
     wrapper.findAll('.completion-btn')[1].trigger('click');
     await wrapper.vm.$nextTick();
@@ -136,7 +138,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('переключатель «Все» не фильтрует по выполнению', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[2].trigger('click');
+    wrapper.findAll('.tab-btn')[3].trigger('click');
     await wrapper.vm.$nextTick();
     wrapper.findAll('.completion-btn')[2].trigger('click');
     await wrapper.vm.$nextTick();
@@ -148,7 +150,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('вкладка «Архив» содержит только выполненные задачи', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[7].trigger('click');
+    wrapper.findAll('.tab-btn')[8].trigger('click');
     await wrapper.vm.$nextTick();
 
     const section = wrapper.findComponent(TaskListSection);
@@ -158,8 +160,8 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('переключение вкладок не перезапрашивает задачи', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[7].trigger('click');
-    wrapper.findAll('.tab-btn')[2].trigger('click');
+    wrapper.findAll('.tab-btn')[8].trigger('click');
+    wrapper.findAll('.tab-btn')[3].trigger('click');
     await wrapper.vm.$nextTick();
 
     expect(getTasks).toHaveBeenCalledTimes(1);
@@ -168,7 +170,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('вкладка «Все задачи» получает дефолт «Без проекта» и сортировку', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[2].trigger('click');
+    wrapper.findAll('.tab-btn')[3].trigger('click');
     await wrapper.vm.$nextTick();
 
     const section = wrapper.findComponent(TaskListSection);
@@ -179,7 +181,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('вкладка «Архив» без дефолта фильтра и без сортировки', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[7].trigger('click');
+    wrapper.findAll('.tab-btn')[8].trigger('click');
     await wrapper.vm.$nextTick();
 
     const section = wrapper.findComponent(TaskListSection);
@@ -196,7 +198,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
 
     expect(getAllIdeas).toHaveBeenCalledTimes(1);
 
-    wrapper.findAll('.tab-btn')[3].trigger('click');
+    wrapper.findAll('.tab-btn')[4].trigger('click');
     await wrapper.vm.$nextTick();
 
     const panel = wrapper.findComponent(IdeasPanel);
@@ -206,7 +208,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('вкладка «Напоминания» рендерит панель напоминаний', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[4].trigger('click');
+    wrapper.findAll('.tab-btn')[5].trigger('click');
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findComponent(RemindersPanel).exists()).toBe(true);
@@ -215,7 +217,7 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('вкладка «Награды» рендерит панель наград', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[5].trigger('click');
+    wrapper.findAll('.tab-btn')[6].trigger('click');
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findComponent(RewardsPanel).exists()).toBe(true);
@@ -224,9 +226,18 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
   it('вкладка «Календарь» рендерит панель календаря', async () => {
     const wrapper = await mountPage();
 
-    wrapper.findAll('.tab-btn')[6].trigger('click');
+    wrapper.findAll('.tab-btn')[7].trigger('click');
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findComponent(CalendarPanel).exists()).toBe(true);
+  });
+
+  it('вкладка «Канбан» рендерит доску', async () => {
+    const wrapper = await mountPage();
+
+    wrapper.findAll('.tab-btn')[2].trigger('click');
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findComponent(KanbanBoardPanel).exists()).toBe(true);
   });
 });

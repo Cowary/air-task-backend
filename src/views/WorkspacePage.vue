@@ -56,6 +56,16 @@
           <span>Неделя</span>
         </button>
         <button
+          class="tab-btn tab-kanban"
+          :class="{ active: activeTab === 'kanban' }"
+          role="tab"
+          :aria-selected="activeTab === 'kanban'"
+          @click="activeTab = 'kanban'"
+        >
+          <SquareKanban :size="16" aria-hidden="true" />
+          <span>Канбан</span>
+        </button>
+        <button
           class="tab-btn tab-task"
           :class="{ active: activeTab === 'tasks' }"
           role="tab"
@@ -137,6 +147,14 @@
       <WeekPanel
         v-else-if="activeTab === 'week'"
         :statistics="statistics"
+        @changed="refresh"
+      />
+
+      <!-- Канбан-доска -->
+      <KanbanBoardPanel
+        v-else-if="activeTab === 'kanban'"
+        :projects="projects"
+        :tasks="tasks"
         @changed="refresh"
       />
 
@@ -229,7 +247,8 @@ import {
   Repeat,
   CalendarRange,
   TriangleAlert,
-  Wallet
+  Wallet,
+  SquareKanban
 } from 'lucide-vue-next';
 import { getAllProjects, ACTIVE_PROJECT_STATUSES } from '../api/projects.js';
 import { getTasks } from '../api/tasks.js';
@@ -242,6 +261,7 @@ import IdeasPanel from '../components/workspace/IdeasPanel.vue';
 import RemindersPanel from '../components/workspace/RemindersPanel.vue';
 import RewardsPanel from '../components/workspace/RewardsPanel.vue';
 import CalendarPanel from '../components/workspace/CalendarPanel.vue';
+import KanbanBoardPanel from '../components/workspace/KanbanBoardPanel.vue';
 import TaskListSection, { NO_PROJECT_FILTER } from '../components/workspace/TaskListSection.vue';
 
 export default {
@@ -265,6 +285,7 @@ export default {
     RemindersPanel,
     RewardsPanel,
     CalendarPanel,
+    KanbanBoardPanel,
     TaskListSection
   },
 
@@ -420,7 +441,7 @@ export default {
 
   mounted() {
     const requestedTab = this.$route?.query?.tab;
-    const knownTabs = ['projects', 'week', 'tasks', 'ideas', 'reminders', 'rewards', 'calendar', 'archive'];
+    const knownTabs = ['projects', 'week', 'tasks', 'kanban', 'ideas', 'reminders', 'rewards', 'calendar', 'archive'];
     if (typeof requestedTab === 'string' && knownTabs.includes(requestedTab)) {
       this.activeTab = requestedTab;
     }
@@ -602,6 +623,7 @@ h1 {
 /* Иконка вкладки = цвет сущности (DESIGN.md §7) */
 .tab-project :deep(svg) { color: var(--entity-project); }
 .tab-week :deep(svg) { color: var(--entity-weekly); }
+.tab-kanban :deep(svg) { color: var(--neon-cyan); }
 .tab-task :deep(svg) { color: var(--entity-task); }
 .tab-idea :deep(svg) { color: var(--entity-idea); }
 .tab-reminder :deep(svg) { color: var(--entity-reminder); }

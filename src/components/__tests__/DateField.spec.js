@@ -48,6 +48,16 @@ describe('DateField', () => {
     expect(wrapper.find('.date-field-input').element.value).toBe('');
   });
 
+  it('передаёт max в нативный date-инпут', () => {
+    const wrapper = mountField({ max: '2026-10-10' });
+    expect(wrapper.find('.date-field-native').attributes('max')).toBe('2026-10-10');
+  });
+
+  it('без max нативный date-инпут без ограничения', () => {
+    const wrapper = mountField();
+    expect(wrapper.find('.date-field-native').attributes('max')).toBeUndefined();
+  });
+
   it('невалидное значение при blur откатывается к последнему валидному', async () => {
     const wrapper = mountField({ modelValue: '2026-10-05' });
     const input = wrapper.find('.date-field-input');
