@@ -59,7 +59,10 @@
 
           <div class="form-group">
             <label for="wsTaskDueDate">Дата выполнения</label>
-            <DateField id="wsTaskDueDate" v-model="form.dueDate" />
+            <DateField id="wsTaskDueDate" v-model="form.dueDate" :max="selectedProjectDueDate" />
+            <span v-if="selectedProjectDueDate" class="form-hint">
+              Не позже даты окончания проекта: {{ formatDateOnly(selectedProjectDueDate) }}
+            </span>
           </div>
 
           <div class="form-group">
@@ -158,6 +161,12 @@ export default {
 
     resolvedProjectName() {
       return this.isCustomProject ? this.form.customProjectName : this.form.projectName;
+    },
+
+    selectedProjectDueDate() {
+      if (this.isCustomProject) return '';
+      const project = this.projects.find(p => p.name === this.form.projectName);
+      return project?.dueDate || '';
     }
   },
 
@@ -177,6 +186,13 @@ export default {
     noProjectName() {
       const project = this.projects.find(p => p.name === 'Без проекта');
       return project ? project.name : '';
+    },
+
+    formatDateOnly(dateString) {
+      if (!dateString) return '';
+      const [year, month, day] = String(dateString).split('T')[0].split('-');
+      if (!year || !month || !day) return dateString;
+      return `${day}.${month}.${year}`;
     },
 
     initForm() {
@@ -249,6 +265,13 @@ this.form = {
     async handleSave() {
       if (!this.form.name || !this.resolvedProjectName) {
         alert('Пожалуйста, заполните все обязательные поля');
+        return;
+      }
+
+      if (this.form.dueDate && this.selectedProjectDueDate
+          && this.form.dueDate > this.selectedProjectDueDate) {
+        alert('Дата задачи не может быть позже даты окончания проекта: '
+          + this.formatDateOnly(this.selectedProjectDueDate));
         return;
       }
 

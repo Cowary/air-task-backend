@@ -42,6 +42,7 @@
       tabindex="-1"
       aria-hidden="true"
       :value="modelValue || ''"
+      :max="max || undefined"
       :disabled="disabled"
       @change="onNativeChange"
     />
@@ -81,6 +82,10 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    max: {
+      type: String,
+      default: ''
     }
   },
 

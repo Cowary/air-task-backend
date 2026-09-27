@@ -64,6 +64,10 @@
   {
    "name": "Purchase category Management",
    "description": "API for managing purchases category"
+  },
+  {
+   "name": "Settings",
+   "description": "API for application display settings"
   }
  ],
  "paths": {
@@ -2581,6 +2585,77 @@
      }
     }
    }
+  },
+  "/api/settings/v1": {
+   "get": {
+    "tags": [
+     "Settings"
+    ],
+    "summary": "Get application settings",
+    "description": "Returns application display settings, including the first day of the week.",
+    "operationId": "getSettings",
+    "responses": {
+     "200": {
+      "description": "Settings successfully retrieved",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiRsAppSettingsResponse"
+        },
+        "example": {
+         "firstDayOfWeek": "SUNDAY"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "Settings"
+    ],
+    "summary": "Update application settings",
+    "description": "Updates application display settings; firstDayOfWeek accepts SUNDAY or MONDAY.",
+    "operationId": "updateSettings",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AppSettingsUpdateRequest"
+       },
+       "example": {
+        "firstDayOfWeek": "MONDAY"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Settings successfully updated",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiRsAppSettingsResponse"
+        },
+        "example": {
+         "firstDayOfWeek": "MONDAY"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid request — validation failed",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiRs"
+        }
+       }
+      }
+     }
+    }
+   }
   }
  },
  "components": {
@@ -4682,6 +4757,74 @@
      },
      "data": {
       "$ref": "#/components/schemas/RewardResponse"
+     }
+    }
+   },
+   "AppSettingsResponse": {
+    "type": "object",
+    "description": "Response body containing application display settings",
+    "properties": {
+     "firstDayOfWeek": {
+      "type": "string",
+      "description": "First day of the week",
+      "enum": [
+       "MONDAY",
+       "TUESDAY",
+       "WEDNESDAY",
+       "THURSDAY",
+       "FRIDAY",
+       "SATURDAY",
+       "SUNDAY"
+      ],
+      "example": "SUNDAY"
+     }
+    }
+   },
+   "AppSettingsUpdateRequest": {
+    "type": "object",
+    "description": "Request body for updating application display settings",
+    "properties": {
+     "firstDayOfWeek": {
+      "type": "string",
+      "description": "First day of the week; only SUNDAY or MONDAY",
+      "enum": [
+       "MONDAY",
+       "TUESDAY",
+       "WEDNESDAY",
+       "THURSDAY",
+       "FRIDAY",
+       "SATURDAY",
+       "SUNDAY"
+      ],
+      "example": "SUNDAY"
+     }
+    },
+    "required": [
+     "firstDayOfWeek"
+    ]
+   },
+   "ApiRsAppSettingsResponse": {
+    "type": "object",
+    "properties": {
+     "isSuccess": {
+      "type": "boolean"
+     },
+     "errorMessage": {
+      "type": "string"
+     },
+     "errorType": {
+      "type": "string",
+      "enum": [
+       "VALIDATION_ERROR",
+       "BAD_REQUEST",
+       "NOT_FOUND",
+       "DATA_INTEGRITY_ERROR",
+       "ACCESS_DENIED",
+       "INTERNAL_ERROR"
+      ]
+     },
+     "data": {
+      "$ref": "#/components/schemas/AppSettingsResponse"
      }
     }
    }
