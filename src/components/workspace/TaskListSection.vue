@@ -143,7 +143,6 @@ import { progress } from '../../utils/subtasks.js';
 import { deleteTask, toggleTask } from '../../api/tasks.js';
 
 export const NO_PROJECT_FILTER = '__no_project__';
-const NO_PROJECT_NAME = 'Без проекта';
 
 const PRIORITY_RANK = {
   HIGH: 0,
@@ -227,7 +226,7 @@ export default {
     uniqueProjects() {
       const names = new Set();
       this.tasks.forEach(task => {
-        if (task.project?.name && task.project.name !== NO_PROJECT_NAME) {
+        if (task.project?.name) {
           names.add(task.project.name);
         }
       });
@@ -251,8 +250,7 @@ export default {
       return this.tasksWithOverrides.filter(task => {
         if (this.showFilters) {
           if (this.filterProject === NO_PROJECT_FILTER) {
-            const name = task.project?.name;
-            if (name && name !== NO_PROJECT_NAME) {
+            if (task.project?.name) {
               return false;
             }
           } else if (this.filterProject && task.project?.name !== this.filterProject) {

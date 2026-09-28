@@ -90,7 +90,7 @@ describe('KanbanBoardPanel — распределение по колонкам'
     const wrapper = await mountPanel();
     const titles = wrapper.findAll('.column-title').map(node => node.text());
 
-    expect(titles).toEqual(['Просрочено', 'Сегодня', 'На этой неделе', 'В этом месяце']);
+    expect(titles).toEqual(['Просрочено', 'Сегодня', 'Завтра', 'На этой неделе', 'В этом месяце']);
   });
 
   it('раскладывает задачи по колонкам по дате', async () => {
@@ -98,15 +98,37 @@ describe('KanbanBoardPanel — распределение по колонкам'
       tasks: [
         task(1, '2026-09-20'), // просрочено
         task(2, TODAY), // сегодня
-        task(3, '2026-09-25'), // эта неделя
-        task(4, '2026-09-29') // этот месяц
+        task(3, '2026-09-24'), // завтра
+        task(4, '2026-09-25'), // эта неделя
+        task(5, '2026-09-29') // этот месяц
       ]
     });
 
     expect(titlesInColumn(wrapper, 'overdue')).toEqual(['Задача 1']);
     expect(titlesInColumn(wrapper, 'today')).toEqual(['Задача 2']);
-    expect(titlesInColumn(wrapper, 'week')).toEqual(['Задача 3']);
-    expect(titlesInColumn(wrapper, 'month')).toEqual(['Задача 4']);
+    expect(titlesInColumn(wrapper, 'tomorrow')).toEqual(['Задача 3']);
+    expect(titlesInColumn(wrapper, 'week')).toEqual(['Задача 4']);
+    expect(titlesInColumn(wrapper, 'month')).toEqual(['Задача 5']);
+  });
+
+  it('задача на завтра не попадает в колонку «На этой неделе»', async () => {
+    const wrapper = await mountPanel({ tasks: [task(1, '2026-09-24')] });
+
+    expect(titlesInColumn(wrapper, 'tomorrow')).toEqual(['Задача 1']);
+    expect(titlesInColumn(wrapper, 'week')).toEqual([]);
+  });
+
+  it('weekly-задача остаётся в «На этой неделе», даже если конец недели — завтра', async () => {
+    vi.setSystemTime(new Date('2026-09-25T12:00:00')); // пятница, weekEnd = суббота 26.09
+    getAllWeeklyTasks.mockResolvedValue({
+      isSuccess: true,
+      data: [{ id: 7, name: 'Обзор недели', count: 1, project: { name: 'Проект А' }, priority: 'MIDDLE', status: 'IN_PROGRESS' }]
+    });
+
+    const wrapper = await mountPanel();
+
+    expect(titlesInColumn(wrapper, 'week')).toEqual(['Обзор недели']);
+    expect(titlesInColumn(wrapper, 'tomorrow')).toEqual([]);
   });
 
   it('не показывает задачи за пределами текущего месяца', async () => {
@@ -143,8 +165,8 @@ describe('KanbanBoardPanel — типы карточек и цвета', () => {
     const wrapper = await mountPanel({
       tasks: [
         task(1, TODAY, { project: { name: 'Проект А' } }),
-        task(2, TODAY, { project: { name: 'Без проекта' } }),
-        task(3, TODAY, { project: null })
+        task(2, TODAY, { project: null }),
+        task(3, TODAY, { project: undefined })
       ]
     });
 

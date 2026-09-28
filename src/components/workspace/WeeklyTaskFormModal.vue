@@ -51,13 +51,12 @@
           </div>
 
           <div class="form-group">
-            <label for="wsWeeklyProject">Проект *</label>
+            <label for="wsWeeklyProject">Проект</label>
             <select
               id="wsWeeklyProject"
               v-model="form.projectName"
-              required
             >
-              <option value="" disabled>Выберите проект</option>
+              <option value="">Без проекта</option>
               <option
                 v-for="project in projects"
                 :key="project.id"
@@ -76,7 +75,7 @@
               required
               placeholder="Введите название проекта"
             />
-            <span class="form-hint">Еженедельные задачи всегда относятся к проекту; по умолчанию — «Без проекта».</span>
+            <span class="form-hint">Оставьте пустым, чтобы задача была без проекта.</span>
           </div>
 
           <div class="form-actions">
@@ -159,14 +158,22 @@ export default {
       return this.projects.map(p => p.name);
     },
 
-    noProjectName() {
-      const project = this.projects.find(p => p.name === 'Без проекта');
-      return project ? project.name : '';
-    },
-
     initForm() {
       if (this.task) {
         const projectName = this.task.project?.name || '';
+
+        if (!projectName) {
+          this.form = {
+            name: this.task.name || '',
+            count: this.task.count || 1,
+            projectName: '',
+            customProjectName: '',
+            priority: this.task.priority || 'MIDDLE',
+            status: this.task.status || 'IN_PROGRESS'
+          };
+          return;
+        }
+
         const known = this.projectNames().includes(projectName);
 
         this.form = {
@@ -183,25 +190,11 @@ export default {
       const defaultName = this.defaultProjectName;
       const known = defaultName && this.projectNames().includes(defaultName);
 
-      if (known) {
-        this.form = {
-          name: '',
-          count: 1,
-          projectName: defaultName,
-          customProjectName: '',
-          priority: 'MIDDLE',
-          status: 'IN_PROGRESS'
-        };
-        return;
-      }
-
-      const fallbackDefault = this.noProjectName();
-
       this.form = {
         name: '',
         count: 1,
-        projectName: fallbackDefault || (this.projects.length > 0 ? this.projects[0].name : '__custom__'),
-        customProjectName: fallbackDefault || this.projects.length > 0 ? '' : defaultName,
+        projectName: known ? defaultName : (defaultName ? '__custom__' : ''),
+        customProjectName: defaultName && !known ? defaultName : '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS'
       };
@@ -212,7 +205,7 @@ export default {
     },
 
     async handleSave() {
-      if (!this.form.name || !this.form.count || !this.resolvedProjectName) {
+      if (!this.form.name || !this.form.count) {
         alert('Пожалуйста, заполните все обязательные поля');
         return;
       }

@@ -160,7 +160,7 @@ describe('TaskListSection — удаление статусов из UI', () => 
 describe('TaskListSection — фильтр «Без проекта»', () => {
   const noProjectTasks = [
     task(1, false, { project: { name: 'Проект Б' } }),
-    task(2, false, { project: { name: 'Без проекта' } }),
+    task(2, false, { project: { name: 'Проект В' } }),
     task(3, false, { project: null }),
     task(4, false, { project: undefined })
   ];
@@ -185,12 +185,12 @@ describe('TaskListSection — фильтр «Без проекта»', () => {
     expect(wrapper.find('select[title="Проект"]').element.value).toBe(NO_PROJECT_FILTER);
   });
 
-  it('фильтр «Без проекта» оставляет задачи с проектом «Без проекта» и без проекта', async () => {
+  it('фильтр «Без проекта» оставляет только задачи без проекта', async () => {
     const wrapper = mountSection(noProjectTasks, { showFilters: true });
 
     await wrapper.find('select[title="Проект"]').setValue(NO_PROJECT_FILTER);
 
-    expect(visibleNames(wrapper)).toEqual(['Задача 2', 'Задача 3', 'Задача 4']);
+    expect(visibleNames(wrapper)).toEqual(['Задача 3', 'Задача 4']);
   });
 
   it('«Без проекта» не дублируется в списке проектов, а «Все проекты» остаются', () => {
@@ -201,6 +201,7 @@ describe('TaskListSection — фильтр «Без проекта»', () => {
     expect(texts.filter(t => t === 'Без проекта')).toHaveLength(1);
     expect(texts).toContain('Все проекты');
     expect(texts).toContain('Проект Б');
+    expect(texts).toContain('Проект В');
   });
 });
 

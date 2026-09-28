@@ -151,15 +151,14 @@
             </div>
 
             <div class="form-group">
-              <label for="taskProject">Проект *</label>
+              <label for="taskProject">Проект</label>
               <div class="project-select-wrapper">
                 <select
                   id="taskProject"
                   v-model="taskForm.projectName"
-                  required
-                  :disabled="loadingProjects || projects.length === 0"
+                  :disabled="loadingProjects"
                 >
-                  <option value="" disabled v-if="!taskForm.projectName && loadingProjects">Загрузка проектов...</option>
+                  <option value="">Без проекта</option>
                   <option
                     v-for="project in projects"
                     :key="project.id"
@@ -178,7 +177,7 @@
                 </button>
               </div>
               <span v-if="loadingProjects" class="form-hint">Загрузка проектов...</span>
-              <span v-else-if="projects.length === 0" class="form-hint">Нет доступных проектов. Создайте первый проект!</span>
+              <span v-else-if="projects.length === 0" class="form-hint">Проектов нет — задача будет без проекта.</span>
             </div>
 
             <div class="form-group">
@@ -426,7 +425,7 @@ export default {
       this.editingTask = null;
       this.taskForm = {
         name: '',
-        projectName: this.projects.length > 0 ? this.projects[0].name : '',
+        projectName: '',
         priority: 'MIDDLE',
         description: '',
         dueDate: '',
@@ -454,7 +453,7 @@ export default {
       this.editingTask = null;
       this.taskForm = {
         name: '',
-        projectName: this.projects.length > 0 ? this.projects[0].name : '',
+        projectName: '',
         priority: 'MIDDLE',
         description: '',
         dueDate: '',
@@ -463,7 +462,7 @@ export default {
     },
 
     async saveTask() {
-      if (!this.taskForm.name || !this.taskForm.projectName) {
+      if (!this.taskForm.name) {
         alert('Пожалуйста, заполните все обязательные поля');
         return;
       }

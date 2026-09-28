@@ -84,3 +84,34 @@ describe('TaskFormModal — ограничение даты датой прое�
     expect(createTask.mock.calls[0][0].dueDate).toBe('2030-12-31');
   });
 });
+
+describe('TaskFormModal — задача без проекта', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubGlobal('alert', vi.fn());
+    createTask.mockResolvedValue({ isSuccess: true, data: {} });
+    updateTask.mockResolvedValue({ isSuccess: true, data: {} });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('позволяет сохранить задачу без проекта', async () => {
+    const wrapper = await mountModal();
+    await wrapper.find('#wsTaskName').setValue('Задача');
+
+    await wrapper.find('form').trigger('submit.prevent');
+
+    expect(createTask).toHaveBeenCalledTimes(1);
+    expect(createTask.mock.calls[0][0].projectName).toBe('');
+  });
+
+  it('при редактировании задачи без проекта оставляет поле пустым', async () => {
+    const wrapper = await mountModal({
+      task: { id: 5, name: 'Без проекта задача', priority: 'LOW', project: null, subTasks: [] }
+    });
+
+    expect(wrapper.find('#wsTaskProject').element.value).toBe('');
+  });
+});

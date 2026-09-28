@@ -63,7 +63,7 @@ export const getTasks = async (isComplete = null) => {
  * @param {Object} taskData - Данные для создания задачи
  * @param {string} taskData.name - Название задачи (обязательно, макс. 200 символов)
  * @param {string} taskData.priority - Приоритет (HIGH, MIDDLE, LOW) - обязательно
- * @param {string} taskData.projectName - Название проекта (обязательно, макс. 100 символов)
+ * @param {string} taskData.projectName - Название проекта (необязательно; пусто — задача без проекта)
  * @param {boolean} [taskData.isComplete] - Флаг выполнения (опционально, по умолчанию false)
  * @param {string} [taskData.description] - Описание задачи (опционально, макс. 10000 символов)
  * @param {string} [taskData.dueDate] - Дата выполнения (опционально, 'ГГГГ-ММ-ДД')
@@ -74,7 +74,7 @@ export const createTask = async (taskData) => {
     const requestBody = {
       name: taskData.name,
       priority: taskData.priority,
-      projectName: taskData.projectName,
+      projectName: taskData.projectName || '',
       isComplete: taskData.isComplete,
       description: taskData.description,
       dueDate: taskData.dueDate || null
@@ -101,7 +101,7 @@ export const createTask = async (taskData) => {
  * @param {number} taskData.id - ID задачи (обязательно)
  * @param {string} taskData.name - Название задачи (обязательно, макс. 200 символов)
  * @param {string} taskData.priority - Приоритет (HIGH, MIDDLE, LOW) - обязательно
- * @param {string} taskData.projectName - Название проекта (обязательно, макс. 100 символов)
+ * @param {string} taskData.projectName - Название проекта (необязательно; пусто — задача без проекта)
  * @param {boolean} [taskData.isComplete] - Флаг выполнения (опционально)
  * @param {string} [taskData.description] - Описание задачи (опционально, макс. 1000 символов)
  * @param {string} [taskData.dueDate] - Дата выполнения (опционально, 'ГГГГ-ММ-ДД'; null — очистить)
@@ -113,7 +113,7 @@ export const updateTask = async (taskData) => {
       id: taskData.id,
       name: taskData.name,
       priority: taskData.priority,
-      projectName: taskData.projectName,
+      projectName: taskData.projectName || '',
       isComplete: taskData.isComplete,
       description: taskData.description,
       dueDate: taskData.dueDate || null

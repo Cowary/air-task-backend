@@ -224,14 +224,13 @@
             </div>
 
             <div class="form-group">
-              <label for="taskProject">Проект *</label>
+              <label for="taskProject">Проект</label>
               <div class="project-select-wrapper">
                 <select
                   id="taskProject"
                   v-model="taskForm.projectName"
-                  required
                 >
-                  <option value="" disabled>Выберите проект</option>
+                  <option value="">Без проекта</option>
                   <option
                     v-for="project in projects"
                     :key="project.id"
@@ -496,7 +495,7 @@ export default {
       this.taskForm = {
         name: '',
         count: 1,
-        projectName: this.projects.length > 0 ? this.projects[0].name : '',
+        projectName: '',
         priority: 'MIDDLE',
         status: 'IN_PROGRESS'
       };
@@ -528,7 +527,7 @@ export default {
     },
     
     async saveTask() {
-      if (!this.taskForm.name || !this.taskForm.count || !this.taskForm.projectName) {
+      if (!this.taskForm.name || !this.taskForm.count) {
         alert('Пожалуйста, заполните все обязательные поля');
         return;
       }

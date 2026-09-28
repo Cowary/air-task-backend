@@ -3185,7 +3185,7 @@
      },
      "projectName": {
       "type": "string",
-      "description": "Name of the project this task belongs to. If not specified, the task is assigned to the default project 'Без проекта'",
+      "description": "Name of the project this task belongs to. Optional; omit or leave blank for no project",
       "example": "Development"
      },
      "priority": {
