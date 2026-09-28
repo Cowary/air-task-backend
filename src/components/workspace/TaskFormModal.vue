@@ -56,6 +56,17 @@
             </select>
           </div>
 
+          <div v-if="isEdit" class="form-group">
+            <label class="checkbox-label">
+              <input
+                id="wsTaskComplete"
+                type="checkbox"
+                v-model="form.isComplete"
+              />
+              <span>Выполнено</span>
+            </label>
+          </div>
+
           <div class="form-group">
             <label for="wsTaskDueDate">Дата выполнения</label>
             <DateField id="wsTaskDueDate" v-model="form.dueDate" :max="selectedProjectDueDate" />
@@ -142,6 +153,7 @@ export default {
         projectName: '',
         customProjectName: '',
         priority: 'MIDDLE',
+        isComplete: false,
         description: '',
         dueDate: '',
         subTasks: []
@@ -232,6 +244,7 @@ export default {
           projectName: known ? explicitDefault : '__custom__',
           customProjectName: known ? '' : explicitDefault,
           priority: 'MIDDLE',
+          isComplete: false,
           description: this.prefillDescription || '',
           dueDate: '',
           subTasks: []
@@ -244,6 +257,7 @@ export default {
         projectName: '',
         customProjectName: '',
         priority: 'MIDDLE',
+        isComplete: false,
         description: this.prefillDescription || '',
         dueDate: '',
         subTasks: []
@@ -281,7 +295,7 @@ export default {
           name: this.form.name,
           projectName: this.resolvedProjectName,
           priority: this.form.priority,
-          ...(this.isEdit ? { isComplete: !!this.task.isComplete } : {}),
+          ...(this.isEdit ? { isComplete: !!this.form.isComplete } : {}),
           description: this.form.description,
           dueDate: this.form.dueDate || null
         };
@@ -420,6 +434,25 @@ export default {
 .custom-project-input{
   margin-top: 2px;
   font-family: var(--font-mono);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.form-group label.checkbox-label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  cursor: pointer;
 }
 
 .form-hint {

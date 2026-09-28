@@ -115,3 +115,42 @@ describe('TaskFormModal — задача без проекта', () => {
     expect(wrapper.find('#wsTaskProject').element.value).toBe('');
   });
 });
+
+describe('TaskFormModal — смена статуса при редактировании', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubGlobal('alert', vi.fn());
+    updateTask.mockResolvedValue({ isSuccess: true, data: {} });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const existingTask = {
+    id: 7,
+    name: 'Задача',
+    priority: 'LOW',
+    project: null,
+    isComplete: false,
+    subTasks: []
+  };
+
+  it('показывает чекбокс статуса только при редактировании', async () => {
+    const createWrapper = await mountModal();
+    expect(createWrapper.find('#wsTaskComplete').exists()).toBe(false);
+
+    const editWrapper = await mountModal({ task: existingTask });
+    expect(editWrapper.find('#wsTaskComplete').exists()).toBe(true);
+  });
+
+  it('отправляет изменённый статус в updateTask', async () => {
+    const wrapper = await mountModal({ task: existingTask });
+
+    await wrapper.find('#wsTaskComplete').setValue(true);
+    await wrapper.find('form').trigger('submit.prevent');
+
+    expect(updateTask).toHaveBeenCalledTimes(1);
+    expect(updateTask.mock.calls[0][0].isComplete).toBe(true);
+  });
+});

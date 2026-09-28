@@ -193,6 +193,17 @@
               </select>
             </div>
 
+            <div v-if="editingTask" class="form-group">
+              <label class="checkbox-label">
+                <input
+                  id="taskComplete"
+                  type="checkbox"
+                  v-model="taskForm.isComplete"
+                />
+                <span>Выполнено</span>
+              </label>
+            </div>
+
             <div class="form-group">
               <label for="taskDueDate">Дата выполнения</label>
               <DateField id="taskDueDate" v-model="taskForm.dueDate" />
@@ -293,6 +304,7 @@ export default {
         name: '',
         projectName: '',
         priority: 'MIDDLE',
+        isComplete: false,
         description: '',
         dueDate: '',
         subTasks: []
@@ -427,6 +439,7 @@ export default {
         name: '',
         projectName: '',
         priority: 'MIDDLE',
+        isComplete: false,
         description: '',
         dueDate: '',
         subTasks: []
@@ -455,6 +468,7 @@ export default {
         name: '',
         projectName: '',
         priority: 'MIDDLE',
+        isComplete: false,
         description: '',
         dueDate: '',
         subTasks: []
@@ -1100,6 +1114,25 @@ h1 {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--accent-primary);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.form-group label.checkbox-label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  cursor: pointer;
 }
 
 .project-select-wrapper {
