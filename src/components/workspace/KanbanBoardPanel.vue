@@ -112,11 +112,12 @@ import TaskFormModal from './TaskFormModal.vue';
 import WeeklyTaskFormModal from './WeeklyTaskFormModal.vue';
 import ReminderFormModal from './ReminderFormModal.vue';
 
-const NO_PROJECT_NAME = 'Без проекта';
+const NO_PROJECT_LABEL = 'Без проекта';
 
 export const KANBAN_COLUMNS = [
   { key: 'overdue', label: 'Просрочено' },
   { key: 'today', label: 'Сегодня' },
+  { key: 'tomorrow', label: 'Завтра' },
   { key: 'week', label: 'На этой неделе' },
   { key: 'month', label: 'В этом месяце' }
 ];
@@ -167,6 +168,11 @@ export default {
       return isoOf(new Date());
     },
 
+    tomorrow() {
+      const now = new Date();
+      return isoOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
+    },
+
     weekStart() {
       return weekRange(new Date(), this.firstDayOfWeek).start;
     },
@@ -186,7 +192,7 @@ export default {
       (this.tasks || []).forEach(task => {
         if (task.isComplete || !task.dueDate) return;
         const name = task.project?.name;
-        const hasProject = !!name && name !== NO_PROJECT_NAME;
+        const hasProject = !!name;
         cards.push({
           key: `task-${task.id}`,
           kind: 'task',
@@ -225,13 +231,13 @@ export default {
         });
       });
 
-      return cards.filter(card => this.columnFor(card.date) !== null);
+      return cards.filter(card => this.columnForCard(card) !== null);
     },
 
     columns() {
-      const groups = { overdue: [], today: [], week: [], month: [] };
+      const groups = { overdue: [], today: [], tomorrow: [], week: [], month: [] };
       this.allCards.forEach(card => {
-        groups[this.columnFor(card.date)].push(card);
+        groups[this.columnForCard(card)].push(card);
       });
 
       const byDateThenTitle = (a, b) =>
@@ -251,9 +257,15 @@ export default {
       const key = String(dateStr).split('T')[0];
       if (key < this.today) return 'overdue';
       if (key === this.today) return 'today';
+      if (key === this.tomorrow) return 'tomorrow';
       if (key <= this.weekEnd) return 'week';
       if (key <= this.monthEnd) return 'month';
       return null;
+    },
+
+    columnForCard(card) {
+      if (card.kind === 'weekly') return 'week';
+      return this.columnFor(card.date);
     },
 
     formatDateOnly(dateString) {
@@ -282,7 +294,7 @@ export default {
 
     typeLabel(card) {
       if (card.projectName) return card.projectName;
-      if (card.variant === 'plain-task') return NO_PROJECT_NAME;
+      if (card.variant === 'plain-task') return NO_PROJECT_LABEL;
       if (card.variant === 'reminder') return 'Напоминание';
       return '';
     },
@@ -482,7 +494,7 @@ export default {
 
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(240px, 1fr));
+  grid-template-columns: repeat(5, minmax(240px, 1fr));
   gap: 14px;
   align-items: start;
   overflow-x: auto;
@@ -501,6 +513,7 @@ export default {
 
 .column-overdue { border-top: 3px solid var(--neon-red); }
 .column-today { border-top: 3px solid var(--neon-amber); }
+.column-tomorrow { border-top: 3px solid var(--neon-green); }
 .column-week { border-top: 3px solid var(--neon-cyan); }
 .column-month { border-top: 3px solid var(--neon-violet); }
 

@@ -111,7 +111,7 @@ export const createProject = async (projectData) => {
  * @param {Object} taskData - Данные для создания задачи
  * @param {string} taskData.name - Название задачи
  * @param {number} taskData.count - Требуемое количество выполнений
- * @param {string} taskData.projectName - Название проекта (обязательно для backend)
+ * @param {string} taskData.projectName - Название проекта (необязательно; пусто — задача без проекта)
  * @param {string} taskData.priority - Приоритет (HIGH, MIDDLE, LOW)
  * @param {string} taskData.status - Статус (IN_PROGRESS, DONE)
  * @returns {Promise} Промис с данными от сервера
@@ -121,7 +121,7 @@ export const createWeeklyTask = async (taskData) => {
     const requestBody = {
       name: taskData.name,
       count: taskData.count,
-      projectName: taskData.projectName,
+      projectName: taskData.projectName || '',
       priority: taskData.priority || 'MIDDLE',
       status: taskData.status || 'IN_PROGRESS'
     };
@@ -143,7 +143,7 @@ export const createWeeklyTask = async (taskData) => {
  * @param {Object} taskData - Данные для обновления
  * @param {string} taskData.name - Название задачи
  * @param {number} taskData.count - Требуемое количество выполнений
- * @param {string} taskData.projectName - Название проекта (обязательно для backend)
+ * @param {string} taskData.projectName - Название проекта (необязательно; пусто — задача без проекта)
  * @param {string} taskData.priority - Приоритет (HIGH, MIDDLE, LOW)
  * @param {string} taskData.status - Статус (IN_PROGRESS, DONE)
  * @returns {Promise} Промис с данными от сервера
@@ -154,7 +154,7 @@ export const updateWeeklyTask = async (id, taskData) => {
       id: id,
       name: taskData.name,
       count: taskData.count,
-      projectName: taskData.projectName,
+      projectName: taskData.projectName || '',
       priority: taskData.priority,
       status: taskData.status
     };

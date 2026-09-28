@@ -69,6 +69,15 @@ describe('api/tasks.js — работа с is_complete', () => {
         expect.objectContaining({ isComplete: true })
       );
     });
+
+    it('без проекта отправляет пустой projectName', async () => {
+      await createTask({ name: 'Задача', priority: 'LOW' });
+
+      expect(apiClient.post).toHaveBeenCalledWith(
+        '/v1/task/save',
+        expect.objectContaining({ projectName: '' })
+      );
+    });
   });
 
   describe('updateTask', () => {
