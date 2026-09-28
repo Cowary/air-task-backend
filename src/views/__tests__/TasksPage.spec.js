@@ -8,11 +8,12 @@ vi.mock('../../api/tasks.js', async (importOriginal) => {
     getTasks: vi.fn(),
     toggleTask: vi.fn(),
     createTask: vi.fn(),
+    updateTask: vi.fn(),
     getAllProjects: vi.fn()
   };
 });
 
-import { getTasks, toggleTask, createTask, getAllProjects } from '../../api/tasks.js';
+import { getTasks, toggleTask, createTask, updateTask, getAllProjects } from '../../api/tasks.js';
 import TasksPage from '../TasksPage.vue';
 
 function task(id, isComplete) {
@@ -33,6 +34,7 @@ async function mountPage() {
     global: {
       stubs: {
         RouterLink: { template: '<a><slot /></a>' },
+        Teleport: true,
         ProjectModal: true,
         SubTasksChecklist: true,
         SubTasksEditor: true
@@ -133,5 +135,30 @@ describe('TasksPage — невыполненные/выполненные вме
     const body = createTask.mock.calls[0][0];
     expect(body).not.toHaveProperty('status');
     expect(body).toMatchObject({ name: 'Новая', projectName: 'Проект' });
+  });
+
+  it('при редактировании позволяет изменить статус задачи', async () => {
+    const wrapper = await mountPage();
+    updateTask.mockResolvedValue({ isSuccess: true, data: task(1, true) });
+
+    wrapper.vm.openEditModal(wrapper.vm.tasks.find(t => t.id === 1));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('#taskComplete').exists()).toBe(true);
+    await wrapper.find('#taskComplete').setValue(true);
+
+    await wrapper.vm.saveTask();
+    await flushPromises();
+
+    expect(updateTask).toHaveBeenCalledTimes(1);
+    expect(updateTask.mock.calls[0][0].isComplete).toBe(true);
+  });
+
+  it('форма создания не показывает чекбокс статуса', async () => {
+    const wrapper = await mountPage();
+    await wrapper.vm.openCreateModal();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('#taskComplete').exists()).toBe(false);
   });
 });
