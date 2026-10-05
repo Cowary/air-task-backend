@@ -1,5 +1,12 @@
 <template>
   <div class="week-panel">
+    <!-- Панель действий -->
+    <div class="week-toolbar">
+      <button @click="openCreateWeekly" class="section-add-btn">
+        <AppIcon name="plus" :size="15" /> Еженедельная задача
+      </button>
+    </div>
+
     <!-- Заголовок с прогрессом недели -->
     <div class="week-summary">
       <div class="week-summary-card">
@@ -56,24 +63,31 @@
           :class="{ selected: selectedTaskId === task.weeklyTaskId }"
           @click="selectTask(task)"
         >
-          <div class="task-card-top">
-            <span class="task-project" v-if="task.projectName"><AppIcon name="folder" :size="16" /> {{ task.projectName }}</span>
-            <span v-if="task.completedToday" class="today-badge"><AppIcon name="check" :size="14" /> сегодня</span>
-          </div>
-
-          <div class="task-name">{{ task.weeklyTaskName }}</div>
-
-          <div class="task-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: task.completionPercentage }"></div>
+          <div class="task-card-main">
+            <div class="task-card-top">
+              <span class="task-project" v-if="task.projectName"><AppIcon name="folder" :size="16" /> {{ task.projectName }}</span>
+              <span v-if="task.completedToday" class="today-badge"><AppIcon name="check" :size="14" /> сегодня</span>
             </div>
-            <span class="progress-text">
-              {{ task.completedCount }} / {{ task.requiredCount }} ({{ task.completionPercentage }})
-            </span>
+
+            <div class="task-name">{{ task.weeklyTaskName }}</div>
+
+            <div class="task-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" :style="{ width: task.completionPercentage }"></div>
+              </div>
+              <span class="progress-text">
+                {{ task.completedCount }} / {{ task.requiredCount }} ({{ task.completionPercentage }})
+              </span>
+            </div>
+
+            <div v-if="selectedTaskId === task.weeklyTaskId" class="selected-indicator">
+              <AppIcon name="check" :size="14" /> Выбрано — нажмите «Отметить выполненной»
+            </div>
           </div>
 
-          <div v-if="selectedTaskId === task.weeklyTaskId" class="selected-indicator">
-            <AppIcon name="check" :size="14" /> Выбрано — нажмите «Отметить выполненной»
+          <div v-if="weeklyRef(task)" class="task-card-actions" @click.stop>
+            <button @click="openEditWeekly(task)" class="action-btn edit-btn" title="Редактировать" aria-label="Редактировать"><AppIcon name="pencil" :size="15" /></button>
+            <button @click="confirmDeleteWeekly(task)" class="action-btn delete-btn" title="Удалить" aria-label="Удалить"><AppIcon name="trash-2" :size="15" /></button>
           </div>
         </div>
       </div>
@@ -95,37 +109,78 @@
           :key="task.weeklyTaskId"
           class="task-card completed"
         >
-          <div class="task-card-top">
-            <span class="task-project" v-if="task.projectName"><AppIcon name="folder" :size="16" /> {{ task.projectName }}</span>
-            <span v-if="task.completedToday" class="today-badge"><AppIcon name="check" :size="14" /> сегодня</span>
+          <div class="task-card-main">
+            <div class="task-card-top">
+              <span class="task-project" v-if="task.projectName"><AppIcon name="folder" :size="16" /> {{ task.projectName }}</span>
+              <span v-if="task.completedToday" class="today-badge"><AppIcon name="check" :size="14" /> сегодня</span>
+            </div>
+
+            <div class="task-name">{{ task.weeklyTaskName }}</div>
+
+            <div class="task-progress">
+              <div class="progress-bar">
+                <div class="progress-fill full" style="width: 100%"></div>
+              </div>
+              <span class="progress-text">
+                {{ task.completedCount }} / {{ task.requiredCount }} (100%)
+              </span>
+            </div>
           </div>
 
-          <div class="task-name">{{ task.weeklyTaskName }}</div>
-
-          <div class="task-progress">
-            <div class="progress-bar">
-              <div class="progress-fill full" style="width: 100%"></div>
-            </div>
-            <span class="progress-text">
-              {{ task.completedCount }} / {{ task.requiredCount }} (100%)
-            </span>
+          <div v-if="weeklyRef(task)" class="task-card-actions" @click.stop>
+            <button @click="openEditWeekly(task)" class="action-btn edit-btn" title="Редактировать" aria-label="Редактировать"><AppIcon name="pencil" :size="15" /></button>
+            <button @click="confirmDeleteWeekly(task)" class="action-btn delete-btn" title="Удалить" aria-label="Удалить"><AppIcon name="trash-2" :size="15" /></button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Модальное окно создания/редактирования еженедельной задачи -->
+    <WeeklyTaskFormModal
+      :visible="showWeeklyModal"
+      :task="editingWeekly"
+      :projects="projects"
+      @close="closeWeeklyModal"
+      @saved="handleWeeklySaved"
+    />
+
+    <!-- Модальное окно подтверждения удаления -->
+    <Teleport to="body">
+      <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
+        <div class="modal-content modal-small" @click.stop>
+          <h3>Подтверждение удаления</h3>
+          <p>Вы уверены, что хотите удалить еженедельную задачу "{{ weeklyToDelete?.name }}"?</p>
+          <div class="form-actions">
+            <button @click="closeDeleteModal" class="cancel-btn">Отмена</button>
+            <button @click="removeWeekly" class="delete-btn-confirm" :disabled="deleting">
+              {{ deleting ? 'Удаление...' : 'Удалить' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script>
-import { completeWeeklyTask } from '../../api/weeklyTasks.js';
+import { completeWeeklyTask, getAllWeeklyTasks, deleteWeeklyTask } from '../../api/weeklyTasks.js';
+import WeeklyTaskFormModal from './WeeklyTaskFormModal.vue';
 
 export default {
   name: 'WeekPanel',
+
+  components: {
+    WeeklyTaskFormModal
+  },
 
   props: {
     statistics: {
       type: Object,
       default: null
+    },
+    projects: {
+      type: Array,
+      default: () => []
     },
     loading: {
       type: Boolean,
@@ -138,7 +193,13 @@ export default {
   data() {
     return {
       selectedTaskId: null,
-      completing: false
+      completing: false,
+      weeklyTasks: [],
+      showWeeklyModal: false,
+      editingWeekly: null,
+      showDeleteModal: false,
+      weeklyToDelete: null,
+      deleting: false
     };
   },
 
@@ -187,6 +248,17 @@ export default {
         return '0%';
       }
       return Math.round((this.completedTotal / this.totalRequired) * 100) + '%';
+    },
+
+    // Полные объекты еженедельных задач по id (статистика содержит только имя/счётчики)
+    weeklyById() {
+      const map = {};
+      this.weeklyTasks.forEach(weekly => {
+        if (weekly.id != null) {
+          map[weekly.id] = weekly;
+        }
+      });
+      return map;
     }
   },
 
@@ -196,10 +268,97 @@ export default {
       if (this.selectedTaskId && !this.incompleteTasks.some(t => t.weeklyTaskId === this.selectedTaskId)) {
         this.selectedTaskId = null;
       }
+      // Синхронизируем полный список недельных задач (создание/изменение в других вкладках)
+      this.loadWeeklyTasks();
     }
   },
 
   methods: {
+    weeklyRef(task) {
+      return this.weeklyById[task.weeklyTaskId] || null;
+    },
+
+    async loadWeeklyTasks() {
+      try {
+        const response = await getAllWeeklyTasks(['IN_PROGRESS']);
+
+        if (response.isSuccess) {
+          this.weeklyTasks = response.data || [];
+        } else {
+          console.error('Ошибка загрузки недельных задач:', response.errorMessage);
+        }
+      } catch (err) {
+        console.error('Ошибка загрузки недельных задач:', err);
+      }
+    },
+
+    openCreateWeekly() {
+      this.editingWeekly = null;
+      this.showWeeklyModal = true;
+    },
+
+    openEditWeekly(task) {
+      const weekly = this.weeklyRef(task);
+
+      if (!weekly) {
+        return;
+      }
+
+      this.editingWeekly = weekly;
+      this.showWeeklyModal = true;
+    },
+
+    closeWeeklyModal() {
+      this.showWeeklyModal = false;
+      this.editingWeekly = null;
+    },
+
+    handleWeeklySaved() {
+      this.loadWeeklyTasks();
+      this.$emit('changed');
+    },
+
+    confirmDeleteWeekly(task) {
+      const weekly = this.weeklyRef(task);
+
+      if (!weekly) {
+        return;
+      }
+
+      this.weeklyToDelete = weekly;
+      this.showDeleteModal = true;
+    },
+
+    closeDeleteModal() {
+      this.showDeleteModal = false;
+      this.weeklyToDelete = null;
+    },
+
+    async removeWeekly() {
+      if (!this.weeklyToDelete) {
+        return;
+      }
+
+      this.deleting = true;
+
+      try {
+        const response = await deleteWeeklyTask(this.weeklyToDelete.id);
+
+        if (response.isSuccess) {
+          this.closeDeleteModal();
+          this.loadWeeklyTasks();
+          this.$emit('changed');
+        } else {
+          alert('Не удалось удалить задачу: ' + (response.errorMessage || 'Неизвестная ошибка'));
+        }
+      } catch (err) {
+        alert('Ошибка при удалении задачи');
+        console.error('Ошибка удаления еженедельной задачи:', err);
+      } finally {
+        this.deleting = false;
+      }
+    },
+
     selectTask(task) {
       this.selectedTaskId = this.selectedTaskId === task.weeklyTaskId
         ? null
@@ -229,6 +388,10 @@ export default {
         this.completing = false;
       }
     }
+  },
+
+  mounted() {
+    this.loadWeeklyTasks();
   }
 };
 </script>
@@ -238,6 +401,31 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.week-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.section-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px dashed var(--accent-primary);
+  border-radius: 6px;
+  background-color: transparent;
+  color: var(--accent-primary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.section-add-btn:hover {
+  background-color: var(--bg-tertiary);
 }
 
 .week-summary {
@@ -397,6 +585,48 @@ export default {
   cursor: pointer;
   transition: all 0.2s ease;
   border-left: 3px solid var(--entity-weekly);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.task-card-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--bg-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  background-color: var(--border-color);
+}
+
+.edit-btn:hover {
+  background-color: var(--accent-blue-light);
+}
+
+.delete-btn:hover {
+  background-color: var(--accent-red-light);
 }
 
 .task-card.incomplete:hover {
@@ -491,5 +721,84 @@ export default {
   font-size: 12px;
   font-weight: 600;
   color: var(--accent-green);
+}
+
+/* Модальные окна подтверждения */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: screen-fade var(--transition-base);
+}
+
+.modal-content {
+  background-color: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--neon-violet) 40%, var(--border-light));
+  padding: 30px;
+  border-radius: var(--radius-lg);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow-elevated), var(--glow-violet);
+  animation: screen-rise var(--transition-slow);
+}
+
+.modal-content h3 {
+  color: var(--text-primary);
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.modal-content p {
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cancel-btn,
+.delete-btn-confirm {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.cancel-btn {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.cancel-btn:hover {
+  background-color: var(--border-color);
+}
+
+.delete-btn-confirm {
+  background-color: var(--accent-red);
+  color: var(--on-neon);
+}
+
+.delete-btn-confirm:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.delete-btn-confirm:disabled {
+  background-color: var(--text-muted);
+  cursor: not-allowed;
 }
 </style>

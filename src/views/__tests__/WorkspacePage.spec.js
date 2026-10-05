@@ -241,3 +241,20 @@ describe('WorkspacePage — вкладки задач и фильтр выпол
     expect(wrapper.findComponent(KanbanBoardPanel).exists()).toBe(true);
   });
 });
+
+describe('WorkspacePage — вкладка «Неделя»', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockResponses();
+  });
+
+  it('передаёт список проектов на панель недели', async () => {
+    const wrapper = await mountPage();
+
+    wrapper.findAll('.tab-btn')[1].trigger('click');
+    await wrapper.vm.$nextTick();
+
+    const panel = wrapper.findComponent({ name: 'WeekPanel' });
+    expect(panel.props('projects')).toEqual([{ id: 1, name: 'A', status: 'ACTIVE' }]);
+  });
+});
