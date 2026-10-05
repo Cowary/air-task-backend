@@ -10,7 +10,7 @@
       <div class="kanban-legend">
         <span class="legend-item legend-project-task"><span class="legend-dot"></span>Проект</span>
         <span class="legend-item legend-plain-task"><span class="legend-dot"></span>Без проекта</span>
-        <span class="legend-item legend-weekly"><span class="legend-dot"></span>Weekly</span>
+        <span class="legend-item legend-weekly"><span class="legend-dot"></span>Еженедельные</span>
         <span class="legend-item legend-reminder"><span class="legend-dot"></span>Напоминания</span>
       </div>
     </header>
@@ -119,6 +119,7 @@ export const KANBAN_COLUMNS = [
   { key: 'today', label: 'Сегодня' },
   { key: 'tomorrow', label: 'Завтра' },
   { key: 'week', label: 'На этой неделе' },
+  { key: 'weekly', label: 'Еженедельные' },
   { key: 'month', label: 'В этом месяце' }
 ];
 
@@ -235,7 +236,7 @@ export default {
     },
 
     columns() {
-      const groups = { overdue: [], today: [], tomorrow: [], week: [], month: [] };
+      const groups = { overdue: [], today: [], tomorrow: [], week: [], weekly: [], month: [] };
       this.allCards.forEach(card => {
         groups[this.columnForCard(card)].push(card);
       });
@@ -264,7 +265,7 @@ export default {
     },
 
     columnForCard(card) {
-      if (card.kind === 'weekly') return 'week';
+      if (card.kind === 'weekly') return 'weekly';
       return this.columnFor(card.date);
     },
 
@@ -494,8 +495,8 @@ export default {
 
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(5, minmax(240px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(6, minmax(180px, 1fr));
+  gap: 12px;
   align-items: start;
   overflow-x: auto;
 }
@@ -504,17 +505,18 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px;
+  padding: 10px;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  min-width: 240px;
+  min-width: 0;
 }
 
 .column-overdue { border-top: 3px solid var(--neon-red); }
 .column-today { border-top: 3px solid var(--neon-amber); }
 .column-tomorrow { border-top: 3px solid var(--neon-green); }
 .column-week { border-top: 3px solid var(--neon-cyan); }
+.column-weekly { border-top: 3px solid var(--entity-weekly); }
 .column-month { border-top: 3px solid var(--neon-violet); }
 
 .column-head {
@@ -593,7 +595,7 @@ export default {
   flex-direction: column;
   gap: 6px;
   width: 100%;
-  padding: 10px 12px;
+  padding: 9px 10px;
   background: transparent;
   border: none;
   border-radius: var(--radius-sm);
