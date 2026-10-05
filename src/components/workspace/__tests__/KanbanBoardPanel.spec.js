@@ -20,7 +20,7 @@ import { getAllWeeklyTasks } from '../../../api/weeklyTasks.js';
 import { getAllReminders } from '../../../api/reminders.js';
 import { getAppSettings } from '../../../api/settings.js';
 import { resetSettings } from '../../../store/settings.js';
-import KanbanBoardPanel from '../KanbanBoardPanel.vue';
+import KanbanBoardPanel, { KANBAN_COLUMNS } from '../KanbanBoardPanel.vue';
 
 const TODAY = '2026-09-23'; // среда
 const WEEK_START = '2026-09-20'; // воскресенье
@@ -90,7 +90,13 @@ describe('KanbanBoardPanel — распределение по колонкам'
     const wrapper = await mountPanel();
     const titles = wrapper.findAll('.column-title').map(node => node.text());
 
-    expect(titles).toEqual(['Просрочено', 'Сегодня', 'Завтра', 'На этой неделе', 'В этом месяце']);
+    expect(titles).toEqual(['Просрочено', 'Сегодня', 'Завтра', 'На этой неделе', 'Еженедельные', 'В этом месяце']);
+  });
+
+  it('содержит шесть колонок с ожидаемыми ключами', () => {
+    expect(KANBAN_COLUMNS.map(column => column.key)).toEqual([
+      'overdue', 'today', 'tomorrow', 'week', 'weekly', 'month'
+    ]);
   });
 
   it('раскладывает задачи по колонкам по дате', async () => {
@@ -118,7 +124,7 @@ describe('KanbanBoardPanel — распределение по колонкам'
     expect(titlesInColumn(wrapper, 'week')).toEqual([]);
   });
 
-  it('weekly-задача остаётся в «На этой неделе», даже если конец недели — завтра', async () => {
+  it('weekly-задача попадает в отдельную колонку «Еженедельные», даже если конец недели — завтра', async () => {
     vi.setSystemTime(new Date('2026-09-25T12:00:00')); // пятница, weekEnd = суббота 26.09
     getAllWeeklyTasks.mockResolvedValue({
       isSuccess: true,
@@ -127,7 +133,8 @@ describe('KanbanBoardPanel — распределение по колонкам'
 
     const wrapper = await mountPanel();
 
-    expect(titlesInColumn(wrapper, 'week')).toEqual(['Обзор недели']);
+    expect(titlesInColumn(wrapper, 'weekly')).toEqual(['Обзор недели']);
+    expect(titlesInColumn(wrapper, 'week')).toEqual([]);
     expect(titlesInColumn(wrapper, 'tomorrow')).toEqual([]);
   });
 
@@ -186,7 +193,7 @@ describe('KanbanBoardPanel — типы карточек и цвета', () => {
     expect(card.exists()).toBe(true);
     expect(card.find('.card-title').text()).toBe('Обзор недели');
     expect(card.find('.card-date').text()).toContain(WEEK_END.split('-').reverse().join('.'));
-    expect(titlesInColumn(wrapper, 'week')).toContain('Обзор недели');
+    expect(titlesInColumn(wrapper, 'weekly')).toContain('Обзор недели');
   });
 
   it('напоминание использует nextDueDate и класс card-reminder', async () => {

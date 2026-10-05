@@ -147,6 +147,7 @@
       <WeekPanel
         v-else-if="activeTab === 'week'"
         :statistics="statistics"
+        :projects="projects"
         @changed="refresh"
       />
 
