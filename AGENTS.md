@@ -59,7 +59,7 @@ Timezone helpers live in `src/utils/timezone.js`.
 
 ## Git & Commits
 
-- **Agents must NEVER commit or push.** All commits (including version bumps in `package.json`) are made by the user only. Prepare changes in the working tree and stop — the user reviews and commits.
+- **Agents may commit and push only with the user's explicit permission.** Without it, prepare changes in the working tree and stop — the user reviews and commits. Version bumps in `package.json` require that same permission.
 
 ## Versioning & Releases
 
