@@ -11,8 +11,8 @@ import TaskListSection from '../TaskListSection.vue';
 import { ACTIVE_PROJECT_STATUSES, ALL_PROJECT_STATUSES, updateProject } from '../../../api/projects.js';
 
 const projects = [
-  { id: 1, name: 'Активный проект', status: 'ACTIVE', priority: 'LOW', goalList: [], weeklyList: [], taskList: [] },
-  { id: 2, name: 'Архивный проект', status: 'ARCHIVED', priority: 'HIGH', goalList: [], weeklyList: [], taskList: [] }
+  { id: 1, name: 'Активный проект', status: 'ACTIVE', priority: 'LOW', weeklyList: [], taskList: [] },
+  { id: 2, name: 'Архивный проект', status: 'ARCHIVED', priority: 'HIGH', weeklyList: [], taskList: [] }
 ];
 
 function mountPanel() {
@@ -82,7 +82,6 @@ describe('ProjectsPanel — только невыполненные задачи
       name: 'Активный проект',
       status: 'ACTIVE',
       priority: 'LOW',
-      goalList: [],
       weeklyList: [],
       taskList: [
         { id: 10, name: 'В работе', isComplete: false },
@@ -144,8 +143,8 @@ describe('ProjectsPanel — подвкладки «Актуальные | Арх
   ];
 
   const panelProjects = [
-    { id: 1, name: 'Активный проект', status: 'ACTIVE', priority: 'LOW', goalList: [], weeklyList: [], taskList: [] },
-    { id: 2, name: 'Другой проект', status: 'ACTIVE', priority: 'LOW', goalList: [], weeklyList: [], taskList: [] }
+    { id: 1, name: 'Активный проект', status: 'ACTIVE', priority: 'LOW', weeklyList: [], taskList: [] },
+    { id: 2, name: 'Другой проект', status: 'ACTIVE', priority: 'LOW', weeklyList: [], taskList: [] }
   ];
 
   function mountPanel() {
@@ -247,7 +246,7 @@ describe('ProjectsPanel — завершение и возврат проект�
 
   const project = (status, extra = {}) => ({
     id: 1, name: 'П1', status, priority: 'LOW',
-    goalList: [], weeklyList: [], taskList: [],
+    weeklyList: [], taskList: [],
     ...extra
   });
 
@@ -274,14 +273,6 @@ describe('ProjectsPanel — завершение и возврат проект�
     expect(btn.attributes('disabled')).toBeDefined();
   });
 
-  it('есть невыполненная цель — заблокирован', async () => {
-    const wrapper = await mountSelected(
-      [project('ACTIVE', { goalList: [{ id: 1, name: 'G', isCompleted: false }] })]
-    );
-
-    expect(wrapper.find('.status-toggle-btn').attributes('disabled')).toBeDefined();
-  });
-
   it('есть еженедельная задача не в DONE — заблокирован', async () => {
     const wrapper = await mountSelected(
       [project('IN_PROGRESS', { weeklyList: [{ id: 5, name: 'W', status: 'IN_PROGRESS', count: 1, priority: 'LOW' }] })]
@@ -302,7 +293,6 @@ describe('ProjectsPanel — завершение и возврат проект�
     updateProject.mockResolvedValue({ isSuccess: true, data: project('DONE') });
     const wrapper = await mountSelected(
       [project('ACTIVE', {
-        goalList: [{ id: 1, name: 'G', isCompleted: true }],
         weeklyList: [{ id: 5, name: 'W', status: 'DONE', count: 1, priority: 'LOW' }]
       })],
       [doneTask]

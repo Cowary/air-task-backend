@@ -25,7 +25,7 @@ const healthError = ref(false)
 const modules = [
   { to: '/workspace', label: 'Рабочее место', hint: 'Проекты и задачи', icon: Rocket, tone: 'magenta' },
   { to: '/weekly-tasks', label: 'Еженедельные задачи', hint: 'Ритм недели', icon: ChartColumn, tone: 'cyan' },
-  { to: '/projects', label: 'Проекты', hint: 'Цели и прогресс', icon: FolderKanban, tone: 'green' },
+  { to: '/projects', label: 'Проекты', hint: 'Прогресс и статусы', icon: FolderKanban, tone: 'green' },
   { to: '/tasks', label: 'Задачи', hint: 'Список дел', icon: ListChecks, tone: 'violet' },
   { to: '/purchases', label: 'Покупки', hint: 'Списки и цены', icon: ShoppingCart, tone: 'amber' },
   { to: '/settings', label: 'Настройки', hint: 'Тарифы и параметры', icon: Settings, tone: 'cyan' }

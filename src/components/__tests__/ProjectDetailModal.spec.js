@@ -6,10 +6,6 @@ vi.mock('../../api/projects.js', async (importOriginal) => {
   return { ...actual, getProjectById: vi.fn() };
 });
 
-vi.mock('../../api/goals.js', () => ({
-  updateGoalStatus: vi.fn()
-}));
-
 vi.mock('../../api/tasks.js', async (importOriginal) => {
   const actual = await importOriginal();
   return { ...actual, toggleTask: vi.fn() };
@@ -27,7 +23,6 @@ function projectResponse() {
       name: 'Проект',
       status: 'ACTIVE',
       priority: 'LOW',
-      goalList: [],
       weeklyList: [],
       taskList: [
         { id: 10, name: 'Невыполненная', priority: 'LOW', isComplete: false, subTasks: [] },
