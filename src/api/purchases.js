@@ -38,7 +38,6 @@ export const createPurchase = async (purchaseData) => {
       priority: purchaseData.priority,
       categoryName: purchaseData.categoryName,
       isComplete: purchaseData.isComplete,
-      coinCost: purchaseData.coinCost ?? null,
       linkList: purchaseData.linkList || [],
       priceList: purchaseData.priceList || []
     };
@@ -75,7 +74,6 @@ export const updatePurchase = async (purchaseData) => {
       priority: purchaseData.priority,
       categoryName: purchaseData.categoryName,
       isComplete: purchaseData.isComplete,
-      coinCost: purchaseData.coinCost ?? null,
       status: purchaseData.status,
       linkList: purchaseData.linkList || [],
       priceList: purchaseData.priceList || []
@@ -123,22 +121,3 @@ export const getPurchaseCategories = async () => {
     throw error;
   }
 };
-
-/**
- * Покупает вещь из списка покупок за монеты (разовая покупка: списание + isComplete=true)
- *
- * API endpoint: POST /v1/purchase/{id}/buy
- *
- * @param {number} id - ID покупки
- * @returns {Promise} Промис с обёрткой { isSuccess, data, errorMessage }
- */
-export const buyPurchase = async (id) => {
-  try {
-    const response = await apiClient.post(`/v1/purchase/${id}/buy`);
-    return response.data;
-  } catch (error) {
-    console.error('Ошибка при покупке за монеты:', error);
-    throw error;
-  }
-};
-

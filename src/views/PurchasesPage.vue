@@ -67,9 +67,6 @@
               <span class="purchase-priority" :class="`priority-${purchase.priority.toLowerCase()}`">
                 {{ getPriorityLabel(purchase.priority) }}
               </span>
-              <span v-if="purchase.coinCost != null" class="coin-cost-badge">
-                <AppIcon name="coins" :size="14" /> {{ purchase.coinCost }} монет
-              </span>
               <span v-if="purchase.isComplete" class="complete-badge"><AppIcon name="check" :size="14" /> Завершено</span>
             </div>
 
@@ -103,16 +100,6 @@
           </div>
 
           <div class="purchase-actions">
-            <button
-              v-if="purchase.coinCost != null && !purchase.isComplete"
-              @click="buyWithCoins(purchase)"
-              class="action-btn buy-coin-btn"
-              title="Купить за монеты"
-              :aria-label="`Купить «${purchase.name}» за ${purchase.coinCost} монет`"
-              :disabled="buyingId === purchase.id"
-            >
-              <AppIcon name="coins" :size="15" />
-            </button>
             <button @click="openEditModal(purchase)" class="action-btn edit-btn" title="Редактировать" aria-label="Редактировать"><AppIcon name="pencil" :size="15" /></button>
             <button @click="confirmDelete(purchase)" class="action-btn delete-btn" title="Удалить" aria-label="Удалить"><AppIcon name="trash-2" :size="15" /></button>
           </div>
@@ -182,21 +169,6 @@
                 <option value="MIDDLE">Средний</option>
                 <option value="LOW">Низкий</option>
               </select>
-            </div>
-
-            <div class="form-group">
-              <label for="purchaseCoinCost">Цена в монетах</label>
-              <input
-                id="purchaseCoinCost"
-                v-model.number="purchaseForm.coinCost"
-                type="number"
-                min="1"
-                step="1"
-                placeholder="Не задана"
-              />
-              <span class="form-hint">
-                Если указать, покупку можно будет купить за монеты — один раз.
-              </span>
             </div>
 
             <div class="form-group" v-if="editingPurchase">
@@ -301,8 +273,7 @@
 </template>
 
 <script>
-import { getPurchases, createPurchase, updatePurchase, deletePurchase, getPurchaseCategories, buyPurchase } from '../api/purchases.js';
-import { refreshWallet } from '../store/wallet.js';
+import { getPurchases, createPurchase, updatePurchase, deletePurchase, getPurchaseCategories } from '../api/purchases.js';
 
 export default {
   name: 'PurchasesPage',
@@ -329,11 +300,9 @@ export default {
         priority: 'MIDDLE',
         isComplete: false,
         status: 'IN_PROGRESS',
-        coinCost: null,
         priceList: [],
         linkList: []
       },
-      buyingId: null,
       isNewCategoryMode: false,
       newCategoryName: '',
 
@@ -495,7 +464,6 @@ export default {
         priority: 'MIDDLE',
         isComplete: false,
         status: 'IN_PROGRESS',
-        coinCost: null,
         priceList: [],
         linkList: []
       };
@@ -512,7 +480,6 @@ export default {
         priority: purchase.priority,
         isComplete: purchase.isComplete,
         status: purchase.status || 'IN_PROGRESS',
-        coinCost: purchase.coinCost ?? null,
         priceList: purchase.priceList ? JSON.parse(JSON.stringify(purchase.priceList)) : [],
         linkList: purchase.linkList ? JSON.parse(JSON.stringify(purchase.linkList)) : []
       };
@@ -532,7 +499,6 @@ export default {
         priority: 'MIDDLE',
         isComplete: false,
         status: 'IN_PROGRESS',
-        coinCost: null,
         priceList: [],
         linkList: []
       };
@@ -557,7 +523,6 @@ export default {
             priority: this.purchaseForm.priority,
             isComplete: this.purchaseForm.isComplete,
             status: this.purchaseForm.status,
-            coinCost: this.purchaseForm.coinCost ?? null,
             priceList: this.purchaseForm.priceList,
             linkList: this.purchaseForm.linkList
           });
@@ -567,7 +532,6 @@ export default {
             categoryName: this.purchaseForm.categoryName,
             priority: this.purchaseForm.priority,
             isComplete: this.purchaseForm.isComplete,
-            coinCost: this.purchaseForm.coinCost ?? null,
             priceList: this.purchaseForm.priceList,
             linkList: this.purchaseForm.linkList
           });
@@ -590,24 +554,6 @@ export default {
     confirmDelete(purchase) {
       this.purchaseToDelete = purchase;
       this.showDeleteModal = true;
-    },
-
-    async buyWithCoins(purchase) {
-      this.buyingId = purchase.id;
-      try {
-        const response = await buyPurchase(purchase.id);
-        if (response.isSuccess) {
-          await this.loadPurchases();
-          await refreshWallet();
-        } else {
-          alert(response.errorMessage || 'Не удалось купить покупку');
-        }
-      } catch (err) {
-        alert('Ошибка при покупке за монеты');
-        console.error('Ошибка покупки за монеты:', err);
-      } finally {
-        this.buyingId = null;
-      }
     },
 
     closeDeleteModal() {
@@ -842,8 +788,7 @@ h1 {
 }
 
 .purchase-priority,
-.complete-badge,
-.coin-cost-badge{
+.complete-badge{
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 12px;
@@ -876,11 +821,6 @@ h1 {
 .complete-badge {
   background-color: var(--accent-green-light);
   color: var(--accent-green);
-}
-
-.coin-cost-badge {
-  background-color: var(--accent-rewards-light);
-  color: var(--entity-rewards);
 }
 
 .purchase-date {
@@ -979,21 +919,6 @@ h1 {
 
 .delete-btn:hover {
   background-color: var(--accent-red-light);
-}
-
-.buy-coin-btn {
-  color: var(--entity-rewards);
-  border: 1px solid color-mix(in srgb, var(--entity-rewards) 45%, transparent);
-}
-
-.buy-coin-btn:hover:not(:disabled) {
-  background-color: var(--accent-rewards-light);
-  box-shadow: var(--glow-rewards);
-}
-
-.buy-coin-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Модальное окно */

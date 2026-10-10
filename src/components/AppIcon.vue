@@ -41,7 +41,6 @@ import {
   Save,
   ShieldCheck,
   Clock,
-  Target,
   ExternalLink,
   Info,
   Lightbulb,
@@ -51,8 +50,6 @@ import {
   History,
   SkipForward,
   CalendarClock,
-  Coins,
-  Gift,
 } from 'lucide-vue-next'
 
 /**
@@ -108,7 +105,6 @@ const ICONS = {
   save: Save,
   'shield-check': ShieldCheck,
   clock: Clock,
-  target: Target,
   'external-link': ExternalLink,
   info: Info,
   lightbulb: Lightbulb,
@@ -118,8 +114,6 @@ const ICONS = {
   history: History,
   'skip-forward': SkipForward,
   'calendar-clock': CalendarClock,
-  coins: Coins,
-  gift: Gift,
 }
 
 const IconComponent = computed(() => ICONS[props.name] || CircleAlert)

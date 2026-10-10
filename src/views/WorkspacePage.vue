@@ -96,16 +96,6 @@
           <span>Напоминания</span>
         </button>
         <button
-          class="tab-btn tab-rewards"
-          :class="{ active: activeTab === 'rewards' }"
-          role="tab"
-          :aria-selected="activeTab === 'rewards'"
-          @click="activeTab = 'rewards'"
-        >
-          <Wallet :size="16" aria-hidden="true" />
-          <span>Награды</span>
-        </button>
-        <button
           class="tab-btn tab-calendar"
           :class="{ active: activeTab === 'calendar' }"
           role="tab"
@@ -209,12 +199,6 @@
         @changed="refresh"
       />
 
-      <!-- Награды -->
-      <RewardsPanel
-        v-else-if="activeTab === 'rewards'"
-        @changed="refresh"
-      />
-
       <!-- Календарь -->
       <CalendarPanel
         v-else-if="activeTab === 'calendar'"
@@ -248,19 +232,16 @@ import {
   Repeat,
   CalendarRange,
   TriangleAlert,
-  Wallet,
   SquareKanban
 } from 'lucide-vue-next';
 import { getAllProjects, ACTIVE_PROJECT_STATUSES } from '../api/projects.js';
 import { getTasks } from '../api/tasks.js';
 import { getWeeklyTaskStatistics } from '../api/weeklyTasks.js';
 import { getAllIdeas } from '../api/ideas.js';
-import { refreshWallet } from '../store/wallet.js';
 import ProjectsPanel from '../components/workspace/ProjectsPanel.vue';
 import WeekPanel from '../components/workspace/WeekPanel.vue';
 import IdeasPanel from '../components/workspace/IdeasPanel.vue';
 import RemindersPanel from '../components/workspace/RemindersPanel.vue';
-import RewardsPanel from '../components/workspace/RewardsPanel.vue';
 import CalendarPanel from '../components/workspace/CalendarPanel.vue';
 import KanbanBoardPanel from '../components/workspace/KanbanBoardPanel.vue';
 import TaskListSection, { NO_PROJECT_FILTER } from '../components/workspace/TaskListSection.vue';
@@ -279,12 +260,10 @@ export default {
     Repeat,
     CalendarRange,
     TriangleAlert,
-    Wallet,
     ProjectsPanel,
     WeekPanel,
     IdeasPanel,
     RemindersPanel,
-    RewardsPanel,
     CalendarPanel,
     KanbanBoardPanel,
     TaskListSection
@@ -358,8 +337,7 @@ export default {
           getAllProjects({ statuses: this.projectStatuses, sortByPriority: true }),
           getTasks(),
           getWeeklyTaskStatistics(),
-          getAllIdeas(),
-          refreshWallet()
+          getAllIdeas()
         ]);
 
         let hasError = false;
@@ -442,7 +420,7 @@ export default {
 
   mounted() {
     const requestedTab = this.$route?.query?.tab;
-    const knownTabs = ['projects', 'week', 'tasks', 'kanban', 'ideas', 'reminders', 'rewards', 'calendar', 'archive'];
+    const knownTabs = ['projects', 'week', 'tasks', 'kanban', 'ideas', 'reminders', 'calendar', 'archive'];
     if (typeof requestedTab === 'string' && knownTabs.includes(requestedTab)) {
       this.activeTab = requestedTab;
     }
@@ -628,7 +606,6 @@ h1 {
 .tab-task :deep(svg) { color: var(--entity-task); }
 .tab-idea :deep(svg) { color: var(--entity-idea); }
 .tab-reminder :deep(svg) { color: var(--entity-reminder); }
-.tab-rewards :deep(svg) { color: var(--entity-rewards); }
 .tab-calendar :deep(svg) { color: var(--neon-cyan); }
 .tab-archive :deep(svg) { color: var(--accent-gray); }
 
