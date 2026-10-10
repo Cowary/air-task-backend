@@ -75,6 +75,13 @@ Timezone helpers live in `src/utils/timezone.js`.
 - Consumers: the `/workspace` Kanban board and calendar, plus the settings screen (`SettingsPage.vue`, section «Отображение»). Weekly statistics are bounded server-side by the same persisted setting.
 - Accepted values: `SUNDAY` and `MONDAY` only.
 
+## MCP / agents (settings screen)
+
+- `SettingsPage.vue` also hosts the «Агенты (MCP)» and «Журнал действий агентов» sections.
+- `src/api/mcp.js` + `src/store/mcp.js` manage API keys (`GET|POST /api/mcp/v1/key*`) and read the agent action log (`GET /api/mcp/v1/audit/list`).
+- A newly created key's plaintext is shown once (copy via `navigator.clipboard`); agents connect to the backend `/mcp` over Streamable HTTP and send the key as `X-API-Key`.
+- Icons `key`, `copy`, `terminal`, `scroll-text`, `ban` are registered in `AppIcon.vue`.
+
 ## Conventions
 
 - CSS custom properties are defined in `src/style.css`; dark mode is activated by `data-theme="dark"` on `<html>`.

@@ -50,6 +50,11 @@ import {
   History,
   SkipForward,
   CalendarClock,
+  Key,
+  Copy,
+  Terminal,
+  ScrollText,
+  Ban,
 } from 'lucide-vue-next'
 
 /**
@@ -114,6 +119,11 @@ const ICONS = {
   history: History,
   'skip-forward': SkipForward,
   'calendar-clock': CalendarClock,
+  key: Key,
+  copy: Copy,
+  terminal: Terminal,
+  'scroll-text': ScrollText,
+  ban: Ban,
 }
 
 const IconComponent = computed(() => ICONS[props.name] || CircleAlert)
