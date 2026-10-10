@@ -64,13 +64,6 @@
             Срок: {{ formatDateOnly(project.dueDate) }}<template v-if="isProjectOpen(project)"> ({{ daysUntil(project.dueDate) }} дн.)</template>
           </div>
 
-          <div v-if="(project.goalList?.length || 0) > 0" class="card-goals">
-            <div class="card-goals-bar">
-              <div class="card-goals-fill" :style="{ width: goalsPercentage(project) }"></div>
-            </div>
-            <span class="card-goals-text"><AppIcon name="target" :size="16" /> {{ completedGoalsCount(project) }}/{{ project.goalList.length }}</span>
-          </div>
-
           <div class="card-counters">
             <span class="counter counter-weekly" title="Еженедельные задачи">
               <AppIcon name="chart-column" :size="16" /> {{ project.weeklyList?.length || 0 }}
@@ -126,7 +119,7 @@
               :disabled="!projectCompletable || changingProjectStatus"
               :title="projectCompletable
                 ? 'Завершить проект'
-                : 'Станет доступно, когда выполнены все задачи, цели и еженедельные задачи'"
+                : 'Станет доступно, когда выполнены все задачи и еженедельные задачи'"
             ><AppIcon name="circle-check-big" :size="16" /> Завершить проект</button>
             <button
               v-if="selectedProject.status === 'DONE'"
@@ -151,39 +144,6 @@
           </span>
           <span>Создан: {{ formatDate(selectedProject.createdTs) }}</span>
           <span>Обновлён: {{ formatDate(selectedProject.updatedTs) }}</span>
-        </div>
-
-        <!-- Цели -->
-        <div class="detail-section">
-          <div class="section-head">
-            <h3><AppIcon name="target" :size="18" /> Цели проекта</h3>
-            <span class="section-count" :class="{ 'count-done': allGoalsDone }">
-              {{ completedGoalsCount(selectedProject) }}/{{ goalList.length }}
-            </span>
-          </div>
-
-          <div v-if="goalList.length > 0" class="goals-progress">
-            <div class="goals-progress-bar">
-              <div class="goals-progress-fill" :style="{ width: goalsPercentage(selectedProject) }"></div>
-            </div>
-          </div>
-
-          <div v-if="goalList.length === 0" class="section-empty">
-            Цели не заданы — добавьте их через редактирование проекта.
-          </div>
-          <div v-else class="goal-checklist">
-            <label v-for="goal in goalList" :key="goal.id" class="goal-check-item">
-              <input
-                type="checkbox"
-                :checked="goal.isCompleted"
-                :disabled="togglingGoals.includes(goal.id)"
-                @change="toggleGoal(goal, $event)"
-              />
-              <span class="goal-check-name" :class="{ 'goal-done': goal.isCompleted }">
-                {{ goal.name }}
-              </span>
-            </label>
-          </div>
         </div>
 
         <!-- Еженедельные задачи -->
@@ -330,7 +290,7 @@
 
       <!-- Ничего не выбрано -->
       <div v-else class="no-selection">
-        <p><AppIcon name="arrow-left" :size="16" /> Выберите проект слева, чтобы увидеть его цели, еженедельные задачи и задачи</p>
+        <p><AppIcon name="arrow-left" :size="16" /> Выберите проект слева, чтобы увидеть его еженедельные задачи и задачи</p>
       </div>
     </section>
 
@@ -392,7 +352,6 @@
 <script>
 import { deleteProject, updateProject } from '../../api/projects.js';
 import { deleteWeeklyTask, completeWeeklyTask } from '../../api/weeklyTasks.js';
-import { updateGoalStatus } from '../../api/goals.js';
 import ProjectFormModal from '../ProjectFormModal.vue';
 import TaskListSection from './TaskListSection.vue';
 import WeeklyTaskFormModal from './WeeklyTaskFormModal.vue';
@@ -453,9 +412,6 @@ export default {
       showWeeklyModal: false,
       editingWeekly: null,
 
-      // Переключение целей
-      togglingGoals: [],
-
       // Отметка выполнения еженедельной задачи
       completingWeeklyId: null,
 
@@ -493,14 +449,6 @@ export default {
       return this.projects.find(p => p.id === this.selectedKey) || null;
     },
 
-    goalList() {
-      return this.selectedProject?.goalList || [];
-    },
-
-    allGoalsDone() {
-      return this.goalList.length > 0 && this.goalList.every(g => g.isCompleted);
-    },
-
     weeklyList() {
       return this.selectedProject?.weeklyList || [];
     },
@@ -530,7 +478,7 @@ export default {
         : this.selectedProjectTasks;
     },
 
-    // Проект готов к завершению: нет незакрытых задач, целей и еженедельных задач
+    // Проект готов к завершению: нет незакрытых задач и еженедельных задач
     // (пустые списки считаются выполненными)
     projectCompletable() {
       const project = this.selectedProject;
@@ -538,9 +486,8 @@ export default {
         return false;
       }
       const noOpenTasks = this.selectedProjectTasks.length === 0;
-      const noOpenGoals = (project.goalList || []).every(goal => !!goal.isCompleted);
       const noOpenWeeklies = (project.weeklyList || []).every(weekly => weekly.status === 'DONE');
-      return noOpenTasks && noOpenGoals && noOpenWeeklies;
+      return noOpenTasks && noOpenWeeklies;
     }
   },
 
@@ -676,18 +623,6 @@ export default {
       return Math.round((due - today) / 86400000);
     },
 
-    completedGoalsCount(project) {
-      return (project.goalList || []).filter(g => g.isCompleted).length;
-    },
-
-    goalsPercentage(project) {
-      const goals = project.goalList || [];
-      if (goals.length === 0) {
-        return '0%';
-      }
-      return Math.round((this.completedGoalsCount(project) / goals.length) * 100) + '%';
-    },
-
     /* --- Еженедельные задачи --- */
 
     weeklyStats(weekly) {
@@ -774,31 +709,6 @@ export default {
         console.error('Ошибка удаления еженедельной задачи:', err);
       } finally {
         this.deleting = false;
-      }
-    },
-
-    /* --- Цели --- */
-
-    async toggleGoal(goal, event) {
-      const newStatus = event.target.checked;
-
-      this.togglingGoals.push(goal.id);
-
-      try {
-        const response = await updateGoalStatus(goal.id, newStatus);
-
-        if (response.isSuccess) {
-          goal.isCompleted = newStatus;
-        } else {
-          event.target.checked = !newStatus;
-          alert('Не удалось изменить статус цели: ' + (response.errorMessage || 'Неизвестная ошибка'));
-        }
-      } catch (err) {
-        event.target.checked = !newStatus;
-        alert('Ошибка при изменении статуса цели');
-        console.error('Ошибка изменения статуса цели:', err);
-      } finally {
-        this.togglingGoals = this.togglingGoals.filter(id => id !== goal.id);
       }
     },
 
@@ -1033,33 +943,6 @@ export default {
   font-weight: 500;
 }
 
-.card-goals {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.card-goals-bar {
-  flex: 1;
-  height: 6px;
-  background-color: var(--bg-tertiary);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.card-goals-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-green), var(--neon-cyan));
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.card-goals-text {
-  font-size: 11px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
 .card-counters {
   display: flex;
   gap: 8px;
@@ -1258,11 +1141,6 @@ export default {
   text-transform: uppercase;
 }
 
-.section-count.count-done {
-  background-color: var(--accent-green-light);
-  color: var(--accent-green);
-}
-
 .section-add-btn {
   margin-left: auto;
   padding: 6px 14px;
@@ -1288,65 +1166,6 @@ export default {
   padding: 10px 12px;
   background-color: var(--bg-tertiary);
   border-radius: 6px;
-}
-
-/* Цели */
-.goals-progress-bar {
-  height: 8px;
-  background-color: var(--bg-tertiary);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.goals-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-green), var(--neon-cyan));
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.goal-checklist {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.goal-check-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.goal-check-item:hover {
-  background-color: var(--bg-tertiary);
-}
-
-.goal-check-item input[type="checkbox"] {
-  accent-color: var(--accent-green);
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.goal-check-item input[type="checkbox"]:disabled {
-  cursor: wait;
-  opacity: 0.6;
-}
-
-.goal-check-name {
-  font-size: 14px;
-  color: var(--text-primary);
-  word-break: break-word;
-}
-
-.goal-check-name.goal-done {
-  text-decoration: line-through;
-  color: var(--text-muted);
 }
 
 /* Еженедельные задачи */

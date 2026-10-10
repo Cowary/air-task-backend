@@ -85,17 +85,17 @@
               <span class="counter-value">{{ activeTaskList(project).length }}</span>
               <span class="counter-label">задач</span>
             </div>
-            <div class="counter-chip goal-chip" v-if="(project.goalList?.length || 0) > 0">
-              <span class="counter-value">{{ completedGoalsCount(project) }}/{{ project.goalList.length }}</span>
-              <span class="counter-label">целей</span>
-            </div>
           </div>
 
           <div class="project-preview" v-if="hasLinkedItems(project)">
             <span v-for="weekly in (project.weeklyList || []).slice(0, 2)" :key="'w' + weekly.id" class="preview-tag">
               <AppIcon name="chart-column" :size="16" /> {{ weekly.name }}
             </span>
-            <span v-for="task in activeTaskList(project).slice(0, 2)" :key="'t' + task.id" class="preview-tag">
+            <span
+              v-for="task in activeTaskList(project).slice(0, 2)"
+              :key="'t' + task.id"
+              class="preview-tag"
+            >
               <AppIcon name="list-checks" :size="16" /> {{ task.name }}
               <span
                 v-if="task.subTasks?.length"
@@ -105,20 +105,12 @@
                 <AppIcon name="check" :size="14" /> {{ task.subTasks.filter(s => s.isCompleted).length }}/{{ task.subTasks.length }}
               </span>
             </span>
-            <span
-              v-for="goal in (project.goalList || []).slice(0, 2)"
-              :key="'g' + goal.id"
-              class="preview-tag goal-preview-tag"
-              :class="{ 'goal-completed': goal.isCompleted }"
-            >
-              <AppIcon name="target" :size="16" /> {{ goal.name }}
-            </span>
             <span v-if="hiddenCount(project) > 0" class="preview-tag more-tag">
               +{{ hiddenCount(project) }} ещё
             </span>
           </div>
           <div class="project-preview empty-preview" v-else>
-            Задачи и цели не привязаны
+            Задачи не привязаны
           </div>
 
           <div class="project-footer">
@@ -318,18 +310,12 @@ export default {
 
     hasLinkedItems(project) {
       return (project.weeklyList?.length || 0) > 0
-        || this.activeTaskList(project).length > 0
-        || (project.goalList?.length || 0) > 0;
-    },
-
-    completedGoalsCount(project) {
-      return (project.goalList || []).filter(g => g.isCompleted).length;
+        || this.activeTaskList(project).length > 0;
     },
 
     hiddenCount(project) {
       const total = (project.weeklyList?.length || 0)
-        + this.activeTaskList(project).length
-        + (project.goalList?.length || 0);
+        + this.activeTaskList(project).length;
       return Math.max(0, total - 6);
     },
 
@@ -699,13 +685,6 @@ h1 {
   text-transform: uppercase;
 }
 
-.goal-chip{
-  border-left: 3px solid var(--accent-green);
-  font-family: var(--font-mono);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
 /* Превью привязанных задач */
 .project-preview {
   display: flex;
@@ -744,11 +723,6 @@ h1 {
 
 .tag-subtasks-done {
   color: var(--accent-green);
-}
-
-.goal-preview-tag.goal-completed {
-  text-decoration: line-through;
-  opacity: 0.7;
 }
 
 .empty-preview {
