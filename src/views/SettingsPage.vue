@@ -240,6 +240,7 @@
 
 <script>
 import AppIcon from '../components/AppIcon.vue';
+import { getMcpEndpoint } from '../utils/runtimeConfig.js';
 import { useSettings, loadSettings, saveFirstDayOfWeek } from '../store/settings.js';
 import {
   useMcp,
@@ -265,7 +266,7 @@ export default {
       form: {
         firstDayOfWeek: 'SUNDAY'
       },
-      endpointUrl: `${window.location.origin}/mcp`,
+      endpointUrl: getMcpEndpoint(),
       showCreateModal: false,
       keyName: '',
       creatingKey: false,
