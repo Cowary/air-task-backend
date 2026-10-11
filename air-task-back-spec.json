@@ -67,6 +67,96 @@
   }
  ],
  "paths": {
+  "/api/mcp/v1/key/list": {
+   "get": {
+    "tags": ["MCP"],
+    "summary": "List MCP API keys",
+    "description": "Returns all MCP API keys, newest first.",
+    "operationId": "listMcpKeys",
+    "responses": {
+     "200": {
+      "description": "Keys successfully retrieved",
+      "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ApiRs"}}}
+     }
+    }
+   }
+  },
+  "/api/mcp/v1/key": {
+   "post": {
+    "tags": ["MCP"],
+    "summary": "Create an MCP API key",
+    "description": "Creates a new MCP API key and returns its plaintext value once.",
+    "operationId": "createMcpKey",
+    "requestBody": {
+     "required": true,
+     "content": {"application/json": {"schema": {"$ref": "#/components/schemas/McpApiKeyCreateRequest"}}}
+    },
+    "responses": {
+     "201": {
+      "description": "Key successfully created",
+      "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ApiRs"}}}
+     },
+     "400": {"description": "Invalid request — validation failed"}
+    }
+   }
+  },
+  "/api/mcp/v1/key/{id}": {
+   "put": {
+    "tags": ["MCP"],
+    "summary": "Rename an MCP API key",
+    "description": "Updates the display name of an existing key.",
+    "operationId": "renameMcpKey",
+    "parameters": [
+     {"name": "id", "in": "path", "required": true, "schema": {"type": "integer", "format": "int64"}}
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {"application/json": {"schema": {"$ref": "#/components/schemas/McpApiKeyUpdateRequest"}}}
+    },
+    "responses": {
+     "200": {
+      "description": "Key successfully renamed",
+      "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ApiRs"}}}
+     },
+     "404": {"description": "Key not found"}
+    }
+   }
+  },
+  "/api/mcp/v1/key/{id}/revoke": {
+   "post": {
+    "tags": ["MCP"],
+    "summary": "Revoke an MCP API key",
+    "description": "Marks the key as revoked; agents using it are rejected immediately.",
+    "operationId": "revokeMcpKey",
+    "parameters": [
+     {"name": "id", "in": "path", "required": true, "schema": {"type": "integer", "format": "int64"}}
+    ],
+    "responses": {
+     "200": {"description": "Key successfully revoked"},
+     "404": {"description": "Key not found"}
+    }
+   }
+  },
+  "/api/mcp/v1/audit/list": {
+   "get": {
+    "tags": ["MCP"],
+    "summary": "List MCP agent actions",
+    "description": "Returns recorded MCP tool invocations, newest first, optionally filtered by key or tool.",
+    "operationId": "listMcpAudit",
+    "parameters": [
+     {"name": "apiKeyId", "in": "query", "required": false, "schema": {"type": "integer", "format": "int64"}},
+     {"name": "toolName", "in": "query", "required": false, "schema": {"type": "string"}},
+     {"name": "limit", "in": "query", "required": false, "schema": {"type": "integer", "default": 50}},
+     {"name": "offset", "in": "query", "required": false, "schema": {"type": "integer", "default": 0}}
+    ],
+    "responses": {
+     "200": {
+      "description": "Actions successfully retrieved",
+      "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ApiRs"}}}
+     }
+    }
+   }
+  },
   "/api/weekly/v1/{id}": {
    "get": {
     "tags": [
@@ -1809,6 +1899,62 @@
  },
  "components": {
   "schemas": {
+   "McpApiKeyCreateRequest": {
+    "type": "object",
+    "description": "Request body for creating a new MCP API key",
+    "required": ["name"],
+    "properties": {
+     "name": {"type": "string", "maxLength": 128, "example": "Claude Code"}
+    }
+   },
+   "McpApiKeyUpdateRequest": {
+    "type": "object",
+    "description": "Request body for renaming an existing MCP API key",
+    "required": ["name"],
+    "properties": {
+     "name": {"type": "string", "maxLength": 128, "example": "CI agent"}
+    }
+   },
+   "McpApiKeyResponse": {
+    "type": "object",
+    "description": "MCP API key metadata; never contains the plaintext key",
+    "properties": {
+     "id": {"type": "integer", "format": "int64", "example": 1},
+     "name": {"type": "string", "example": "Claude Code"},
+     "keyPrefix": {"type": "string", "example": "atk_ab12cd34"},
+     "createdTs": {"type": "string", "format": "date-time"},
+     "lastUsedTs": {"type": "string", "format": "date-time"},
+     "revoked": {"type": "boolean", "example": false},
+     "revokedTs": {"type": "string", "format": "date-time"}
+    }
+   },
+   "McpApiKeyCreatedResponse": {
+    "type": "object",
+    "description": "MCP API key with its plaintext value; shown only once",
+    "properties": {
+     "id": {"type": "integer", "format": "int64", "example": 1},
+     "name": {"type": "string", "example": "Claude Code"},
+     "keyPrefix": {"type": "string", "example": "atk_ab12cd34"},
+     "createdTs": {"type": "string", "format": "date-time"},
+     "key": {"type": "string", "description": "Plaintext API key; store it now"}
+    }
+   },
+   "McpAuditEntryResponse": {
+    "type": "object",
+    "description": "Recorded MCP agent action",
+    "properties": {
+     "id": {"type": "integer", "format": "int64", "example": 42},
+     "apiKeyId": {"type": "integer", "format": "int64"},
+     "apiKeyName": {"type": "string", "example": "Claude Code"},
+     "toolName": {"type": "string", "example": "task_create"},
+     "requestBody": {"type": "string"},
+     "responseBody": {"type": "string"},
+     "status": {"type": "string", "example": "SUCCESS"},
+     "errorMessage": {"type": "string"},
+     "durationMs": {"type": "integer", "format": "int64", "example": 12},
+     "createdTs": {"type": "string", "format": "date-time"}
+    }
+   },
    "WeeklyUpdateRequest": {
     "type": "object",
     "description": "Request body for updating a weekly task",

@@ -17,6 +17,11 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_BACKEND_URL || 'http://localhost:8090',
           changeOrigin: true,
           secure: false,
+        },
+        '/mcp': {
+          target: env.VITE_BACKEND_URL || 'http://localhost:8090',
+          changeOrigin: true,
+          secure: false,
         }
       }
     },
