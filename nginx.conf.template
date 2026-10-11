@@ -25,11 +25,24 @@ server {
         add_header Cache-Control "public, no-transform";
     }
 
+    # MCP-проксирование (Streamable HTTP)
+    # Агенты подключаются к тому же origin по /mcp, запрос идёт на backend
+    location /mcp {
+        proxy_pass ${BACKEND_ORIGIN};
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_buffering off;
+        proxy_read_timeout 3600s;
+    }
+
     # API-проксирование
     # Запросы к /api перенаправляются напрямую на backend
     location /api/ {
         proxy_pass ${BACKEND_URL}/;
-
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

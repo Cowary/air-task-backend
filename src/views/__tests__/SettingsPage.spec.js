@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { mount } from '@vue/test-utils';
 
 vi.mock('../../store/settings.js', () => ({
@@ -22,37 +23,27 @@ function mountPage() {
   return mount(SettingsPage, { global: { stubs: { AppIcon: true } } });
 }
 
+function readRepoFile(relative) {
+  return readFileSync(new URL(relative, import.meta.url), 'utf8');
+}
+
 describe('SettingsPage — адрес MCP-сервера (B11)', () => {
-  beforeEach(() => {
-    delete window.__AIR_TASK_CONFIG__;
-  });
-
-  afterEach(() => {
-    delete window.__AIR_TASK_CONFIG__;
-    vi.unstubAllEnvs();
-  });
-
-  it('показывает адрес backend из runtime-конфига, а не origin фронта', () => {
-    window.__AIR_TASK_CONFIG__ = { backendUrl: 'http://192.168.1.77:8106' };
-
-    const wrapper = mountPage();
-
-    expect(wrapper.vm.endpointUrl).toBe('http://192.168.1.77:8106/mcp');
-  });
-
-  it('обрезает завершающий слэш в backend URL', () => {
-    window.__AIR_TASK_CONFIG__ = { backendUrl: 'http://192.168.1.77:8106/' };
-
-    const wrapper = mountPage();
-
-    expect(wrapper.vm.endpointUrl).toBe('http://192.168.1.77:8106/mcp');
-  });
-
-  it('падает обратно на origin фронта, когда runtime-конфиг и VITE_BACKEND_URL пусты', () => {
-    vi.stubEnv('VITE_BACKEND_URL', '');
-
+  it('показывает MCP-адрес на origin фронта', () => {
     const wrapper = mountPage();
 
     expect(wrapper.vm.endpointUrl).toBe(`${window.location.origin}/mcp`);
+  });
+
+  it('nginx проксирует /mcp на backend, иначе адрес недоступен', () => {
+    const conf = readRepoFile('../../../nginx.conf.template');
+
+    expect(conf).toMatch(/location\s+\/mcp\b/);
+    expect(conf).toContain('${BACKEND_ORIGIN}');
+  });
+
+  it('vite проксирует /mcp в dev-режиме', () => {
+    const conf = readRepoFile('../../../vite.config.js');
+
+    expect(conf).toContain("'/mcp'");
   });
 });
