@@ -18,6 +18,8 @@ FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+ARG PUBLIC_BACKEND_URL
+ENV PUBLIC_BACKEND_URL=${PUBLIC_BACKEND_URL}
 ENV BACKEND_URL=http://192.168.1.79:8102
 
 COPY nginx.conf.template /etc/nginx/conf.d/default.conf.template
