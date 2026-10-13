@@ -160,7 +160,9 @@ export default {
 
     initForm() {
       if (this.task) {
-        const projectName = this.task.project?.name || '';
+        // Еженедельные задачи из project.weeklyList приходят без поля project,
+        // поэтому при редактировании из панели проекта берём проект из defaultProjectName.
+        const projectName = this.task.project?.name || this.defaultProjectName || '';
 
         if (!projectName) {
           this.form = {
