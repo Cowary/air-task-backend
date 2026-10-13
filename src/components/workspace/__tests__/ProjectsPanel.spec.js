@@ -337,3 +337,39 @@ describe('ProjectsPanel — завершение и возврат проект�
     expect(wrapper.emitted('statuses-changed')).toBeUndefined();
   });
 });
+
+describe('ProjectsPanel — редактирование еженедельной задачи', () => {
+  const weeklyProjects = [
+    {
+      id: 1,
+      name: 'Мой проект',
+      status: 'ACTIVE',
+      priority: 'LOW',
+      weeklyList: [
+        { id: 5, name: 'Недельная', count: 1, priority: 'LOW', status: 'IN_PROGRESS' }
+      ],
+      taskList: []
+    }
+  ];
+
+  async function mountSelectedWithWeekly() {
+    const wrapper = mount(ProjectsPanel, {
+      props: { projects: weeklyProjects, tasks: [], weekMap: {} },
+      global: {
+        stubs: { ProjectFormModal: true, TaskListSection: true, Teleport: true }
+      }
+    });
+    wrapper.vm.select(1);
+    await wrapper.vm.$nextTick();
+    return wrapper;
+  }
+
+  it('в модалке редактирования поле «Проект» показывает проект задачи, а не «Без проекта»', async () => {
+    const wrapper = await mountSelectedWithWeekly();
+
+    await wrapper.find('.weekly-row .edit-btn').trigger('click');
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('#wsWeeklyProject').element.value).toBe('Мой проект');
+  });
+});
